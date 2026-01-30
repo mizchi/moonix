@@ -77,17 +77,79 @@ pub fn ShellContext::exec_simple(
     "head" => cmd_head(self, args)
     "tail" => cmd_tail(self, args)
     "grep" => cmd_grep(self, args)
-    _ => {
-      try {
-        let _ = self.ctx.write(
-          @posix.STDERR_FD,
-          string_to_bytes("command not found: " + name + "\n"),
-        )
-      } catch {
-        _ => ()
-      }
-      127
+    _ => self.exec_external(name, args)
+  }
+}
+
+///| Try to execute an external WASM command
+fn ShellContext::exec_external(
+  self : ShellContext,
+  name : String,
+  args : Array[String]
+) -> Int {
+  // Check if wasm_runner is available
+  let runner = match self.wasm_runner {
+    Some(r) => r
+    None => {
+      write_stderr_msg(self, "command not found: " + name + "\n")
+      return 127
     }
+  }
+
+  // Look for /bin/{name}.wasm
+  let wasm_path = "/bin/" + name + ".wasm"
+  let wasm_bytes = try {
+    self.fs.read_file(wasm_path)
+  } catch {
+    _ => {
+      write_stderr_msg(self, "command not found: " + name + "\n")
+      return 127
+    }
+  }
+
+  // Prepare stdin from pipe_input
+  let stdin = match self.pipe_input {
+    Some(data) => data
+    None => Bytes::new(0)
+  }
+
+  // Get environment variables
+  let env = self.ctx.get_all_env()
+  let cwd = self.ctx.getcwd()
+
+  // Execute WASM
+  let WasmRunnerFn(run_fn) = runner
+  match run_fn(wasm_bytes, stdin, args, env, cwd) {
+    Ok((exit_code, stdout, stderr)) => {
+      // Write outputs to streams
+      if stdout.length() > 0 {
+        try {
+          let _ = self.ctx.write(@posix.STDOUT_FD, stdout)
+        } catch {
+          _ => ()
+        }
+      }
+      if stderr.length() > 0 {
+        try {
+          let _ = self.ctx.write(@posix.STDERR_FD, stderr)
+        } catch {
+          _ => ()
+        }
+      }
+      exit_code
+    }
+    Err(msg) => {
+      write_stderr_msg(self, "wasm error: " + msg + "\n")
+      1
+    }
+  }
+}
+
+fn write_stderr_msg(sh : ShellContext, msg : String) -> Unit {
+  try {
+    let _ = sh.ctx.write(@posix.STDERR_FD, string_to_bytes(msg))
+  } catch {
+    _ => ()
   }
 }
 

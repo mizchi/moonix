@@ -1,6 +1,7 @@
 {
   "import": [
     "mizchi/moonix/fs",
-    "mizchi/moonix/posix"
+    "mizchi/moonix/posix",
+    "mizchi/moonix/wasm"
   ]
 }

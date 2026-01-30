@@ -1,9 +1,16 @@
+///| WASM runner callback type
+/// (wasm_bytes, stdin, args, env, cwd) -> Result[(exit_code, stdout, stderr), error_msg]
+pub(all) struct WasmRunnerFn(
+  (Bytes, Bytes, Array[String], Array[(String, String)], String) -> Result[(Int, Bytes, Bytes), String]
+)
+
 ///| Shell execution context
 pub struct ShellContext {
   fs : @fs.MemFs
   mut ctx : @posix.PosixContext
   mut streams : @posix.BufferedStreamHandler
   mut pipe_input : Bytes?
+  mut wasm_runner : WasmRunnerFn?
 }
 
 ///| Create a new shell context
@@ -11,14 +18,29 @@ pub fn ShellContext::new() -> ShellContext {
   let fs = @fs.MemFs::new()
   let streams = @posix.BufferedStreamHandler::new()
   let ctx = @posix.PosixContext::new(fs, streams)
-  { fs, ctx, streams, pipe_input: None }
+  { fs, ctx, streams, pipe_input: None, wasm_runner: None }
 }
 
 ///| Create shell context with existing filesystem
 pub fn ShellContext::with_fs(fs : @fs.MemFs) -> ShellContext {
   let streams = @posix.BufferedStreamHandler::new()
   let ctx = @posix.PosixContext::new(fs, streams)
-  { fs, ctx, streams, pipe_input: None }
+  { fs, ctx, streams, pipe_input: None, wasm_runner: None }
+}
+
+///| Set WASM runner callback
+pub fn ShellContext::set_wasm_runner(self : ShellContext, runner : WasmRunnerFn) -> Unit {
+  self.wasm_runner = Some(runner)
+}
+
+///| Set pipe input (for testing and programmatic use)
+pub fn ShellContext::set_pipe_input(self : ShellContext, data : Bytes) -> Unit {
+  self.pipe_input = Some(data)
+}
+
+///| Clear pipe input
+pub fn ShellContext::clear_pipe_input(self : ShellContext) -> Unit {
+  self.pipe_input = None
 }
 
 ///| Reset streams (call before each command)
