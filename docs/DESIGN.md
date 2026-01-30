@@ -297,20 +297,24 @@ moonix (agent runtime)
 - [x] Quote handling, glob expansion
 - [x] Command substitution, arithmetic expansion
 
-### Phase 2: Git Integration
-- [ ] GitBackedFs implementation
-- [ ] Snapshot/rollback commands
-- [ ] Branch support
+### Phase 2: Git Integration (Complete)
+- [x] GitBackedFs implementation (src/gitfs/)
+- [x] Snapshot/rollback commands
+- [x] Branch support
+- [x] History tracking
 
-### Phase 3: Effect Logging
-- [ ] WASI capability interception
-- [ ] Effect log storage
-- [ ] Rollback warnings
+### Phase 3: Effect Logging & Security (Complete)
+- [x] Effect log storage (src/effect/)
+- [x] EffectKind: HTTP, MCP, A2A, Socket, Clock, Random, Process
+- [x] Capability-based security (src/capability/)
+- [x] Capability presets: minimal, sandbox, developer, agent
+- [ ] WASI capability interception (pending integration)
+- [ ] Rollback warnings (pending integration)
 
 ### Phase 4: Agent Interop
 - [ ] MCP client/server
 - [ ] A2A protocol
-- [ ] Capability-based security
+- [ ] Runtime integration
 
 ## Design Principles
 
