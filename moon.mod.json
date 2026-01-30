@@ -1,8 +1,11 @@
 {
   "name": "mizchi/moonix",
   "version": "0.1.0",
-  "description": "Virtual POSIX layer for MoonBit - Unix-like filesystem and process emulation",
+  "deps": {
+    "mizchi/git": "0.1.2"
+  },
   "repository": "https://github.com/mizchi/moonix",
-  "source": "src",
-  "license": "MIT"
+  "license": "MIT",
+  "description": "Virtual POSIX layer for MoonBit - Unix-like filesystem and process emulation",
+  "source": "src"
 }
