@@ -45,18 +45,23 @@ test "EffectLog::record_mcp tracks tool calls" {
   }
 }
 
-test "EffectLog::entries_after filters by sequence" {
+test "EffectLog::entries_after filters by head position" {
   let log = EffectLog::new()
   log.set_timestamp_provider(fn() { 1000L })
 
-  let _ = log.record_clock(1000L)
-  let _ = log.record_clock(2000L)
-  let _ = log.record_clock(3000L)
+  let _ = log.record_clock(1000L)  // seq 0
+  let _ = log.record_clock(2000L)  // seq 1
+  let _ = log.record_clock(3000L)  // seq 2
 
-  let after = log.entries_after(0)
+  // entries_after(1) returns entries with seq >= 1
+  let after = log.entries_after(1)
   assert_eq(after.length(), 2)
   assert_eq(after[0].seq, 1)
   assert_eq(after[1].seq, 2)
+
+  // entries_after(0) returns all entries
+  let all = log.entries_after(0)
+  assert_eq(all.length(), 3)
 }
 
 test "EffectLog::http_effects filters HTTP only" {

@@ -1,0 +1,9 @@
+{
+  "import": [
+    "mizchi/moonix/fs",
+    "mizchi/moonix/gitfs",
+    "mizchi/moonix/effect",
+    "mizchi/moonix/capability",
+    "mizchi/git"
+  ]
+}

@@ -138,11 +138,12 @@ pub fn EffectLog::length(self : EffectLog) -> Int {
   self.entries.length()
 }
 
-/// Get entries after a specific sequence number
-pub fn EffectLog::entries_after(self : EffectLog, seq : Int) -> Array[EffectEntry] {
+/// Get entries at or after a specific sequence number (head position)
+/// This returns all effects logged since the given head position
+pub fn EffectLog::entries_after(self : EffectLog, head_pos : Int) -> Array[EffectEntry] {
   let result : Array[EffectEntry] = []
   for entry in self.entries {
-    if entry.seq > seq {
+    if entry.seq >= head_pos {
       result.push(entry)
     }
   }
