@@ -4,21 +4,22 @@
 pub fn ShellContext::exec(self : ShellContext, cmd : String) -> Int {
   let parsed = parse_command(cmd)
 
-  match parsed.pipe_to {
+  let result = match parsed.pipe_to {
     Some(pipe_cmd) => {
       // Execute first command, capture stdout, feed to second command
       let first_result = self.exec_simple(parsed.command, parsed.args)
       if first_result != 0 {
-        return first_result
+        first_result
+      } else {
+        // Get stdout from first command and use as stdin for pipe
+        let pipe_input = self.streams.get_stdout()
+        // Reset streams for second command
+        self.reset_streams()
+        self.pipe_input = Some(pipe_input)
+        let result = self.exec(pipe_cmd)
+        self.pipe_input = None
+        result
       }
-      // Get stdout from first command and use as stdin for pipe
-      let pipe_input = self.streams.get_stdout()
-      // Reset streams for second command
-      self.reset_streams()
-      self.pipe_input = Some(pipe_input)
-      let result = self.exec(pipe_cmd)
-      self.pipe_input = None
-      result
     }
     None => {
       let result = self.exec_simple(parsed.command, parsed.args)
@@ -49,6 +50,8 @@ pub fn ShellContext::exec(self : ShellContext, cmd : String) -> Int {
       result
     }
   }
+  self.last_exit_code = result
+  result
 }
 
 ///| Execute a simple command (no pipes/redirects)
@@ -77,6 +80,12 @@ pub fn ShellContext::exec_simple(
     "head" => cmd_head(self, args)
     "tail" => cmd_tail(self, args)
     "grep" => cmd_grep(self, args)
+    "true" => cmd_true(self, args)
+    "false" => cmd_false(self, args)
+    "exit" => cmd_exit(self, args)
+    "sleep" => cmd_sleep(self, args)
+    "test" => cmd_test(self, args)
+    "[" => cmd_bracket(self, args)
     _ => self.exec_external(name, args)
   }
 }
@@ -188,7 +197,7 @@ fn parse_simple_command(cmd : String) -> ParsedCommand {
   let parts = split_command(main_cmd)
   let command = if parts.is_empty() { "" } else { parts[0] }
   let args : Array[String] = []
-  for i = 1; i < parts.length(); i = i + 1 {
+  for i in 1..<parts.length() {
     args.push(parts[i])
   }
   ParsedCommand::{ command, args, redirect_out: redirect_file, pipe_to: None }
@@ -197,16 +206,60 @@ fn parse_simple_command(cmd : String) -> ParsedCommand {
 fn split_command(cmd : String) -> Array[String] {
   let parts : Array[String] = []
   let current = StringBuilder::new()
+  let chars : Array[Char] = []
   for c in cmd {
+    chars.push(c)
+  }
+  let len = chars.length()
+  let mut i = 0
+
+  while i < len {
+    let c = chars[i]
+
     if c == ' ' || c == '\t' {
+      // Whitespace: end current token
       if current.to_string().length() > 0 {
         parts.push(current.to_string())
         current.reset()
       }
+      i += 1
+    } else if c == '\'' {
+      // Single quote: read until closing quote, no escapes
+      i += 1
+      while i < len && chars[i] != '\'' {
+        current.write_char(chars[i])
+        i += 1
+      }
+      if i < len {
+        i += 1 // skip closing quote
+      }
+    } else if c == '"' {
+      // Double quote: read until closing quote, handle escapes
+      i += 1
+      while i < len && chars[i] != '"' {
+        if chars[i] == '\\' && i + 1 < len {
+          i += 1
+          current.write_char(chars[i])
+        } else {
+          current.write_char(chars[i])
+        }
+        i += 1
+      }
+      if i < len {
+        i += 1 // skip closing quote
+      }
+    } else if c == '\\' && i + 1 < len {
+      // Escape: next char is literal
+      i += 1
+      current.write_char(chars[i])
+      i += 1
     } else {
+      // Regular character
       current.write_char(c)
+      i += 1
     }
   }
+
   if current.to_string().length() > 0 {
     parts.push(current.to_string())
   }

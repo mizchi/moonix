@@ -11,6 +11,7 @@ pub struct ShellContext {
   mut streams : @posix.BufferedStreamHandler
   mut pipe_input : Bytes?
   mut wasm_runner : WasmRunnerFn?
+  mut last_exit_code : Int
 }
 
 ///| Create a new shell context
@@ -18,14 +19,14 @@ pub fn ShellContext::new() -> ShellContext {
   let fs = @fs.MemFs::new()
   let streams = @posix.BufferedStreamHandler::new()
   let ctx = @posix.PosixContext::new(fs, streams)
-  { fs, ctx, streams, pipe_input: None, wasm_runner: None }
+  { fs, ctx, streams, pipe_input: None, wasm_runner: None, last_exit_code: 0 }
 }
 
 ///| Create shell context with existing filesystem
 pub fn ShellContext::with_fs(fs : @fs.MemFs) -> ShellContext {
   let streams = @posix.BufferedStreamHandler::new()
   let ctx = @posix.PosixContext::new(fs, streams)
-  { fs, ctx, streams, pipe_input: None, wasm_runner: None }
+  { fs, ctx, streams, pipe_input: None, wasm_runner: None, last_exit_code: 0 }
 }
 
 ///| Set WASM runner callback
@@ -82,4 +83,9 @@ pub fn ShellContext::get_fs(self : ShellContext) -> @fs.MemFs {
 ///| Get the POSIX context
 pub fn ShellContext::get_ctx(self : ShellContext) -> @posix.PosixContext {
   self.ctx
+}
+
+///| Get last exit code ($?)
+pub fn ShellContext::get_last_exit_code(self : ShellContext) -> Int {
+  self.last_exit_code
 }

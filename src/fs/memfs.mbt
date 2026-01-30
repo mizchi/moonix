@@ -51,7 +51,7 @@ fn MemFs::resolve(self : MemFs, path : String) -> Int? {
   // Skip first '/' and split by '/'
   let path_without_slash = if normalized.length() > 1 {
     let buf = StringBuilder::new()
-    for i = 1; i < normalized.length(); i = i + 1 {
+    for i in 1..<normalized.length() {
       buf.write_char(normalized[i].to_int().unsafe_to_char())
     }
     buf.to_string()
@@ -263,7 +263,7 @@ pub impl FileSystemBackend for MemFs with mkdir_p(self, path) {
   // Skip first '/' and get the rest
   let path_without_slash = if normalized.length() > 1 {
     let buf = StringBuilder::new()
-    for i = 1; i < normalized.length(); i = i + 1 {
+    for i in 1..<normalized.length() {
       buf.write_char(normalized[i].to_int().unsafe_to_char())
     }
     buf.to_string()

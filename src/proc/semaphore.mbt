@@ -79,7 +79,7 @@ pub fn Semaphore::waiter_count(self : Semaphore) -> Int {
 /// Remove a specific waiter (e.g., when process is killed)
 pub fn Semaphore::remove_waiter(self : Semaphore, pid : Pid) -> Bool {
   let Pid(target) = pid
-  for i = 0; i < self.waiters.length(); i = i + 1 {
+  for i in 0..<self.waiters.length() {
     let Pid(w) = self.waiters[i]
     if w == target {
       let _ = self.waiters.remove(i)

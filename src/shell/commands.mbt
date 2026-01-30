@@ -271,7 +271,7 @@ pub fn cmd_write(sh : ShellContext, args : Array[String]) -> Int {
   }
   let path = sh.ctx.resolve_path(args[0])
   let content = StringBuilder::new()
-  for i = 1; i < args.length(); i = i + 1 {
+  for i in 1..<args.length() {
     if i > 1 {
       content.write_char(' ')
     }
@@ -312,7 +312,7 @@ pub fn cmd_head(sh : ShellContext, args : Array[String]) -> Int {
   }
   let lines = split_lines(input)
   let count = if lines.length() < n { lines.length() } else { n }
-  for i = 0; i < count; i = i + 1 {
+  for i in 0..<count {
     write_stdout(sh.ctx, lines[i] + "\n")
   }
   0
@@ -436,9 +436,10 @@ fn contains(haystack : String, needle : String) -> Bool {
   for ch in needle {
     need_chars.push(ch)
   }
-  for i = 0; i <= hay_chars.length() - need_chars.length(); i = i + 1 {
+  let limit = hay_chars.length() - need_chars.length()
+  for i in 0..<=limit {
     let mut matched = true
-    for j = 0; j < need_chars.length(); j = j + 1 {
+    for j in 0..<need_chars.length() {
       if hay_chars[i + j] != need_chars[j] {
         matched = false
         break
@@ -448,5 +449,347 @@ fn contains(haystack : String, needle : String) -> Bool {
       return true
     }
   }
+  false
+}
+
+///| true command - always returns 0
+pub fn cmd_true(_sh : ShellContext, _args : Array[String]) -> Int {
+  0
+}
+
+///| false command - always returns 1
+pub fn cmd_false(_sh : ShellContext, _args : Array[String]) -> Int {
+  1
+}
+
+///| exit command - returns exit code (default 0)
+pub fn cmd_exit(sh : ShellContext, args : Array[String]) -> Int {
+  if args.is_empty() {
+    sh.last_exit_code
+  } else {
+    match parse_int(args[0]) {
+      Some(code) => code
+      None => {
+        write_stderr(sh.ctx, "exit: numeric argument required\n")
+        2
+      }
+    }
+  }
+}
+
+///| sleep command - in virtual env, returns immediately
+pub fn cmd_sleep(_sh : ShellContext, _args : Array[String]) -> Int {
+  // In virtual environment, sleep is a no-op
+  // Real implementation would need async support
+  0
+}
+
+///| Glob pattern matching
+pub fn glob_match(pattern : String, text : String) -> Bool {
+  let p_chars : Array[Char] = []
+  let t_chars : Array[Char] = []
+  for c in pattern {
+    p_chars.push(c)
+  }
+  for c in text {
+    t_chars.push(c)
+  }
+  glob_match_chars(p_chars, 0, t_chars, 0)
+}
+
+fn glob_match_chars(
+  pattern : Array[Char],
+  pi : Int,
+  text : Array[Char],
+  ti : Int
+) -> Bool {
+  let plen = pattern.length()
+  let tlen = text.length()
+
+  if pi >= plen {
+    return ti >= tlen
+  }
+
+  let p = pattern[pi]
+
+  match p {
+    '*' => {
+      // Try matching zero or more characters
+      // First, try matching zero chars (skip the *)
+      if glob_match_chars(pattern, pi + 1, text, ti) {
+        return true
+      }
+      // Then try matching one char and recurse
+      if ti < tlen && glob_match_chars(pattern, pi, text, ti + 1) {
+        return true
+      }
+      false
+    }
+    '?' => {
+      // Match any single character
+      if ti < tlen {
+        glob_match_chars(pattern, pi + 1, text, ti + 1)
+      } else {
+        false
+      }
+    }
+    '[' => {
+      // Character class [abc] or [a-z]
+      if ti >= tlen {
+        return false
+      }
+      let t = text[ti]
+      let mut matched = false
+      let mut negated = false
+      let mut i = pi + 1
+
+      if i < plen && pattern[i] == '!' {
+        negated = true
+        i += 1
+      }
+
+      while i < plen && pattern[i] != ']' {
+        if i + 2 < plen && pattern[i + 1] == '-' && pattern[i + 2] != ']' {
+          // Range a-z
+          let lo = pattern[i]
+          let hi = pattern[i + 2]
+          if t >= lo && t <= hi {
+            matched = true
+          }
+          i += 3
+        } else {
+          if pattern[i] == t {
+            matched = true
+          }
+          i += 1
+        }
+      }
+
+      if negated {
+        matched = not(matched)
+      }
+
+      if matched && i < plen && pattern[i] == ']' {
+        glob_match_chars(pattern, i + 1, text, ti + 1)
+      } else {
+        false
+      }
+    }
+    _ => {
+      // Literal character
+      if ti < tlen && text[ti] == p {
+        glob_match_chars(pattern, pi + 1, text, ti + 1)
+      } else {
+        false
+      }
+    }
+  }
+}
+
+///| Expand glob pattern to matching files
+pub fn expand_glob(
+  fs : @fs.MemFs,
+  cwd : String,
+  pattern : String
+) -> Array[String] {
+  let results : Array[String] = []
+
+  // Determine directory to search
+  let (dir, file_pattern) = if pattern.contains("/") {
+    let last_slash = find_last_char(pattern, '/')
+    match last_slash {
+      Some(pos) =>
+        if pos == 0 {
+          ("/", substring(pattern, 1, pattern.length()))
+        } else {
+          (substring(pattern, 0, pos), substring(pattern, pos + 1, pattern.length()))
+        }
+      None => (cwd, pattern)
+    }
+  } else {
+    (cwd, pattern)
+  }
+
+  // Check if pattern has glob chars
+  if not(has_glob_chars(file_pattern)) {
+    results.push(pattern)
+    return results
+  }
+
+  // List directory and match
+  try {
+    let entries = fs.readdir(dir)
+    for entry in entries {
+      if glob_match(file_pattern, entry.name) {
+        let path = if dir == "/" {
+          "/" + entry.name
+        } else {
+          dir + "/" + entry.name
+        }
+        results.push(path)
+      }
+    }
+  } catch {
+    _ => ()
+  }
+
+  // If no matches, return original pattern
+  if results.is_empty() {
+    results.push(pattern)
+  }
+
+  results
+}
+
+fn has_glob_chars(s : String) -> Bool {
+  for c in s {
+    if c == '*' || c == '?' || c == '[' {
+      return true
+    }
+  }
+  false
+}
+
+fn find_last_char(s : String, target : Char) -> Int? {
+  let chars : Array[Char] = []
+  for c in s {
+    chars.push(c)
+  }
+  for i = chars.length() - 1; i >= 0; i = i - 1 {
+    if chars[i] == target {
+      return Some(i)
+    }
+  }
+  None
+}
+
+///| Parse integer from string
+fn parse_int(s : String) -> Int? {
+  if s.is_empty() {
+    return None
+  }
+  let mut result = 0
+  let mut negative = false
+  let mut start = 0
+  if s[0] == '-' {
+    negative = true
+    start = 1
+  } else if s[0] == '+' {
+    start = 1
+  }
+  for i in start..<s.length() {
+    let c = s[i]
+    if c >= '0' && c <= '9' {
+      result = result * 10 + (c.to_int() - '0'.to_int())
+    } else {
+      return None
+    }
+  }
+  Some(if negative { -result } else { result })
+}
+
+///| test command - evaluate conditional expressions
+pub fn cmd_test(sh : ShellContext, args : Array[String]) -> Int {
+  if args.is_empty() {
+    return 1 // empty test is false
+  }
+  if test_expr(sh, args) { 0 } else { 1 }
+}
+
+///| [ command - alias for test, requires ] at end
+pub fn cmd_bracket(sh : ShellContext, args : Array[String]) -> Int {
+  if args.is_empty() {
+    write_stderr(sh.ctx, "[: missing ]\n")
+    return 2
+  }
+  let last = args[args.length() - 1]
+  if last != "]" {
+    write_stderr(sh.ctx, "[: missing ]\n")
+    return 2
+  }
+  // Remove trailing ]
+  let test_args : Array[String] = []
+  for i in 0..<(args.length() - 1) {
+    test_args.push(args[i])
+  }
+  cmd_test(sh, test_args)
+}
+
+///| Evaluate test expression
+fn test_expr(sh : ShellContext, args : Array[String]) -> Bool {
+  let len = args.length()
+  if len == 0 {
+    return false
+  }
+  // Unary: ! expr
+  if args[0] == "!" {
+    let rest : Array[String] = []
+    for i in 1..<len {
+      rest.push(args[i])
+    }
+    return not(test_expr(sh, rest))
+  }
+  // Unary file tests: -e, -f, -d, -z, -n
+  if len == 2 {
+    let op = args[0]
+    let arg = args[1]
+    match op {
+      "-e" => return sh.fs.exists(sh.ctx.resolve_path(arg))
+      "-f" => return sh.fs.is_file(sh.ctx.resolve_path(arg))
+      "-d" => return sh.fs.is_dir(sh.ctx.resolve_path(arg))
+      "-z" => return arg.is_empty()
+      "-n" => return not(arg.is_empty())
+      "-r" | "-w" | "-x" => return sh.fs.exists(sh.ctx.resolve_path(arg)) // simplified
+      _ => ()
+    }
+  }
+  // Single argument: true if non-empty
+  if len == 1 {
+    return not(args[0].is_empty())
+  }
+  // Binary: arg1 op arg2
+  if len == 3 {
+    let left = args[0]
+    let op = args[1]
+    let right = args[2]
+    match op {
+      // String comparison
+      "=" | "==" => return left == right
+      "!=" => return left != right
+      // Numeric comparison
+      "-eq" =>
+        match (parse_int(left), parse_int(right)) {
+          (Some(l), Some(r)) => return l == r
+          _ => return false
+        }
+      "-ne" =>
+        match (parse_int(left), parse_int(right)) {
+          (Some(l), Some(r)) => return l != r
+          _ => return false
+        }
+      "-lt" =>
+        match (parse_int(left), parse_int(right)) {
+          (Some(l), Some(r)) => return l < r
+          _ => return false
+        }
+      "-le" =>
+        match (parse_int(left), parse_int(right)) {
+          (Some(l), Some(r)) => return l <= r
+          _ => return false
+        }
+      "-gt" =>
+        match (parse_int(left), parse_int(right)) {
+          (Some(l), Some(r)) => return l > r
+          _ => return false
+        }
+      "-ge" =>
+        match (parse_int(left), parse_int(right)) {
+          (Some(l), Some(r)) => return l >= r
+          _ => return false
+        }
+      _ => ()
+    }
+  }
+  // Default: false for unknown expressions
   false
 }

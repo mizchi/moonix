@@ -25,7 +25,7 @@ pub fn parse_http_request(data : Bytes) -> HttpRequest? {
   // Parse headers
   let headers : Array[(String, String)] = []
   let mut body_start = 0
-  for i = 1; i < lines.length(); i = i + 1 {
+  for i in 1..<lines.length() {
     let line = lines[i]
     if line.length() == 0 {
       body_start = i + 1
@@ -149,7 +149,7 @@ pub fn parse_http_response(data : Bytes) -> HttpResponse? {
   // Parse headers
   let headers : Array[(String, String)] = []
   let mut body_start = 0
-  for i = 1; i < lines.length(); i = i + 1 {
+  for i in 1..<lines.length() {
     let line = lines[i]
     if line.length() == 0 {
       body_start = i + 1

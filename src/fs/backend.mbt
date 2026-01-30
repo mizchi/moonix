@@ -71,7 +71,7 @@ pub fn parent_path(path : String) -> String {
     "/"
   } else if last_slash > 0 {
     let buf = StringBuilder::new()
-    for i = 0; i < last_slash; i = i + 1 {
+    for i in 0..<last_slash {
       buf.write_char(normalized[i].to_int().unsafe_to_char())
     }
     buf.to_string()

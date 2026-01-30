@@ -103,7 +103,7 @@ pub fn Process::add_child(self : Process, child : Pid) -> Unit {
 /// Remove a child
 pub fn Process::remove_child(self : Process, child : Pid) -> Bool {
   let Pid(target) = child
-  for i = 0; i < self.children.length(); i = i + 1 {
+  for i in 0..<self.children.length() {
     let Pid(c) = self.children[i]
     if c == target {
       let _ = self.children.remove(i)
@@ -174,7 +174,7 @@ pub fn Process::read_stdin(self : Process, max_len : Int) -> Bytes {
   }
   let result = Bytes::makei(len, fn(i) { self.stdin_buf[i] })
   // Remove read bytes
-  for i = 0; i < len; i = i + 1 {
+  for _ in 0..<len {
     let _ = self.stdin_buf.remove(0)
   }
   result

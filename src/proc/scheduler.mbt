@@ -290,7 +290,7 @@ pub fn Scheduler::release_semaphore(self : Scheduler, sem_id : Int) -> Unit {
 /// Remove PID from ready queue
 fn Scheduler::remove_from_ready(self : Scheduler, pid : Pid) -> Unit {
   let Pid(target) = pid
-  for i = 0; i < self.ready_queue.length(); i = i + 1 {
+  for i in 0..<self.ready_queue.length() {
     let Pid(p) = self.ready_queue[i]
     if p == target {
       let _ = self.ready_queue.remove(i)
