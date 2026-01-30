@@ -155,6 +155,25 @@ pub struct AgentContext {
 }
 ```
 
+**Implemented as AgentRuntime (src/runtime/):**
+
+```moonbit
+// Create runtime with capability preset
+let rt = AgentRuntime::sandbox()  // /tmp only write
+let rt = AgentRuntime::developer()  // full access
+
+// Filesystem operations (capability-checked)
+rt.write_string("/tmp/file.txt", content)  // allowed in sandbox
+rt.write_string("/etc/passwd", content)    // PermissionDenied
+
+// Snapshot with effect tracking
+let snap = rt.snapshot("Before experiment")
+let _ = rt.http_request("POST", url, body, handler)  // logged
+let _ = rt.mcp_call("tool", input, handler)          // logged
+let result = rt.rollback(snap)
+// result.irreversible_effects contains the HTTP and MCP calls
+```
+
 ### 4. MCP Integration
 
 ```moonbit
@@ -308,8 +327,8 @@ moonix (agent runtime)
 - [x] EffectKind: HTTP, MCP, A2A, Socket, Clock, Random, Process
 - [x] Capability-based security (src/capability/)
 - [x] Capability presets: minimal, sandbox, developer, agent
-- [ ] WASI capability interception (pending integration)
-- [ ] Rollback warnings (pending integration)
+- [x] AgentRuntime integration (src/runtime/)
+- [x] Rollback with irreversible effect warnings
 
 ### Phase 4: Agent Interop
 - [ ] MCP client/server
