@@ -132,6 +132,93 @@ pub fn AgentRuntime::list_branches(
   }
 }
 
+/// Fork from a snapshot to a new branch
+/// Creates a new branch at the snapshot point and switches to it
+pub fn AgentRuntime::fork(
+  self : AgentRuntime,
+  snapshot : RuntimeSnapshot,
+  branch_name : String
+) -> Unit raise RuntimeError {
+  if not(self.capabilities.can_rollback()) {
+    raise PermissionDenied("fork")
+  }
+  if not(self.capabilities.has(fn(cap) {
+    match cap {
+      @capability.GitBranch => true
+      _ => false
+    }
+  })) {
+    raise PermissionDenied("branch")
+  }
+
+  // Create branch at the snapshot commit
+  self.fs.branch_at(branch_name, snapshot.git_snapshot.commit_id) catch {
+    e => raise GitError(e.to_string())
+  }
+
+  // Rollback to the snapshot state
+  self.fs.rollback(snapshot.git_snapshot) catch {
+    e => raise GitError(e.to_string())
+  }
+
+  // Switch to the new branch
+  self.fs.switch(branch_name) catch {
+    e => raise GitError(e.to_string())
+  }
+
+  // Restore environment and cwd from snapshot
+  let keys : Array[String] = []
+  for k, _ in self.env {
+    keys.push(k)
+  }
+  for k in keys {
+    self.env.remove(k)
+  }
+  for k, v in snapshot.env {
+    self.env.set(k, v)
+  }
+  self.cwd = snapshot.cwd
+}
+
+/// Fork from current state to a new branch
+/// Commits current changes if any, then creates a new branch
+pub fn AgentRuntime::fork_here(
+  self : AgentRuntime,
+  branch_name : String,
+  message~ : String = "fork point"
+) -> RuntimeSnapshot raise RuntimeError {
+  if not(self.capabilities.has(fn(cap) {
+    match cap {
+      @capability.GitBranch => true
+      _ => false
+    }
+  })) {
+    raise PermissionDenied("branch")
+  }
+
+  // Create snapshot of current state
+  let snap = self.snapshot(message)
+
+  // Create branch at current HEAD
+  self.fs.branch(branch_name) catch {
+    e => raise GitError(e.to_string())
+  }
+
+  // Switch to the new branch
+  self.fs.switch(branch_name) catch {
+    e => raise GitError(e.to_string())
+  }
+
+  snap
+}
+
+/// Get current branch name
+pub fn AgentRuntime::current_branch(self : AgentRuntime) -> String? raise RuntimeError {
+  self.fs.current_branch() catch {
+    e => raise GitError(e.to_string())
+  }
+}
+
 /// Check if there are uncommitted changes
 pub fn AgentRuntime::has_changes(self : AgentRuntime) -> Bool {
   self.fs.has_changes()

@@ -66,3 +66,11 @@ pub fn RuntimeConfig::agent(
     capabilities: @capability.CapabilitySet::agent(mcp_tools, a2a_agents, allowed_hosts),
   }
 }
+
+/// Unrestricted configuration (for testing only)
+pub fn RuntimeConfig::unrestricted() -> RuntimeConfig {
+  {
+    author: "moonix-unrestricted",
+    capabilities: @capability.CapabilitySet::unrestricted(),
+  }
+}

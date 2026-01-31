@@ -44,6 +44,11 @@ pub fn AgentRuntime::developer() -> AgentRuntime {
   AgentRuntime::new(RuntimeConfig::developer())
 }
 
+/// Create with unrestricted configuration (for testing only)
+pub fn AgentRuntime::unrestricted() -> AgentRuntime {
+  AgentRuntime::new(RuntimeConfig::unrestricted())
+}
+
 /// Set timestamp provider (for testing)
 pub fn AgentRuntime::set_timestamp_provider(
   self : AgentRuntime,

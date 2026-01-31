@@ -95,6 +95,14 @@ pub fn GitBackedFs::rollback_to(
   self : GitBackedFs,
   commit_id : @git.ObjectId,
 ) -> Unit raise @git.GitError {
+  // Get current working files before checkout
+  let current_files = self.collect_working_files()
+
+  // Get target tree files
+  let db = @lib.ObjectDb::load(self, self.git_dir)
+  let target_files = @lib.collect_tree_files_from_commit(db, self, commit_id)
+
+  // Perform checkout (restores tracked files)
   let _ = @lib.checkout(
     self,
     self,
@@ -104,8 +112,62 @@ pub fn GitBackedFs::rollback_to(
     update_worktree=true,
     update_index=true,
   )
+
+  // Remove untracked files (files that exist in working dir but not in target)
+  for file in current_files {
+    if not(target_files.contains(file)) {
+      let abs_path = if self.root == "/" {
+        "/" + file
+      } else {
+        self.root + "/" + file
+      }
+      if self.memfs.is_file(abs_path) {
+        @fs.FileSystemBackend::remove(self.memfs, abs_path) catch {
+          _ => () // Ignore errors
+        }
+      }
+    }
+  }
+
+  // Clean up empty directories
+  self.clean_empty_directories(self.root)
+
   self.head = Some(commit_id)
   self.clear_dirty()
+}
+
+///| Remove empty directories recursively
+fn GitBackedFs::clean_empty_directories(self : GitBackedFs, dir : String) -> Unit {
+  let entries = @fs.FileSystemBackend::readdir(self.memfs, dir) catch {
+    _ => return
+  }
+  for entry in entries {
+    let path = if dir == "/" {
+      "/" + entry.name
+    } else {
+      dir + "/" + entry.name
+    }
+    // Skip .git directory
+    if self.is_git_path(path) {
+      continue
+    }
+    match entry.file_type {
+      @fs.Directory => {
+        // Recursively clean subdirectories first
+        self.clean_empty_directories(path)
+        // Try to remove if now empty
+        let sub_entries = @fs.FileSystemBackend::readdir(self.memfs, path) catch {
+          _ => continue
+        }
+        if sub_entries.length() == 0 {
+          @fs.FileSystemBackend::remove(self.memfs, path) catch {
+            _ => () // Ignore errors
+          }
+        }
+      }
+      _ => ()
+    }
+  }
 }
 
 ///| Get current HEAD commit
@@ -140,6 +202,24 @@ pub fn GitBackedFs::switch(
   @lib.switch_branch(self, self, self.root, name, checkout=true)
   self.head = @lib.resolve_head_commit(self, self.git_dir)
   self.clear_dirty()
+}
+
+///| Create a branch at a specific commit
+pub fn GitBackedFs::branch_at(
+  self : GitBackedFs,
+  name : String,
+  commit_id : @git.ObjectId,
+) -> Unit raise @git.GitError {
+  @lib.create_branch_at(self, self, self.root, name, commit_id)
+}
+
+///| Get current branch name (None if detached HEAD)
+pub fn GitBackedFs::current_branch(self : GitBackedFs) -> String? raise @git.GitError {
+  let head_ref = @lib.read_head_ref(self, self.git_dir)
+  match head_ref {
+    @lib.Branch(name) => Some(name)
+    @lib.Detached(_) => None
+  }
 }
 
 ///| List branches
