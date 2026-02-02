@@ -1,4 +1,4 @@
-///| snapshot/rollup commands backed by mizchi/bit/x/fs
+///| snapshot/rollback commands backed by mizchi/bit/x/fs
 
 fn git_dir_path() -> String {
   "/.git"
@@ -154,10 +154,10 @@ pub fn cmd_snapshot(sh : ShellContext, args : Array[String]) -> Int {
   0
 }
 
-///| rollup command (restore to a snapshot hash)
-pub fn cmd_rollup(sh : ShellContext, args : Array[String]) -> Int {
+///| rollback command (restore to a snapshot hash)
+pub fn cmd_rollback(sh : ShellContext, args : Array[String]) -> Int {
   if args.is_empty() {
-    write_stderr(sh.ctx, "rollup: missing commit hash\n")
+    write_stderr(sh.ctx, "rollback: missing commit hash\n")
     return 1
   }
   let hex = args[0]
@@ -175,7 +175,7 @@ pub fn cmd_rollup(sh : ShellContext, args : Array[String]) -> Int {
     0
   } catch {
     e => {
-      write_stderr(sh.ctx, "rollup: " + e.to_string() + "\n")
+      write_stderr(sh.ctx, "rollback: " + e.to_string() + "\n")
       1
     }
   }

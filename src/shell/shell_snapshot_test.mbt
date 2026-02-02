@@ -10,7 +10,7 @@ fn short_hash(hash : String) -> String {
   }
 }
 
-test "snapshot/rollup commands update prompt and restore state" {
+test "snapshot/rollback commands update prompt and restore state" {
   let sh = ShellContext::new()
 
   let _ = sh.exec("write /note.txt v1")
@@ -28,7 +28,7 @@ test "snapshot/rollup commands update prompt and restore state" {
   assert_true(sh.prompt().contains(short_hash(hash2)))
 
   sh.reset_streams()
-  let _ = sh.exec("rollup " + hash1)
+  let _ = sh.exec("rollback " + hash1)
   assert_eq(sh.get_fs().read_string("/note.txt"), "v1\n")
   assert_true(sh.prompt().contains(short_hash(hash1)))
 }

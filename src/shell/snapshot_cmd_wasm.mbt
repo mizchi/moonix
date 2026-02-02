@@ -1,4 +1,4 @@
-///| snapshot/rollup for wasm targets (in-memory snapshots)
+///| snapshot/rollback for wasm targets (in-memory snapshots)
 
 fn join_args(args : Array[String]) -> String {
   let buf = StringBuilder::new()
@@ -97,9 +97,9 @@ pub fn cmd_snapshot(sh : ShellContext, args : Array[String]) -> Int {
   0
 }
 
-pub fn cmd_rollup(sh : ShellContext, args : Array[String]) -> Int {
+pub fn cmd_rollback(sh : ShellContext, args : Array[String]) -> Int {
   if args.is_empty() {
-    write_stderr(sh.ctx, "rollup: missing commit hash\n")
+    write_stderr(sh.ctx, "rollback: missing commit hash\n")
     return 1
   }
   let hex = args[0]
@@ -107,13 +107,13 @@ pub fn cmd_rollup(sh : ShellContext, args : Array[String]) -> Int {
     try? @bit.ObjectId::from_hex(hex)
   match commit_result {
     Err(e) => {
-      write_stderr(sh.ctx, "rollup: " + e.to_string() + "\n")
+      write_stderr(sh.ctx, "rollback: " + e.to_string() + "\n")
       1
     }
     Ok(commit_id) =>
       match sh.snapshot_store.get(hex) {
         None => {
-          write_stderr(sh.ctx, "rollup: unknown snapshot\n")
+          write_stderr(sh.ctx, "rollback: unknown snapshot\n")
           1
         }
         Some(files) => {
@@ -127,7 +127,7 @@ pub fn cmd_rollup(sh : ShellContext, args : Array[String]) -> Int {
             }
             sh.fs.write_file(path, data) catch {
               e => {
-                write_stderr(sh.ctx, "rollup: " + e.to_string() + "\n")
+                write_stderr(sh.ctx, "rollback: " + e.to_string() + "\n")
                 return 1
               }
             }

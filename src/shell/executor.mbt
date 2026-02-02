@@ -87,7 +87,7 @@ pub fn ShellContext::exec_simple(
     "test" => cmd_test(self, args)
     "[" => cmd_bracket(self, args)
     "snapshot" => cmd_snapshot(self, args)
-    "rollup" => cmd_rollup(self, args)
+    "rollback" => cmd_rollback(self, args)
     _ => self.exec_external(name, args)
   }
 }
