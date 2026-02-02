@@ -4,7 +4,7 @@
 pub fn GitBackedFs::snapshot(
   self : GitBackedFs,
   message : String,
-) -> SnapshotId raise @git.GitError {
+) -> SnapshotId raise @bit.GitError {
   let timestamp = self.get_timestamp()
 
   // Collect all working files (excluding .git)
@@ -86,15 +86,15 @@ fn GitBackedFs::collect_files_recursive(
 pub fn GitBackedFs::rollback(
   self : GitBackedFs,
   snapshot : SnapshotId,
-) -> Unit raise @git.GitError {
+) -> Unit raise @bit.GitError {
   self.rollback_to(snapshot.commit_id)
 }
 
 ///| Rollback to a commit by ID
 pub fn GitBackedFs::rollback_to(
   self : GitBackedFs,
-  commit_id : @git.ObjectId,
-) -> Unit raise @git.GitError {
+  commit_id : @bit.ObjectId,
+) -> Unit raise @bit.GitError {
   // Get current working files before checkout
   let current_files = self.collect_working_files()
 
@@ -171,7 +171,7 @@ fn GitBackedFs::clean_empty_directories(self : GitBackedFs, dir : String) -> Uni
 }
 
 ///| Get current HEAD commit
-pub fn GitBackedFs::get_head(self : GitBackedFs) -> @git.ObjectId? {
+pub fn GitBackedFs::get_head(self : GitBackedFs) -> @bit.ObjectId? {
   self.head
 }
 
@@ -179,7 +179,7 @@ pub fn GitBackedFs::get_head(self : GitBackedFs) -> @git.ObjectId? {
 pub fn GitBackedFs::history(
   self : GitBackedFs,
   max_count~ : Int = 100,
-) -> Array[SnapshotId] raise @git.GitError {
+) -> Array[SnapshotId] raise @bit.GitError {
   let log_entries = @lib.log_head(self, self.git_dir, max_count~)
   log_entries.map(fn(entry) {
     { commit_id: entry.id, message: entry.message, timestamp: entry.timestamp }
@@ -190,7 +190,7 @@ pub fn GitBackedFs::history(
 pub fn GitBackedFs::branch(
   self : GitBackedFs,
   name : String,
-) -> Unit raise @git.GitError {
+) -> Unit raise @bit.GitError {
   @lib.create_branch(self, self, self.root, name)
 }
 
@@ -198,7 +198,7 @@ pub fn GitBackedFs::branch(
 pub fn GitBackedFs::switch(
   self : GitBackedFs,
   name : String,
-) -> Unit raise @git.GitError {
+) -> Unit raise @bit.GitError {
   @lib.switch_branch(self, self, self.root, name, checkout=true)
   self.head = @lib.resolve_head_commit(self, self.git_dir)
   self.clear_dirty()
@@ -208,13 +208,13 @@ pub fn GitBackedFs::switch(
 pub fn GitBackedFs::branch_at(
   self : GitBackedFs,
   name : String,
-  commit_id : @git.ObjectId,
-) -> Unit raise @git.GitError {
+  commit_id : @bit.ObjectId,
+) -> Unit raise @bit.GitError {
   @lib.create_branch_at(self, self, self.root, name, commit_id)
 }
 
 ///| Get current branch name (None if detached HEAD)
-pub fn GitBackedFs::current_branch(self : GitBackedFs) -> String? raise @git.GitError {
+pub fn GitBackedFs::current_branch(self : GitBackedFs) -> String? raise @bit.GitError {
   let head_ref = @lib.read_head_ref(self, self.git_dir)
   match head_ref {
     @lib.Branch(name) => Some(name)
@@ -225,7 +225,7 @@ pub fn GitBackedFs::current_branch(self : GitBackedFs) -> String? raise @git.Git
 ///| List branches
 pub fn GitBackedFs::list_branches(
   self : GitBackedFs,
-) -> Array[String] raise @git.GitError {
+) -> Array[String] raise @bit.GitError {
   let (_, branches) = @lib.list_branches(self, self.root)
   branches.map(fn(b) { b.name })
 }

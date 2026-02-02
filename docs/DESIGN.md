@@ -301,7 +301,7 @@ a2a status task-123         # Check task status
 
 ```
 moonix (agent runtime)
-├── mizchi/git         # GitBackedFs implementation
+├── mizchi/bit         # GitBackedFs implementation
 ├── mcp                # MCP protocol (new)
 ├── a2a                # A2A protocol (new)
 └── json               # Message serialization

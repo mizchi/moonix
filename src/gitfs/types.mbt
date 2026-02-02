@@ -2,7 +2,7 @@
 
 ///| Snapshot identifier
 pub struct SnapshotId {
-  commit_id : @git.ObjectId
+  commit_id : @bit.ObjectId
   message : String
   timestamp : Int64
 }
@@ -18,7 +18,7 @@ pub struct GitBackedFs {
   /// Dirty file tracking (path -> true if modified since last snapshot)
   mut dirty : Map[String, Bool]
   /// Current HEAD commit (None if no commits yet)
-  mut head : @git.ObjectId?
+  mut head : @bit.ObjectId?
   /// Author name for commits
   author : String
   /// Timestamp provider (for testing)
@@ -44,19 +44,8 @@ pub fn GitBackedFs::new(author~ : String = "moonix") -> GitBackedFs {
 
 ///| Initialize .git directory structure
 fn GitBackedFs::init_git_dir(self : GitBackedFs) -> Unit {
-  let git_dir = self.git_dir
-  // Create directories - ignore errors since we're initializing
   try {
-    @fs.FileSystemBackend::mkdir(self.memfs, git_dir)
-    @fs.FileSystemBackend::mkdir(self.memfs, git_dir + "/objects")
-    @fs.FileSystemBackend::mkdir(self.memfs, git_dir + "/refs")
-    @fs.FileSystemBackend::mkdir(self.memfs, git_dir + "/refs/heads")
-    // Create HEAD pointing to main branch
-    @fs.FileSystemBackend::write_string(
-      self.memfs,
-      git_dir + "/HEAD",
-      "ref: refs/heads/main\n",
-    )
+    @lib.init_repo(self, self.root, default_branch="main", bare=false)
   } catch {
     _ => ()
   }

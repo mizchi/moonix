@@ -4,6 +4,6 @@
     "mizchi/moonix/gitfs",
     "mizchi/moonix/effect",
     "mizchi/moonix/capability",
-    "mizchi/git"
+    "mizchi/bit"
   ]
 }

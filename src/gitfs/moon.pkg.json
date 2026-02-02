@@ -1,7 +1,7 @@
 {
   "import": [
     "mizchi/moonix/fs",
-    "mizchi/git",
-    "mizchi/git/lib"
+    "mizchi/bit",
+    "mizchi/bit/lib"
   ]
 }
