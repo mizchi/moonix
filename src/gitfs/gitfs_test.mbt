@@ -107,3 +107,61 @@ test "GitBackedFs git paths excluded from dirty tracking" {
   @fs.FileSystemBackend::write_string(fs, "/normal.txt", "content")
   assert_true(fs.has_changes())
 }
+
+test "GitBackedFs snapshot handles deep tree and many files" {
+  let fs = GitBackedFs::new(author="test")
+  fs.set_timestamp_provider(fn() { 1000L })
+
+  let deep_files : Array[(String, String)] = []
+  @fs.FileSystemBackend::mkdir_p(fs, "/deep")
+  let mut deep_path = "/deep"
+  let depth = 20
+  for i in 0..<depth {
+    deep_path = deep_path + "/d" + i.to_string()
+    @fs.FileSystemBackend::mkdir_p(fs, deep_path)
+    let path = deep_path + "/file" + i.to_string() + ".txt"
+    let content = "depth " + i.to_string()
+    @fs.FileSystemBackend::write_string(fs, path, content)
+    deep_files.push((path, content))
+  }
+
+  let bulk_files : Array[(String, String)] = []
+  @fs.FileSystemBackend::mkdir_p(fs, "/bulk")
+  let bulk_count = 200
+  for i in 0..<bulk_count {
+    let path = "/bulk/f" + i.to_string() + ".txt"
+    let content = "data " + i.to_string()
+    @fs.FileSystemBackend::write_string(fs, path, content)
+    bulk_files.push((path, content))
+  }
+
+  let snap = fs.snapshot("big tree")
+
+  @fs.FileSystemBackend::rm_rf(fs, "/deep/d0")
+  assert_false(@fs.FileSystemBackend::exists(fs, deep_files[0].0))
+
+  for i in 0..<10 {
+    let path = bulk_files[i].0
+    @fs.FileSystemBackend::write_string(fs, path, "mutated")
+  }
+  for i in 10..<60 {
+    let path = bulk_files[i].0
+    @fs.FileSystemBackend::remove(fs, path)
+  }
+  @fs.FileSystemBackend::write_string(fs, "/bulk/new.txt", "new")
+
+  fs.rollback(snap)
+
+  assert_false(@fs.FileSystemBackend::exists(fs, "/bulk/new.txt"))
+
+  for _, entry in deep_files {
+    let (path, content) = entry
+    assert_true(@fs.FileSystemBackend::is_file(fs, path))
+    assert_eq(@fs.FileSystemBackend::read_string(fs, path), content)
+  }
+  for _, entry in bulk_files {
+    let (path, content) = entry
+    assert_true(@fs.FileSystemBackend::is_file(fs, path))
+    assert_eq(@fs.FileSystemBackend::read_string(fs, path), content)
+  }
+}
