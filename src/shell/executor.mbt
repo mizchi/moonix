@@ -86,6 +86,8 @@ pub fn ShellContext::exec_simple(
     "sleep" => cmd_sleep(self, args)
     "test" => cmd_test(self, args)
     "[" => cmd_bracket(self, args)
+    "snapshot" => cmd_snapshot(self, args)
+    "rollup" => cmd_rollup(self, args)
     _ => self.exec_external(name, args)
   }
 }
@@ -285,4 +287,3 @@ fn trim_str(s : String) -> String {
   }
   buf.to_string()
 }
-

@@ -1,0 +1,15 @@
+import {
+  "mizchi/moonix/fs" as @fs,
+  "mizchi/moonix/posix" as @posix,
+  "mizchi/moonix/sh" as @sh,
+  "mizchi/bit/x/fs" as @bitfs,
+  "mizchi/bit" as @bit,
+}
+
+options(
+  targets: {
+    "snapshot_cmd_native.mbt": [ "native" ],
+    "snapshot_cmd_wasm.mbt": [ "wasm-gc" ],
+    "shell_snapshot_test.mbt": [ "native" ],
+  },
+)

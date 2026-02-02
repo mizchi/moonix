@@ -12,6 +12,10 @@ pub struct ShellContext {
   mut pipe_input : Bytes?
   mut wasm_runner : WasmRunnerFn?
   mut last_exit_code : Int
+  git_store : @bit.TestFs
+  mut snapshot_head : @bit.ObjectId?
+  mut snapshot_clock : Int64
+  snapshot_store : Map[String, Map[String, Bytes]]
 }
 
 ///| Create a new shell context
@@ -19,14 +23,36 @@ pub fn ShellContext::new() -> ShellContext {
   let fs = @fs.MemFs::new()
   let streams = @posix.BufferedStreamHandler::new()
   let ctx = @posix.PosixContext::new(fs, streams)
-  { fs, ctx, streams, pipe_input: None, wasm_runner: None, last_exit_code: 0 }
+  {
+    fs,
+    ctx,
+    streams,
+    pipe_input: None,
+    wasm_runner: None,
+    last_exit_code: 0,
+    git_store: @bit.TestFs::new(),
+    snapshot_head: None,
+    snapshot_clock: 0L,
+    snapshot_store: {},
+  }
 }
 
 ///| Create shell context with existing filesystem
 pub fn ShellContext::with_fs(fs : @fs.MemFs) -> ShellContext {
   let streams = @posix.BufferedStreamHandler::new()
   let ctx = @posix.PosixContext::new(fs, streams)
-  { fs, ctx, streams, pipe_input: None, wasm_runner: None, last_exit_code: 0 }
+  {
+    fs,
+    ctx,
+    streams,
+    pipe_input: None,
+    wasm_runner: None,
+    last_exit_code: 0,
+    git_store: @bit.TestFs::new(),
+    snapshot_head: None,
+    snapshot_clock: 0L,
+    snapshot_store: {},
+  }
 }
 
 ///| Set WASM runner callback
@@ -88,4 +114,29 @@ pub fn ShellContext::get_ctx(self : ShellContext) -> @posix.PosixContext {
 ///| Get last exit code ($?)
 pub fn ShellContext::get_last_exit_code(self : ShellContext) -> Int {
   self.last_exit_code
+}
+
+///| Get current snapshot hash (full hex)
+pub fn ShellContext::current_hash(self : ShellContext) -> String {
+  match self.snapshot_head {
+    Some(id) => id.to_hex()
+    None => @bit.ObjectId::zero().to_hex()
+  }
+}
+
+///| Render shell prompt with current snapshot hash
+pub fn ShellContext::prompt(self : ShellContext) -> String {
+  let hex = self.current_hash()
+  let short = if hex.length() > 7 {
+    String::unsafe_substring(hex, start=0, end=7)
+  } else {
+    hex
+  }
+  "[" + short + "]$ "
+}
+
+fn ShellContext::next_snapshot_timestamp(self : ShellContext) -> Int64 {
+  let t = self.snapshot_clock
+  self.snapshot_clock += 1L
+  t
 }
