@@ -1,7 +1,7 @@
 {
   "import": [
     "mizchi/moonix/runtime",
-    "mizchi/moonix/llm",
+    "mizchi/moonix/ai/llm",
     "moonbitlang/core/json"
   ]
 }
