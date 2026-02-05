@@ -1,0 +1,7 @@
+{
+  "nodeModulesDir": "auto",
+  "tasks": {
+    "build-fixture": "cd fixtures && RUSTC=$HOME/.rustup/toolchains/stable-aarch64-apple-darwin/bin/rustc cargo build --target wasm32-wasip1 --release && wasm-tools component new target/wasm32-wasip1/release/wasi-test.wasm --adapt wasi_snapshot_preview1.command.wasm -o component.wasm && jco transpile component.wasm -o out --instantiation async --map 'wasi:filesystem/types@0.2.3=../../virtual_fs.ts#types' --map 'wasi:filesystem/preopens@0.2.3=../../virtual_fs.ts#preopens' --map 'wasi:io/streams@0.2.3=../../virtual_io.ts#streams' --map 'wasi:io/error@0.2.3=../../virtual_io.ts#error' --map 'wasi:cli/stdin@0.2.3=../../virtual_cli.ts#stdin' --map 'wasi:cli/stdout@0.2.3=../../virtual_cli.ts#stdout' --map 'wasi:cli/stderr@0.2.3=../../virtual_cli.ts#stderr' --map 'wasi:cli/exit@0.2.3=../../virtual_cli.ts#exit' --map 'wasi:cli/environment@0.2.3=../../virtual_cli.ts#environment' --map 'wasi:cli/terminal-input@0.2.3=../../virtual_cli.ts#terminalInput' --map 'wasi:cli/terminal-output@0.2.3=../../virtual_cli.ts#terminalOutput' --map 'wasi:cli/terminal-stdin@0.2.3=../../virtual_cli.ts#terminalStdin' --map 'wasi:cli/terminal-stdout@0.2.3=../../virtual_cli.ts#terminalStdout' --map 'wasi:cli/terminal-stderr@0.2.3=../../virtual_cli.ts#terminalStderr'",
+    "test": "deno test --no-check --allow-read --allow-env"
+  }
+}

@@ -1,0 +1,22 @@
+default:
+    @just --list
+
+generate:
+    ~/.local/bin/moon-component generate wit/world.wit -o . > .gen.log
+    @echo "Generated bindings (log: .gen.log)"
+
+generate-verbose:
+    ~/.local/bin/moon-component generate wit/world.wit -o .
+
+build: generate
+    moon build --target wasm --release impl
+
+componentize: build
+    ~/.local/bin/moon-component componentize _build/wasm/release/build/impl/impl.wasm \
+        --wit-dir wit -o component.wasm
+
+run: componentize
+    wasmtime run component.wasm
+
+clean:
+    rm -rf _build component.wasm .gen.log

@@ -1,0 +1,27 @@
+{
+  "is-main": true,
+  "import": [
+    { "path": "moonix-component/gen/cabi", "alias": "cabi" },
+    { "path": "moonix-component/gen/interface/wasi/filesystem/preopens", "alias": "preopens" },
+    { "path": "moonix-component/gen/interface/wasi/filesystem/types", "alias": "fs" },
+    { "path": "moonix-component/gen/interface/wasi/io/streams", "alias": "streams" },
+    { "path": "moonix-component/gen/interface/wasi/cli/stdout", "alias": "stdout" },
+    { "path": "moonix-component/gen/interface/wasi/cli/exit", "alias": "exit" }
+  ],
+  "link": {
+    "wasm": {
+      "exports": [
+        "cabi_realloc:cabi_realloc",
+        "wasmExportRun:wasi:cli/run@0.2.9#run"
+      ],
+      "export-memory-name": "memory"
+    },
+    "wasm-gc": {
+      "exports": [
+        "cabi_realloc:cabi_realloc",
+        "wasmExportRun:wasi:cli/run@0.2.9#run"
+      ],
+      "export-memory-name": "memory"
+    }
+  }
+}

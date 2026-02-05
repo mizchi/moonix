@@ -1,0 +1,15 @@
+[package]
+name = "wasmtime_host_experiments"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+anyhow = "1.0"
+rand_core = "0.6"
+tempfile = "3"
+wasmtime = { version = "41.0.0", features = ["component-model"] }
+wasmtime-wasi = { version = "41.0.0", features = ["p3"] }
+wasmtime-wasi-http = { version = "41.0.0", features = ["p3"], optional = true }
+
+[features]
+http = ["dep:wasmtime-wasi-http"]
