@@ -1,0 +1,8 @@
+{
+  "import": [
+    { "path": "moonix-shell/gen/cabi", "alias": "cabi" },
+    { "path": "moonix-shell/gen/interface/wasi/io/streams", "alias": "streams" },
+    { "path": "moonix-shell/gen/interface/wasi/io/error", "alias": "error" },
+    { "path": "moonix-shell/gen/interface/wasi/clocks/wall-clock", "alias": "wall_clock" }
+  ]
+}

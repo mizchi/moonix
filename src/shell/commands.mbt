@@ -588,7 +588,7 @@ fn glob_match_chars(
 
 ///| Expand glob pattern to matching files
 pub fn expand_glob(
-  fs : @fs.MemFs,
+  fs : &@fs.FileSystemBackend,
   cwd : String,
   pattern : String
 ) -> Array[String] {

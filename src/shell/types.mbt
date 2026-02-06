@@ -6,7 +6,7 @@ pub(all) struct WasmRunnerFn(
 
 ///| Shell execution context
 pub struct ShellContext {
-  fs : @fs.MemFs
+  fs : &@fs.FileSystemBackend
   mut ctx : @posix.PosixContext
   mut streams : @posix.BufferedStreamHandler
   mut pipe_input : Bytes?
@@ -16,6 +16,7 @@ pub struct ShellContext {
   mut snapshot_head : @bit.ObjectId?
   mut snapshot_clock : Int64
   snapshot_store : Map[String, Map[String, Bytes]]
+  xsh_runtime : @xsh.Runtime
 }
 
 ///| Create a new shell context
@@ -34,11 +35,12 @@ pub fn ShellContext::new() -> ShellContext {
     snapshot_head: None,
     snapshot_clock: 0L,
     snapshot_store: {},
+    xsh_runtime: @xsh.Runtime::new(@xsh_capability.CapabilitySet::new()),
   }
 }
 
 ///| Create shell context with existing filesystem
-pub fn ShellContext::with_fs(fs : @fs.MemFs) -> ShellContext {
+pub fn ShellContext::with_fs(fs : &@fs.FileSystemBackend) -> ShellContext {
   let streams = @posix.BufferedStreamHandler::new()
   let ctx = @posix.PosixContext::new(fs, streams)
   {
@@ -52,6 +54,7 @@ pub fn ShellContext::with_fs(fs : @fs.MemFs) -> ShellContext {
     snapshot_head: None,
     snapshot_clock: 0L,
     snapshot_store: {},
+    xsh_runtime: @xsh.Runtime::new(@xsh_capability.CapabilitySet::new()),
   }
 }
 
@@ -102,7 +105,7 @@ pub struct ParsedCommand {
 }
 
 ///| Get the filesystem
-pub fn ShellContext::get_fs(self : ShellContext) -> @fs.MemFs {
+pub fn ShellContext::get_fs(self : ShellContext) -> &@fs.FileSystemBackend {
   self.fs
 }
 

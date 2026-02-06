@@ -1,0 +1,6 @@
+{
+  "import": [
+    { "path": "moonix-shell/gen/cabi", "alias": "cabi" },
+    { "path": "moonix-shell/gen/interface/wasi/cli/terminal-output", "alias": "terminal_output" }
+  ]
+}

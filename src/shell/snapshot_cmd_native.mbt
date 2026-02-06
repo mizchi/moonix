@@ -31,7 +31,7 @@ fn is_git_path(path : String) -> Bool {
 }
 
 fn collect_memfs_files(
-  fs : @fs.MemFs,
+  fs : &@fs.FileSystemBackend,
   dir : String,
   out : Array[String],
 ) -> Unit {
@@ -55,7 +55,7 @@ fn collect_memfs_files(
   }
 }
 
-fn clear_memfs_root(fs : @fs.MemFs) -> Unit {
+fn clear_memfs_root(fs : &@fs.FileSystemBackend) -> Unit {
   let entries = fs.readdir("/") catch {
     _ => return
   }

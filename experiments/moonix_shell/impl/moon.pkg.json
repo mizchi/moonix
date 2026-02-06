@@ -1,0 +1,46 @@
+{
+  "is-main": true,
+  "import": [
+    { "path": "moonix-shell/gen/cabi", "alias": "cabi" },
+    { "path": "moonix-shell/gen/interface/wasi/filesystem/preopens", "alias": "preopens" },
+    { "path": "moonix-shell/gen/interface/wasi/filesystem/types", "alias": "fs" },
+    { "path": "moonix-shell/gen/interface/wasi/io/streams", "alias": "streams" },
+    { "path": "moonix-shell/gen/interface/wasi/io/poll", "alias": "poll" },
+    { "path": "moonix-shell/gen/interface/wasi/cli/stdout", "alias": "stdout" },
+    { "path": "moonix-shell/gen/interface/wasi/cli/stderr", "alias": "stderr" },
+    { "path": "moonix-shell/gen/interface/wasi/cli/stdin", "alias": "stdin" },
+    { "path": "moonix-shell/gen/interface/wasi/cli/exit", "alias": "exit" },
+    { "path": "moonix-shell/gen/interface/wasi/cli/environment", "alias": "environment" },
+    { "path": "moonix-shell/gen/interface/wasi/clocks/wall-clock", "alias": "wall_clock" },
+    { "path": "moonix-shell/gen/interface/wasi/clocks/monotonic-clock", "alias": "mono_clock" },
+    { "path": "moonix-shell/gen/interface/wasi/random/random", "alias": "random" },
+    { "path": "moonix-shell/gen/interface/wasi/random/insecure", "alias": "insecure" },
+    { "path": "moonix-shell/gen/interface/wasi/random/insecure-seed", "alias": "insecure_seed" },
+    { "path": "moonix-shell/gen/interface/wasi/sockets/network", "alias": "network" },
+    { "path": "moonix-shell/gen/interface/wasi/sockets/instance-network", "alias": "instance_network" },
+    { "path": "moonix-shell/gen/interface/wasi/sockets/tcp-create-socket", "alias": "tcp_create" },
+    { "path": "moonix-shell/gen/interface/wasi/sockets/udp-create-socket", "alias": "udp_create" },
+    { "path": "moonix-shell/gen/interface/wasi/sockets/ip-name-lookup", "alias": "ip_lookup" },
+    { "path": "moonix-shell/wasi_fs", "alias": "wasi_fs" },
+    { "path": "moonix-shell/wasi_streams", "alias": "wasi_streams" },
+    { "path": "mizchi/moonix/shell", "alias": "shell" },
+    { "path": "mizchi/moonix/posix", "alias": "posix" },
+    { "path": "mizchi/moonix/fs", "alias": "moonix_fs" }
+  ],
+  "link": {
+    "wasm": {
+      "exports": [
+        "cabi_realloc:cabi_realloc",
+        "wasmExportRun:wasi:cli/run@0.2.9#run"
+      ],
+      "export-memory-name": "memory"
+    },
+    "wasm-gc": {
+      "exports": [
+        "cabi_realloc:cabi_realloc",
+        "wasmExportRun:wasi:cli/run@0.2.9#run"
+      ],
+      "export-memory-name": "memory"
+    }
+  }
+}
