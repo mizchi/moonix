@@ -3,6 +3,8 @@
  * Provides deterministic wall-clock and monotonic-clock.
  */
 
+import { Pollable } from "./virtual_poll.ts";
+
 export const wallClock = {
   now(): { seconds: bigint; nanoseconds: number } {
     return { seconds: 0n, nanoseconds: 0 };
@@ -19,10 +21,10 @@ export const monotonicClock = {
   resolution(): bigint {
     return 1000000n;
   },
-  subscribeInstant(_when: bigint): Record<string, never> {
-    return {};
+  subscribeInstant(_when: bigint): Pollable {
+    return new Pollable();
   },
-  subscribeDuration(_when: bigint): Record<string, never> {
-    return {};
+  subscribeDuration(_when: bigint): Pollable {
+    return new Pollable();
   },
 };

@@ -5,8 +5,22 @@
     { "path": "moonix-component/gen/interface/wasi/filesystem/preopens", "alias": "preopens" },
     { "path": "moonix-component/gen/interface/wasi/filesystem/types", "alias": "fs" },
     { "path": "moonix-component/gen/interface/wasi/io/streams", "alias": "streams" },
+    { "path": "moonix-component/gen/interface/wasi/io/poll", "alias": "poll" },
     { "path": "moonix-component/gen/interface/wasi/cli/stdout", "alias": "stdout" },
-    { "path": "moonix-component/gen/interface/wasi/cli/exit", "alias": "exit" }
+    { "path": "moonix-component/gen/interface/wasi/cli/stderr", "alias": "stderr" },
+    { "path": "moonix-component/gen/interface/wasi/cli/stdin", "alias": "stdin" },
+    { "path": "moonix-component/gen/interface/wasi/cli/exit", "alias": "exit" },
+    { "path": "moonix-component/gen/interface/wasi/cli/environment", "alias": "environment" },
+    { "path": "moonix-component/gen/interface/wasi/clocks/wall-clock", "alias": "wall_clock" },
+    { "path": "moonix-component/gen/interface/wasi/clocks/monotonic-clock", "alias": "mono_clock" },
+    { "path": "moonix-component/gen/interface/wasi/random/random", "alias": "random" },
+    { "path": "moonix-component/gen/interface/wasi/random/insecure", "alias": "insecure" },
+    { "path": "moonix-component/gen/interface/wasi/random/insecure-seed", "alias": "insecure_seed" },
+    { "path": "moonix-component/gen/interface/wasi/sockets/network", "alias": "network" },
+    { "path": "moonix-component/gen/interface/wasi/sockets/instance-network", "alias": "instance_network" },
+    { "path": "moonix-component/gen/interface/wasi/sockets/tcp-create-socket", "alias": "tcp_create" },
+    { "path": "moonix-component/gen/interface/wasi/sockets/udp-create-socket", "alias": "udp_create" },
+    { "path": "moonix-component/gen/interface/wasi/sockets/ip-name-lookup", "alias": "ip_lookup" }
   ],
   "link": {
     "wasm": {

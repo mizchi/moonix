@@ -4,8 +4,10 @@
  */
 
 class NetworkError extends Error {
+  payload: string;
   constructor() {
     super("network access denied in virtual environment");
+    this.payload = "access-denied";
   }
 }
 

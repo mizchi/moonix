@@ -243,16 +243,30 @@ fn ShellContext::expand_word(self : ShellContext, word : @sh.Word) -> String {
 
 ///| Execute shell script using parser
 pub fn ShellContext::exec_script(self : ShellContext, script : String) -> Int {
-  try {
-    let cmd = @sh.parse(script)
-    let result = self.exec_command(cmd)
-    self.last_exit_code = result
-    result
-  } catch {
-    _ => {
-      write_stderr_msg(self, "syntax error\n")
-      self.last_exit_code = 2
-      2
+  if @xsh.is_xsh_script(script) {
+    try {
+      let _ = self.xsh_runtime.eval_script(script)
+      self.last_exit_code = 0
+      0
+    } catch {
+      e => {
+        write_stderr_msg(self, "xsh: " + e.to_string() + "\n")
+        self.last_exit_code = 2
+        2
+      }
+    }
+  } else {
+    try {
+      let cmd = @sh.parse(script)
+      let result = self.exec_command(cmd)
+      self.last_exit_code = result
+      result
+    } catch {
+      _ => {
+        write_stderr_msg(self, "syntax error\n")
+        self.last_exit_code = 2
+        2
+      }
     }
   }
 }

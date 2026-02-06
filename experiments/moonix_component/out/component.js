@@ -5,6 +5,10 @@ export function instantiate(getCoreModule, imports, instantiateCore = WebAssembl
   
   const toUint64 = val => BigInt.asUintN(64, BigInt(val));
   
+  function toUint32(val) {
+    return val >>> 0;
+  }
+  
   const utf8Decoder = new TextDecoder();
   
   const utf8Encoder = new TextEncoder();
@@ -784,22 +788,178 @@ const module0 = getCoreModule('component.core.wasm');
 const module1 = getCoreModule('component.core2.wasm');
 const module2 = getCoreModule('component.core3.wasm');
 
-const { stdout } = imports['../../deno_host/virtual_cli.ts'];
+const { environment, stderr, stdin, stdout } = imports['../../deno_host/virtual_cli.ts'];
+const { monotonicClock, wallClock } = imports['../../deno_host/virtual_clock.ts'];
 const { preopens, types } = imports['../../deno_host/virtual_fs.ts'];
 const { error, streams } = imports['../../deno_host/virtual_io.ts'];
+const { poll: poll$1 } = imports['../../deno_host/virtual_poll.ts'];
+const { insecure, insecureSeed: insecureSeed$1, random } = imports['../../deno_host/virtual_random.ts'];
+const { tcp, tcpCreateSocket, udp, udpCreateSocket } = imports['../../deno_host/virtual_sockets.ts'];
+const { getArguments,
+  getEnvironment } = environment;
+const { getStderr } = stderr;
+const { getStdin } = stdin;
 const { getStdout } = stdout;
+const { now,
+  resolution,
+  subscribeDuration } = monotonicClock;
+const { now: now$1,
+  resolution: resolution$1 } = wallClock;
 const { getDirectories } = preopens;
 const { Descriptor } = types;
 const { Error: Error$1 } = error;
-const { OutputStream } = streams;
+const { InputStream,
+  OutputStream } = streams;
+const { Pollable,
+  poll } = poll$1;
+const { getInsecureRandomBytes,
+  getInsecureRandomU64 } = insecure;
+const { insecureSeed } = insecureSeed$1;
+const { getRandomBytes,
+  getRandomU64 } = random;
+const { TcpSocket } = tcp;
+const { createTcpSocket } = tcpCreateSocket;
+const { UdpSocket } = udp;
+const { createUdpSocket } = udpCreateSocket;
 let gen = (function* _initGenerator () {
   let exports0;
+  
+  function trampoline0() {
+    _debugLog('[iface="wasi:random/random@0.2.9", function="get-random-u64"] [Instruction::CallInterface] (async? sync, @ enter)');
+    const _interface_call_currentTaskID = startCurrentTask(0, false, 'get-random-u64');
+    const ret = getRandomU64();
+    _debugLog('[iface="wasi:random/random@0.2.9", function="get-random-u64"] [Instruction::CallInterface] (sync, @ post-call)');
+    endCurrentTask(0);
+    _debugLog('[iface="wasi:random/random@0.2.9", function="get-random-u64"][Instruction::Return]', {
+      funcName: 'get-random-u64',
+      paramCount: 1,
+      async: false,
+      postReturn: false
+    });
+    return toUint64(ret);
+  }
+  
+  
+  function trampoline1() {
+    _debugLog('[iface="wasi:clocks/monotonic-clock@0.2.9", function="resolution"] [Instruction::CallInterface] (async? sync, @ enter)');
+    const _interface_call_currentTaskID = startCurrentTask(0, false, 'resolution');
+    const ret = resolution();
+    _debugLog('[iface="wasi:clocks/monotonic-clock@0.2.9", function="resolution"] [Instruction::CallInterface] (sync, @ post-call)');
+    endCurrentTask(0);
+    _debugLog('[iface="wasi:clocks/monotonic-clock@0.2.9", function="resolution"][Instruction::Return]', {
+      funcName: 'resolution',
+      paramCount: 1,
+      async: false,
+      postReturn: false
+    });
+    return toUint64(ret);
+  }
+  
+  const handleTable3 = [T_FLAG, 0];
+  const captureTable3= new Map();
+  let captureCnt3 = 0;
+  handleTables[3] = handleTable3;
+  
+  function trampoline2() {
+    _debugLog('[iface="wasi:cli/stderr@0.2.9", function="get-stderr"] [Instruction::CallInterface] (async? sync, @ enter)');
+    const _interface_call_currentTaskID = startCurrentTask(0, false, 'get-stderr');
+    const ret = getStderr();
+    _debugLog('[iface="wasi:cli/stderr@0.2.9", function="get-stderr"] [Instruction::CallInterface] (sync, @ post-call)');
+    endCurrentTask(0);
+    if (!(ret instanceof OutputStream)) {
+      throw new TypeError('Resource error: Not a valid "OutputStream" resource.');
+    }
+    var handle0 = ret[symbolRscHandle];
+    if (!handle0) {
+      const rep = ret[symbolRscRep] || ++captureCnt3;
+      captureTable3.set(rep, ret);
+      handle0 = rscTableCreateOwn(handleTable3, rep);
+    }
+    _debugLog('[iface="wasi:cli/stderr@0.2.9", function="get-stderr"][Instruction::Return]', {
+      funcName: 'get-stderr',
+      paramCount: 1,
+      async: false,
+      postReturn: false
+    });
+    return handle0;
+  }
+  
   const handleTable1 = [T_FLAG, 0];
   const captureTable1= new Map();
   let captureCnt1 = 0;
   handleTables[1] = handleTable1;
   
-  function trampoline0() {
+  function trampoline3(arg0) {
+    _debugLog('[iface="wasi:clocks/monotonic-clock@0.2.9", function="subscribe-duration"] [Instruction::CallInterface] (async? sync, @ enter)');
+    const _interface_call_currentTaskID = startCurrentTask(0, false, 'subscribe-duration');
+    const ret = subscribeDuration(BigInt.asUintN(64, arg0));
+    _debugLog('[iface="wasi:clocks/monotonic-clock@0.2.9", function="subscribe-duration"] [Instruction::CallInterface] (sync, @ post-call)');
+    endCurrentTask(0);
+    if (!(ret instanceof Pollable)) {
+      throw new TypeError('Resource error: Not a valid "Pollable" resource.');
+    }
+    var handle0 = ret[symbolRscHandle];
+    if (!handle0) {
+      const rep = ret[symbolRscRep] || ++captureCnt1;
+      captureTable1.set(rep, ret);
+      handle0 = rscTableCreateOwn(handleTable1, rep);
+    }
+    _debugLog('[iface="wasi:clocks/monotonic-clock@0.2.9", function="subscribe-duration"][Instruction::Return]', {
+      funcName: 'subscribe-duration',
+      paramCount: 1,
+      async: false,
+      postReturn: false
+    });
+    return handle0;
+  }
+  
+  
+  function trampoline4() {
+    _debugLog('[iface="wasi:random/insecure@0.2.9", function="get-insecure-random-u64"] [Instruction::CallInterface] (async? sync, @ enter)');
+    const _interface_call_currentTaskID = startCurrentTask(0, false, 'get-insecure-random-u64');
+    const ret = getInsecureRandomU64();
+    _debugLog('[iface="wasi:random/insecure@0.2.9", function="get-insecure-random-u64"] [Instruction::CallInterface] (sync, @ post-call)');
+    endCurrentTask(0);
+    _debugLog('[iface="wasi:random/insecure@0.2.9", function="get-insecure-random-u64"][Instruction::Return]', {
+      funcName: 'get-insecure-random-u64',
+      paramCount: 1,
+      async: false,
+      postReturn: false
+    });
+    return toUint64(ret);
+  }
+  
+  const handleTable2 = [T_FLAG, 0];
+  const captureTable2= new Map();
+  let captureCnt2 = 0;
+  handleTables[2] = handleTable2;
+  
+  function trampoline5() {
+    _debugLog('[iface="wasi:cli/stdin@0.2.9", function="get-stdin"] [Instruction::CallInterface] (async? sync, @ enter)');
+    const _interface_call_currentTaskID = startCurrentTask(0, false, 'get-stdin');
+    const ret = getStdin();
+    _debugLog('[iface="wasi:cli/stdin@0.2.9", function="get-stdin"] [Instruction::CallInterface] (sync, @ post-call)');
+    endCurrentTask(0);
+    if (!(ret instanceof InputStream)) {
+      throw new TypeError('Resource error: Not a valid "InputStream" resource.');
+    }
+    var handle0 = ret[symbolRscHandle];
+    if (!handle0) {
+      const rep = ret[symbolRscRep] || ++captureCnt2;
+      captureTable2.set(rep, ret);
+      handle0 = rscTableCreateOwn(handleTable2, rep);
+    }
+    _debugLog('[iface="wasi:cli/stdin@0.2.9", function="get-stdin"][Instruction::Return]', {
+      funcName: 'get-stdin',
+      paramCount: 1,
+      async: false,
+      postReturn: false
+    });
+    return handle0;
+  }
+  
+  
+  function trampoline6() {
     _debugLog('[iface="wasi:cli/stdout@0.2.9", function="get-stdout"] [Instruction::CallInterface] (async? sync, @ enter)');
     const _interface_call_currentTaskID = startCurrentTask(0, false, 'get-stdout');
     const ret = getStdout();
@@ -810,9 +970,9 @@ let gen = (function* _initGenerator () {
     }
     var handle0 = ret[symbolRscHandle];
     if (!handle0) {
-      const rep = ret[symbolRscRep] || ++captureCnt1;
-      captureTable1.set(rep, ret);
-      handle0 = rscTableCreateOwn(handleTable1, rep);
+      const rep = ret[symbolRscRep] || ++captureCnt3;
+      captureTable3.set(rep, ret);
+      handle0 = rscTableCreateOwn(handleTable3, rep);
     }
     _debugLog('[iface="wasi:cli/stdout@0.2.9", function="get-stdout"][Instruction::Return]', {
       funcName: 'get-stdout',
@@ -823,15 +983,60 @@ let gen = (function* _initGenerator () {
     return handle0;
   }
   
+  
+  function trampoline7() {
+    _debugLog('[iface="wasi:clocks/monotonic-clock@0.2.9", function="now"] [Instruction::CallInterface] (async? sync, @ enter)');
+    const _interface_call_currentTaskID = startCurrentTask(0, false, 'now');
+    const ret = now();
+    _debugLog('[iface="wasi:clocks/monotonic-clock@0.2.9", function="now"] [Instruction::CallInterface] (sync, @ post-call)');
+    endCurrentTask(0);
+    _debugLog('[iface="wasi:clocks/monotonic-clock@0.2.9", function="now"][Instruction::Return]', {
+      funcName: 'now',
+      paramCount: 1,
+      async: false,
+      postReturn: false
+    });
+    return toUint64(ret);
+  }
+  
+  
+  function trampoline8(arg0) {
+    var handle1 = arg0;
+    var rep2 = handleTable1[(handle1 << 1) + 1] & ~T_FLAG;
+    var rsc0 = captureTable1.get(rep2);
+    if (!rsc0) {
+      rsc0 = Object.create(Pollable.prototype);
+      Object.defineProperty(rsc0, symbolRscHandle, { writable: true, value: handle1});
+      Object.defineProperty(rsc0, symbolRscRep, { writable: true, value: rep2});
+    }
+    curResourceBorrows.push(rsc0);
+    _debugLog('[iface="wasi:io/poll@0.2.9", function="[method]pollable.ready"] [Instruction::CallInterface] (async? sync, @ enter)');
+    const _interface_call_currentTaskID = startCurrentTask(0, false, '[method]pollable.ready');
+    const ret = rsc0.ready();
+    _debugLog('[iface="wasi:io/poll@0.2.9", function="[method]pollable.ready"] [Instruction::CallInterface] (sync, @ post-call)');
+    for (const rsc of curResourceBorrows) {
+      rsc[symbolRscHandle] = undefined;
+    }
+    curResourceBorrows = [];
+    endCurrentTask(0);
+    _debugLog('[iface="wasi:io/poll@0.2.9", function="[method]pollable.ready"][Instruction::Return]', {
+      funcName: '[method]pollable.ready',
+      paramCount: 1,
+      async: false,
+      postReturn: false
+    });
+    return ret ? 1 : 0;
+  }
+  
   let exports1;
   let memory0;
   let realloc0;
-  const handleTable2 = [T_FLAG, 0];
-  const captureTable2= new Map();
-  let captureCnt2 = 0;
-  handleTables[2] = handleTable2;
+  const handleTable4 = [T_FLAG, 0];
+  const captureTable4= new Map();
+  let captureCnt4 = 0;
+  handleTables[4] = handleTable4;
   
-  function trampoline1(arg0) {
+  function trampoline9(arg0) {
     _debugLog('[iface="wasi:filesystem/preopens@0.2.9", function="get-directories"] [Instruction::CallInterface] (async? sync, @ enter)');
     const _interface_call_currentTaskID = startCurrentTask(0, false, 'get-directories');
     const ret = getDirectories();
@@ -848,9 +1053,9 @@ let gen = (function* _initGenerator () {
       }
       var handle1 = tuple0_0[symbolRscHandle];
       if (!handle1) {
-        const rep = tuple0_0[symbolRscRep] || ++captureCnt2;
-        captureTable2.set(rep, tuple0_0);
-        handle1 = rscTableCreateOwn(handleTable2, rep);
+        const rep = tuple0_0[symbolRscRep] || ++captureCnt4;
+        captureTable4.set(rep, tuple0_0);
+        handle1 = rscTableCreateOwn(handleTable4, rep);
       }
       dataView(memory0).setInt32(base + 0, handle1, true);
       var ptr2 = utf8Encode(tuple0_1, realloc0, memory0);
@@ -869,10 +1074,87 @@ let gen = (function* _initGenerator () {
   }
   
   
-  function trampoline2(arg0, arg1, arg2, arg3, arg4) {
+  function trampoline10(arg0) {
+    _debugLog('[iface="wasi:cli/environment@0.2.9", function="get-environment"] [Instruction::CallInterface] (async? sync, @ enter)');
+    const _interface_call_currentTaskID = startCurrentTask(0, false, 'get-environment');
+    const ret = getEnvironment();
+    _debugLog('[iface="wasi:cli/environment@0.2.9", function="get-environment"] [Instruction::CallInterface] (sync, @ post-call)');
+    endCurrentTask(0);
+    var vec3 = ret;
+    var len3 = vec3.length;
+    var result3 = realloc0(0, 0, 4, len3 * 16);
+    for (let i = 0; i < vec3.length; i++) {
+      const e = vec3[i];
+      const base = result3 + i * 16;var [tuple0_0, tuple0_1] = e;
+      var ptr1 = utf8Encode(tuple0_0, realloc0, memory0);
+      var len1 = utf8EncodedLen;
+      dataView(memory0).setUint32(base + 4, len1, true);
+      dataView(memory0).setUint32(base + 0, ptr1, true);
+      var ptr2 = utf8Encode(tuple0_1, realloc0, memory0);
+      var len2 = utf8EncodedLen;
+      dataView(memory0).setUint32(base + 12, len2, true);
+      dataView(memory0).setUint32(base + 8, ptr2, true);
+    }
+    dataView(memory0).setUint32(arg0 + 4, len3, true);
+    dataView(memory0).setUint32(arg0 + 0, result3, true);
+    _debugLog('[iface="wasi:cli/environment@0.2.9", function="get-environment"][Instruction::Return]', {
+      funcName: 'get-environment',
+      paramCount: 0,
+      async: false,
+      postReturn: false
+    });
+  }
+  
+  
+  function trampoline11(arg0) {
+    _debugLog('[iface="wasi:cli/environment@0.2.9", function="get-arguments"] [Instruction::CallInterface] (async? sync, @ enter)');
+    const _interface_call_currentTaskID = startCurrentTask(0, false, 'get-arguments');
+    const ret = getArguments();
+    _debugLog('[iface="wasi:cli/environment@0.2.9", function="get-arguments"] [Instruction::CallInterface] (sync, @ post-call)');
+    endCurrentTask(0);
+    var vec1 = ret;
+    var len1 = vec1.length;
+    var result1 = realloc0(0, 0, 4, len1 * 8);
+    for (let i = 0; i < vec1.length; i++) {
+      const e = vec1[i];
+      const base = result1 + i * 8;var ptr0 = utf8Encode(e, realloc0, memory0);
+      var len0 = utf8EncodedLen;
+      dataView(memory0).setUint32(base + 4, len0, true);
+      dataView(memory0).setUint32(base + 0, ptr0, true);
+    }
+    dataView(memory0).setUint32(arg0 + 4, len1, true);
+    dataView(memory0).setUint32(arg0 + 0, result1, true);
+    _debugLog('[iface="wasi:cli/environment@0.2.9", function="get-arguments"][Instruction::Return]', {
+      funcName: 'get-arguments',
+      paramCount: 0,
+      async: false,
+      postReturn: false
+    });
+  }
+  
+  
+  function trampoline12(arg0) {
+    _debugLog('[iface="wasi:random/insecure-seed@0.2.9", function="insecure-seed"] [Instruction::CallInterface] (async? sync, @ enter)');
+    const _interface_call_currentTaskID = startCurrentTask(0, false, 'insecure-seed');
+    const ret = insecureSeed();
+    _debugLog('[iface="wasi:random/insecure-seed@0.2.9", function="insecure-seed"] [Instruction::CallInterface] (sync, @ post-call)');
+    endCurrentTask(0);
+    var [tuple0_0, tuple0_1] = ret;
+    dataView(memory0).setBigInt64(arg0 + 0, toUint64(tuple0_0), true);
+    dataView(memory0).setBigInt64(arg0 + 8, toUint64(tuple0_1), true);
+    _debugLog('[iface="wasi:random/insecure-seed@0.2.9", function="insecure-seed"][Instruction::Return]', {
+      funcName: 'insecure-seed',
+      paramCount: 0,
+      async: false,
+      postReturn: false
+    });
+  }
+  
+  
+  function trampoline13(arg0, arg1, arg2, arg3, arg4) {
     var handle1 = arg0;
-    var rep2 = handleTable2[(handle1 << 1) + 1] & ~T_FLAG;
-    var rsc0 = captureTable2.get(rep2);
+    var rep2 = handleTable4[(handle1 << 1) + 1] & ~T_FLAG;
+    var rsc0 = captureTable4.get(rep2);
     if (!rsc0) {
       rsc0 = Object.create(Descriptor.prototype);
       Object.defineProperty(rsc0, symbolRscHandle, { writable: true, value: handle1});
@@ -1082,10 +1364,10 @@ let gen = (function* _initGenerator () {
   }
   
   
-  function trampoline3(arg0, arg1, arg2, arg3) {
+  function trampoline14(arg0, arg1, arg2, arg3) {
     var handle1 = arg0;
-    var rep2 = handleTable2[(handle1 << 1) + 1] & ~T_FLAG;
-    var rsc0 = captureTable2.get(rep2);
+    var rep2 = handleTable4[(handle1 << 1) + 1] & ~T_FLAG;
+    var rsc0 = captureTable4.get(rep2);
     if (!rsc0) {
       rsc0 = Object.create(Descriptor.prototype);
       Object.defineProperty(rsc0, symbolRscHandle, { writable: true, value: handle1});
@@ -1300,10 +1582,10 @@ let gen = (function* _initGenerator () {
   }
   
   
-  function trampoline4(arg0, arg1, arg2, arg3, arg4, arg5, arg6) {
+  function trampoline15(arg0, arg1, arg2, arg3, arg4, arg5, arg6) {
     var handle1 = arg0;
-    var rep2 = handleTable2[(handle1 << 1) + 1] & ~T_FLAG;
-    var rsc0 = captureTable2.get(rep2);
+    var rep2 = handleTable4[(handle1 << 1) + 1] & ~T_FLAG;
+    var rsc0 = captureTable4.get(rep2);
     if (!rsc0) {
       rsc0 = Object.create(Descriptor.prototype);
       Object.defineProperty(rsc0, symbolRscHandle, { writable: true, value: handle1});
@@ -1363,9 +1645,9 @@ let gen = (function* _initGenerator () {
         }
         var handle7 = e[symbolRscHandle];
         if (!handle7) {
-          const rep = e[symbolRscRep] || ++captureCnt2;
-          captureTable2.set(rep, e);
-          handle7 = rscTableCreateOwn(handleTable2, rep);
+          const rep = e[symbolRscRep] || ++captureCnt4;
+          captureTable4.set(rep, e);
+          handle7 = rscTableCreateOwn(handleTable4, rep);
         }
         dataView(memory0).setInt32(arg6 + 4, handle7, true);
         break;
@@ -1547,15 +1829,278 @@ let gen = (function* _initGenerator () {
     });
   }
   
+  
+  function trampoline16(arg0, arg1) {
+    _debugLog('[iface="wasi:random/random@0.2.9", function="get-random-bytes"] [Instruction::CallInterface] (async? sync, @ enter)');
+    const _interface_call_currentTaskID = startCurrentTask(0, false, 'get-random-bytes');
+    const ret = getRandomBytes(BigInt.asUintN(64, arg0));
+    _debugLog('[iface="wasi:random/random@0.2.9", function="get-random-bytes"] [Instruction::CallInterface] (sync, @ post-call)');
+    endCurrentTask(0);
+    var val0 = ret;
+    var len0 = val0.byteLength;
+    var ptr0 = realloc0(0, 0, 1, len0 * 1);
+    var src0 = new Uint8Array(val0.buffer || val0, val0.byteOffset, len0 * 1);
+    (new Uint8Array(memory0.buffer, ptr0, len0 * 1)).set(src0);
+    dataView(memory0).setUint32(arg1 + 4, len0, true);
+    dataView(memory0).setUint32(arg1 + 0, ptr0, true);
+    _debugLog('[iface="wasi:random/random@0.2.9", function="get-random-bytes"][Instruction::Return]', {
+      funcName: 'get-random-bytes',
+      paramCount: 0,
+      async: false,
+      postReturn: false
+    });
+  }
+  
+  const handleTable5 = [T_FLAG, 0];
+  const captureTable5= new Map();
+  let captureCnt5 = 0;
+  handleTables[5] = handleTable5;
+  
+  function trampoline17(arg0, arg1) {
+    let enum0;
+    switch (arg0) {
+      case 0: {
+        enum0 = 'ipv4';
+        break;
+      }
+      case 1: {
+        enum0 = 'ipv6';
+        break;
+      }
+      default: {
+        throw new TypeError('invalid discriminant specified for IpAddressFamily');
+      }
+    }
+    _debugLog('[iface="wasi:sockets/udp-create-socket@0.2.9", function="create-udp-socket"] [Instruction::CallInterface] (async? sync, @ enter)');
+    const _interface_call_currentTaskID = startCurrentTask(0, false, 'create-udp-socket');
+    let ret;
+    try {
+      ret = { tag: 'ok', val: createUdpSocket(enum0)};
+    } catch (e) {
+      ret = { tag: 'err', val: getErrorPayload(e) };
+    }
+    _debugLog('[iface="wasi:sockets/udp-create-socket@0.2.9", function="create-udp-socket"] [Instruction::CallInterface] (sync, @ post-call)');
+    endCurrentTask(0);
+    var variant3 = ret;
+    switch (variant3.tag) {
+      case 'ok': {
+        const e = variant3.val;
+        dataView(memory0).setInt8(arg1 + 0, 0, true);
+        if (!(e instanceof UdpSocket)) {
+          throw new TypeError('Resource error: Not a valid "UdpSocket" resource.');
+        }
+        var handle1 = e[symbolRscHandle];
+        if (!handle1) {
+          const rep = e[symbolRscRep] || ++captureCnt5;
+          captureTable5.set(rep, e);
+          handle1 = rscTableCreateOwn(handleTable5, rep);
+        }
+        dataView(memory0).setInt32(arg1 + 4, handle1, true);
+        break;
+      }
+      case 'err': {
+        const e = variant3.val;
+        dataView(memory0).setInt8(arg1 + 0, 1, true);
+        var val2 = e;
+        let enum2;
+        switch (val2) {
+          case 'unknown': {
+            enum2 = 0;
+            break;
+          }
+          case 'access-denied': {
+            enum2 = 1;
+            break;
+          }
+          case 'not-supported': {
+            enum2 = 2;
+            break;
+          }
+          case 'invalid-argument': {
+            enum2 = 3;
+            break;
+          }
+          case 'out-of-memory': {
+            enum2 = 4;
+            break;
+          }
+          case 'timeout': {
+            enum2 = 5;
+            break;
+          }
+          case 'concurrency-conflict': {
+            enum2 = 6;
+            break;
+          }
+          case 'not-in-progress': {
+            enum2 = 7;
+            break;
+          }
+          case 'would-block': {
+            enum2 = 8;
+            break;
+          }
+          case 'invalid-state': {
+            enum2 = 9;
+            break;
+          }
+          case 'new-socket-limit': {
+            enum2 = 10;
+            break;
+          }
+          case 'address-not-bindable': {
+            enum2 = 11;
+            break;
+          }
+          case 'address-in-use': {
+            enum2 = 12;
+            break;
+          }
+          case 'remote-unreachable': {
+            enum2 = 13;
+            break;
+          }
+          case 'connection-refused': {
+            enum2 = 14;
+            break;
+          }
+          case 'connection-reset': {
+            enum2 = 15;
+            break;
+          }
+          case 'connection-aborted': {
+            enum2 = 16;
+            break;
+          }
+          case 'datagram-too-large': {
+            enum2 = 17;
+            break;
+          }
+          case 'name-unresolvable': {
+            enum2 = 18;
+            break;
+          }
+          case 'temporary-resolver-failure': {
+            enum2 = 19;
+            break;
+          }
+          case 'permanent-resolver-failure': {
+            enum2 = 20;
+            break;
+          }
+          default: {
+            if ((e) instanceof Error) {
+              console.error(e);
+            }
+            
+            throw new TypeError(`"${val2}" is not one of the cases of error-code`);
+          }
+        }
+        dataView(memory0).setInt8(arg1 + 4, enum2, true);
+        break;
+      }
+      default: {
+        throw new TypeError('invalid variant specified for result');
+      }
+    }
+    _debugLog('[iface="wasi:sockets/udp-create-socket@0.2.9", function="create-udp-socket"][Instruction::Return]', {
+      funcName: 'create-udp-socket',
+      paramCount: 0,
+      async: false,
+      postReturn: false
+    });
+  }
+  
   const handleTable0 = [T_FLAG, 0];
   const captureTable0= new Map();
   let captureCnt0 = 0;
   handleTables[0] = handleTable0;
   
-  function trampoline5(arg0, arg1, arg2, arg3) {
+  function trampoline18(arg0, arg1, arg2) {
     var handle1 = arg0;
-    var rep2 = handleTable1[(handle1 << 1) + 1] & ~T_FLAG;
-    var rsc0 = captureTable1.get(rep2);
+    var rep2 = handleTable2[(handle1 << 1) + 1] & ~T_FLAG;
+    var rsc0 = captureTable2.get(rep2);
+    if (!rsc0) {
+      rsc0 = Object.create(InputStream.prototype);
+      Object.defineProperty(rsc0, symbolRscHandle, { writable: true, value: handle1});
+      Object.defineProperty(rsc0, symbolRscRep, { writable: true, value: rep2});
+    }
+    curResourceBorrows.push(rsc0);
+    _debugLog('[iface="wasi:io/streams@0.2.9", function="[method]input-stream.read"] [Instruction::CallInterface] (async? sync, @ enter)');
+    const _interface_call_currentTaskID = startCurrentTask(0, false, '[method]input-stream.read');
+    let ret;
+    try {
+      ret = { tag: 'ok', val: rsc0.read(BigInt.asUintN(64, arg1))};
+    } catch (e) {
+      ret = { tag: 'err', val: getErrorPayload(e) };
+    }
+    _debugLog('[iface="wasi:io/streams@0.2.9", function="[method]input-stream.read"] [Instruction::CallInterface] (sync, @ post-call)');
+    for (const rsc of curResourceBorrows) {
+      rsc[symbolRscHandle] = undefined;
+    }
+    curResourceBorrows = [];
+    endCurrentTask(0);
+    var variant6 = ret;
+    switch (variant6.tag) {
+      case 'ok': {
+        const e = variant6.val;
+        dataView(memory0).setInt8(arg2 + 0, 0, true);
+        var val3 = e;
+        var len3 = val3.byteLength;
+        var ptr3 = realloc0(0, 0, 1, len3 * 1);
+        var src3 = new Uint8Array(val3.buffer || val3, val3.byteOffset, len3 * 1);
+        (new Uint8Array(memory0.buffer, ptr3, len3 * 1)).set(src3);
+        dataView(memory0).setUint32(arg2 + 8, len3, true);
+        dataView(memory0).setUint32(arg2 + 4, ptr3, true);
+        break;
+      }
+      case 'err': {
+        const e = variant6.val;
+        dataView(memory0).setInt8(arg2 + 0, 1, true);
+        var variant5 = e;
+        switch (variant5.tag) {
+          case 'last-operation-failed': {
+            const e = variant5.val;
+            dataView(memory0).setInt8(arg2 + 4, 0, true);
+            if (!(e instanceof Error$1)) {
+              throw new TypeError('Resource error: Not a valid "Error" resource.');
+            }
+            var handle4 = e[symbolRscHandle];
+            if (!handle4) {
+              const rep = e[symbolRscRep] || ++captureCnt0;
+              captureTable0.set(rep, e);
+              handle4 = rscTableCreateOwn(handleTable0, rep);
+            }
+            dataView(memory0).setInt32(arg2 + 8, handle4, true);
+            break;
+          }
+          case 'closed': {
+            dataView(memory0).setInt8(arg2 + 4, 1, true);
+            break;
+          }
+          default: {
+            throw new TypeError(`invalid variant tag value \`${JSON.stringify(variant5.tag)}\` (received \`${variant5}\`) specified for \`StreamError\``);
+          }
+        }
+        break;
+      }
+      default: {
+        throw new TypeError('invalid variant specified for result');
+      }
+    }
+    _debugLog('[iface="wasi:io/streams@0.2.9", function="[method]input-stream.read"][Instruction::Return]', {
+      funcName: '[method]input-stream.read',
+      paramCount: 0,
+      async: false,
+      postReturn: false
+    });
+  }
+  
+  
+  function trampoline19(arg0, arg1, arg2, arg3) {
+    var handle1 = arg0;
+    var rep2 = handleTable3[(handle1 << 1) + 1] & ~T_FLAG;
+    var rsc0 = captureTable3.get(rep2);
     if (!rsc0) {
       rsc0 = Object.create(OutputStream.prototype);
       Object.defineProperty(rsc0, symbolRscHandle, { writable: true, value: handle1});
@@ -1628,23 +2173,324 @@ let gen = (function* _initGenerator () {
     });
   }
   
+  
+  function trampoline20(arg0, arg1, arg2) {
+    var len3 = arg1;
+    var base3 = arg0;
+    var result3 = [];
+    for (let i = 0; i < len3; i++) {
+      const base = base3 + i * 4;
+      var handle1 = dataView(memory0).getInt32(base + 0, true);
+      var rep2 = handleTable1[(handle1 << 1) + 1] & ~T_FLAG;
+      var rsc0 = captureTable1.get(rep2);
+      if (!rsc0) {
+        rsc0 = Object.create(Pollable.prototype);
+        Object.defineProperty(rsc0, symbolRscHandle, { writable: true, value: handle1});
+        Object.defineProperty(rsc0, symbolRscRep, { writable: true, value: rep2});
+      }
+      curResourceBorrows.push(rsc0);
+      result3.push(rsc0);
+    }
+    _debugLog('[iface="wasi:io/poll@0.2.9", function="poll"] [Instruction::CallInterface] (async? sync, @ enter)');
+    const _interface_call_currentTaskID = startCurrentTask(0, false, 'poll');
+    const ret = poll(result3);
+    _debugLog('[iface="wasi:io/poll@0.2.9", function="poll"] [Instruction::CallInterface] (sync, @ post-call)');
+    for (const rsc of curResourceBorrows) {
+      rsc[symbolRscHandle] = undefined;
+    }
+    curResourceBorrows = [];
+    endCurrentTask(0);
+    var val4 = ret;
+    var len4 = val4.length;
+    var ptr4 = realloc0(0, 0, 4, len4 * 4);
+    var src4 = new Uint8Array(val4.buffer, val4.byteOffset, len4 * 4);
+    (new Uint8Array(memory0.buffer, ptr4, len4 * 4)).set(src4);
+    dataView(memory0).setUint32(arg2 + 4, len4, true);
+    dataView(memory0).setUint32(arg2 + 0, ptr4, true);
+    _debugLog('[iface="wasi:io/poll@0.2.9", function="poll"][Instruction::Return]', {
+      funcName: 'poll',
+      paramCount: 0,
+      async: false,
+      postReturn: false
+    });
+  }
+  
+  const handleTable6 = [T_FLAG, 0];
+  const captureTable6= new Map();
+  let captureCnt6 = 0;
+  handleTables[6] = handleTable6;
+  
+  function trampoline21(arg0, arg1) {
+    let enum0;
+    switch (arg0) {
+      case 0: {
+        enum0 = 'ipv4';
+        break;
+      }
+      case 1: {
+        enum0 = 'ipv6';
+        break;
+      }
+      default: {
+        throw new TypeError('invalid discriminant specified for IpAddressFamily');
+      }
+    }
+    _debugLog('[iface="wasi:sockets/tcp-create-socket@0.2.9", function="create-tcp-socket"] [Instruction::CallInterface] (async? sync, @ enter)');
+    const _interface_call_currentTaskID = startCurrentTask(0, false, 'create-tcp-socket');
+    let ret;
+    try {
+      ret = { tag: 'ok', val: createTcpSocket(enum0)};
+    } catch (e) {
+      ret = { tag: 'err', val: getErrorPayload(e) };
+    }
+    _debugLog('[iface="wasi:sockets/tcp-create-socket@0.2.9", function="create-tcp-socket"] [Instruction::CallInterface] (sync, @ post-call)');
+    endCurrentTask(0);
+    var variant3 = ret;
+    switch (variant3.tag) {
+      case 'ok': {
+        const e = variant3.val;
+        dataView(memory0).setInt8(arg1 + 0, 0, true);
+        if (!(e instanceof TcpSocket)) {
+          throw new TypeError('Resource error: Not a valid "TcpSocket" resource.');
+        }
+        var handle1 = e[symbolRscHandle];
+        if (!handle1) {
+          const rep = e[symbolRscRep] || ++captureCnt6;
+          captureTable6.set(rep, e);
+          handle1 = rscTableCreateOwn(handleTable6, rep);
+        }
+        dataView(memory0).setInt32(arg1 + 4, handle1, true);
+        break;
+      }
+      case 'err': {
+        const e = variant3.val;
+        dataView(memory0).setInt8(arg1 + 0, 1, true);
+        var val2 = e;
+        let enum2;
+        switch (val2) {
+          case 'unknown': {
+            enum2 = 0;
+            break;
+          }
+          case 'access-denied': {
+            enum2 = 1;
+            break;
+          }
+          case 'not-supported': {
+            enum2 = 2;
+            break;
+          }
+          case 'invalid-argument': {
+            enum2 = 3;
+            break;
+          }
+          case 'out-of-memory': {
+            enum2 = 4;
+            break;
+          }
+          case 'timeout': {
+            enum2 = 5;
+            break;
+          }
+          case 'concurrency-conflict': {
+            enum2 = 6;
+            break;
+          }
+          case 'not-in-progress': {
+            enum2 = 7;
+            break;
+          }
+          case 'would-block': {
+            enum2 = 8;
+            break;
+          }
+          case 'invalid-state': {
+            enum2 = 9;
+            break;
+          }
+          case 'new-socket-limit': {
+            enum2 = 10;
+            break;
+          }
+          case 'address-not-bindable': {
+            enum2 = 11;
+            break;
+          }
+          case 'address-in-use': {
+            enum2 = 12;
+            break;
+          }
+          case 'remote-unreachable': {
+            enum2 = 13;
+            break;
+          }
+          case 'connection-refused': {
+            enum2 = 14;
+            break;
+          }
+          case 'connection-reset': {
+            enum2 = 15;
+            break;
+          }
+          case 'connection-aborted': {
+            enum2 = 16;
+            break;
+          }
+          case 'datagram-too-large': {
+            enum2 = 17;
+            break;
+          }
+          case 'name-unresolvable': {
+            enum2 = 18;
+            break;
+          }
+          case 'temporary-resolver-failure': {
+            enum2 = 19;
+            break;
+          }
+          case 'permanent-resolver-failure': {
+            enum2 = 20;
+            break;
+          }
+          default: {
+            if ((e) instanceof Error) {
+              console.error(e);
+            }
+            
+            throw new TypeError(`"${val2}" is not one of the cases of error-code`);
+          }
+        }
+        dataView(memory0).setInt8(arg1 + 4, enum2, true);
+        break;
+      }
+      default: {
+        throw new TypeError('invalid variant specified for result');
+      }
+    }
+    _debugLog('[iface="wasi:sockets/tcp-create-socket@0.2.9", function="create-tcp-socket"][Instruction::Return]', {
+      funcName: 'create-tcp-socket',
+      paramCount: 0,
+      async: false,
+      postReturn: false
+    });
+  }
+  
+  
+  function trampoline22(arg0) {
+    _debugLog('[iface="wasi:clocks/wall-clock@0.2.9", function="resolution"] [Instruction::CallInterface] (async? sync, @ enter)');
+    const _interface_call_currentTaskID = startCurrentTask(0, false, 'resolution');
+    const ret = resolution$1();
+    _debugLog('[iface="wasi:clocks/wall-clock@0.2.9", function="resolution"] [Instruction::CallInterface] (sync, @ post-call)');
+    endCurrentTask(0);
+    var {seconds: v0_0, nanoseconds: v0_1 } = ret;
+    dataView(memory0).setBigInt64(arg0 + 0, toUint64(v0_0), true);
+    dataView(memory0).setInt32(arg0 + 8, toUint32(v0_1), true);
+    _debugLog('[iface="wasi:clocks/wall-clock@0.2.9", function="resolution"][Instruction::Return]', {
+      funcName: 'resolution',
+      paramCount: 0,
+      async: false,
+      postReturn: false
+    });
+  }
+  
+  
+  function trampoline23(arg0) {
+    _debugLog('[iface="wasi:clocks/wall-clock@0.2.9", function="now"] [Instruction::CallInterface] (async? sync, @ enter)');
+    const _interface_call_currentTaskID = startCurrentTask(0, false, 'now');
+    const ret = now$1();
+    _debugLog('[iface="wasi:clocks/wall-clock@0.2.9", function="now"] [Instruction::CallInterface] (sync, @ post-call)');
+    endCurrentTask(0);
+    var {seconds: v0_0, nanoseconds: v0_1 } = ret;
+    dataView(memory0).setBigInt64(arg0 + 0, toUint64(v0_0), true);
+    dataView(memory0).setInt32(arg0 + 8, toUint32(v0_1), true);
+    _debugLog('[iface="wasi:clocks/wall-clock@0.2.9", function="now"][Instruction::Return]', {
+      funcName: 'now',
+      paramCount: 0,
+      async: false,
+      postReturn: false
+    });
+  }
+  
+  
+  function trampoline24(arg0, arg1) {
+    _debugLog('[iface="wasi:random/insecure@0.2.9", function="get-insecure-random-bytes"] [Instruction::CallInterface] (async? sync, @ enter)');
+    const _interface_call_currentTaskID = startCurrentTask(0, false, 'get-insecure-random-bytes');
+    const ret = getInsecureRandomBytes(BigInt.asUintN(64, arg0));
+    _debugLog('[iface="wasi:random/insecure@0.2.9", function="get-insecure-random-bytes"] [Instruction::CallInterface] (sync, @ post-call)');
+    endCurrentTask(0);
+    var val0 = ret;
+    var len0 = val0.byteLength;
+    var ptr0 = realloc0(0, 0, 1, len0 * 1);
+    var src0 = new Uint8Array(val0.buffer || val0, val0.byteOffset, len0 * 1);
+    (new Uint8Array(memory0.buffer, ptr0, len0 * 1)).set(src0);
+    dataView(memory0).setUint32(arg1 + 4, len0, true);
+    dataView(memory0).setUint32(arg1 + 0, ptr0, true);
+    _debugLog('[iface="wasi:random/insecure@0.2.9", function="get-insecure-random-bytes"][Instruction::Return]', {
+      funcName: 'get-insecure-random-bytes',
+      paramCount: 0,
+      async: false,
+      postReturn: false
+    });
+  }
+  
   let exports2;
   Promise.all([module0, module1, module2]).catch(() => {});
   ({ exports: exports0 } = yield instantiateCore(yield module1));
   ({ exports: exports1 } = yield instantiateCore(yield module0, {
+    'wasi:cli/environment@0.2.9': {
+      'get-arguments': exports0['2'],
+      'get-environment': exports0['1'],
+    },
+    'wasi:cli/stderr@0.2.9': {
+      'get-stderr': trampoline2,
+    },
+    'wasi:cli/stdin@0.2.9': {
+      'get-stdin': trampoline5,
+    },
     'wasi:cli/stdout@0.2.9': {
-      'get-stdout': trampoline0,
+      'get-stdout': trampoline6,
+    },
+    'wasi:clocks/monotonic-clock@0.2.9': {
+      now: trampoline7,
+      resolution: trampoline1,
+      'subscribe-duration': trampoline3,
+    },
+    'wasi:clocks/wall-clock@0.2.9': {
+      now: exports0['14'],
+      resolution: exports0['13'],
     },
     'wasi:filesystem/preopens@0.2.9': {
       'get-directories': exports0['0'],
     },
     'wasi:filesystem/types@0.2.9': {
-      '[method]descriptor.open-at': exports0['3'],
-      '[method]descriptor.read': exports0['2'],
-      '[method]descriptor.write': exports0['1'],
+      '[method]descriptor.open-at': exports0['6'],
+      '[method]descriptor.read': exports0['5'],
+      '[method]descriptor.write': exports0['4'],
+    },
+    'wasi:io/poll@0.2.9': {
+      '[method]pollable.ready': trampoline8,
+      poll: exports0['11'],
     },
     'wasi:io/streams@0.2.9': {
-      '[method]output-stream.blocking-write-and-flush': exports0['4'],
+      '[method]input-stream.read': exports0['9'],
+      '[method]output-stream.blocking-write-and-flush': exports0['10'],
+    },
+    'wasi:random/insecure-seed@0.2.9': {
+      'insecure-seed': exports0['3'],
+    },
+    'wasi:random/insecure@0.2.9': {
+      'get-insecure-random-bytes': exports0['15'],
+      'get-insecure-random-u64': trampoline4,
+    },
+    'wasi:random/random@0.2.9': {
+      'get-random-bytes': exports0['7'],
+      'get-random-u64': trampoline0,
+    },
+    'wasi:sockets/tcp-create-socket@0.2.9': {
+      'create-tcp-socket': exports0['12'],
+    },
+    'wasi:sockets/udp-create-socket@0.2.9': {
+      'create-udp-socket': exports0['8'],
     },
   }));
   memory0 = exports1.memory;
@@ -1652,11 +2498,22 @@ let gen = (function* _initGenerator () {
   ({ exports: exports2 } = yield instantiateCore(yield module2, {
     '': {
       $imports: exports0.$imports,
-      '0': trampoline1,
-      '1': trampoline2,
-      '2': trampoline3,
-      '3': trampoline4,
-      '4': trampoline5,
+      '0': trampoline9,
+      '1': trampoline10,
+      '10': trampoline19,
+      '11': trampoline20,
+      '12': trampoline21,
+      '13': trampoline22,
+      '14': trampoline23,
+      '15': trampoline24,
+      '2': trampoline11,
+      '3': trampoline12,
+      '4': trampoline13,
+      '5': trampoline14,
+      '6': trampoline15,
+      '7': trampoline16,
+      '8': trampoline17,
+      '9': trampoline18,
     },
   }));
   let run029Run;

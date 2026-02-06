@@ -9,6 +9,14 @@ export interface StreamErrorClosed {
   tag: 'closed',
 }
 
+export class InputStream {
+  /**
+   * This type does not have a public constructor.
+   */
+  private constructor();
+  read(len: bigint): Uint8Array;
+}
+
 export class OutputStream {
   /**
    * This type does not have a public constructor.
