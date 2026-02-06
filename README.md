@@ -1,109 +1,32 @@
 # moonix
 
-WASM-based secure shell environment for MoonBit.
+> **WARNING: This library is highly experimental. APIs will change without notice. Do not use in production.**
 
-## Design Philosophy
+Virtual POSIX layer for MoonBit — in-memory Unix-like filesystem, process emulation, and git-backed versioning, all running in WASM.
 
-### Safe Execution for Vibe Coding
+## What is this for?
 
-moonix is designed primarily for **safe code execution in AI-assisted development (vibe coding)**. When AI generates and executes code, security is paramount. moonix provides:
+moonix provides a sandboxed POSIX-like environment that runs entirely in-memory, targeting two primary use cases:
 
-- **Complete Isolation**: All filesystem operations run in-memory, never touching the host system
-- **Capability-based Security**: No ambient authority; all resources must be explicitly granted
-- **Deterministic Execution**: Same inputs always produce same outputs
-- **Resource Limits**: Bounded execution time and memory usage
+1. **AI sandbox**: A safe execution environment for AI-generated code. All filesystem operations are isolated in memory — nothing touches the host system. Combined with capability-based security, this makes it suitable for running untrusted code from LLM outputs.
 
-### Future Vision: Immutable Shell
-
-Inspired by **Unison** (content-addressed code) and **Nix** (reproducible builds), moonix aims to evolve into a shell superset language with:
+2. **Git-backed virtual filesystem**: Using `@gitfs`, you get a virtual filesystem with automatic git versioning powered by [mizchi/bit](https://github.com/mizchi/bit). Every `snapshot()` creates a real git commit, and you can `rollback()`, `branch()`, and `switch()` — all in memory, no native git required.
 
 ```
-┌─────────────────────────────────────────────────────────────┐
-│  moonix shell (superset)                                    │
-│  ┌───────────────────────────────────────────────────────┐  │
-│  │  POSIX sh (compatible subset)                         │  │
-│  │  - Pipes, redirects, control flow                     │  │
-│  │  - Environment variables                              │  │
-│  └───────────────────────────────────────────────────────┘  │
-│  + Content-addressed commands (like Unison)                 │
-│  + Immutable environments (like Nix)                        │
-│  + First-class WASM modules                                 │
-│  + Typed pipelines                                          │
-└─────────────────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────┐
+│  Your App / AI Agent                        │
+├─────────────────────────────────────────────┤
+│  @gitfs   - Git-versioned virtual FS        │
+│  @fs      - Pluggable filesystem backend    │
+│  @posix   - fd, env, cwd emulation          │
+│  @proc    - Cooperative process scheduler   │
+│  @net     - Virtual network / HTTP          │
+│  @wasm    - WASM module execution           │
+│  @capability - Permission control           │
+├─────────────────────────────────────────────┤
+│  MemFs (in-memory) or WasiFs (host bridge)  │
+└─────────────────────────────────────────────┘
 ```
-
-**Key Concepts:**
-
-1. **Content-Addressed Commands**: Commands are identified by their content hash, ensuring reproducibility
-2. **Immutable Environments**: Environment snapshots are versioned and can be restored
-3. **WASM-First**: All external commands are WASM modules with explicit capability requirements
-4. **Gradual Typing**: Start with dynamic shell scripts, add types for reliability
-
-## Architecture
-
-```
-┌─────────────┐
-│   shell     │  High-level shell execution
-├─────────────┤
-│   sh        │  Shell parser & AST
-├─────────────┤
-│   posix     │  POSIX context (fd, env, cwd)
-├─────────────┤
-│   fs        │  Virtual filesystem (pluggable backend)
-├─────────────┤
-│   proc      │  Process scheduler & IPC
-├─────────────┤
-│   net       │  Virtual network & HTTP
-├─────────────┤
-│   wasm      │  WASM module execution
-└─────────────┘
-```
-
-## Current Features
-
-### Shell (`@shell`)
-
-22 built-in commands:
-
-| Category | Commands |
-|----------|----------|
-| I/O | `echo`, `cat`, `head`, `tail`, `grep` |
-| Files | `ls`, `touch`, `rm`, `cp`, `mv`, `write` |
-| Dirs | `pwd`, `cd`, `mkdir` |
-| Env | `env`, `export` |
-| Control | `true`, `false`, `exit`, `sleep`, `test`, `[` |
-
-Control structures via `exec_script()`:
-- `if/then/elif/else/fi`
-- `for x in ...; do ...; done`
-- `while/until`
-- Pipes (`|`) and redirects (`>`, `>>`)
-- Logical operators (`&&`, `||`, `;`)
-
-### Virtual FileSystem (`@fs`)
-
-- `FileSystemBackend` trait for pluggable storage
-- `MemFs` - In-memory inode-based filesystem
-- Future: IndexedDB, host fs adapters
-
-### POSIX Emulation (`@posix`)
-
-- File descriptors (open, read, write, close, lseek)
-- Environment variables
-- Working directory
-- Pluggable stream handlers
-
-### Process Management (`@proc`)
-
-- Cooperative multitasking scheduler
-- Semaphore-based synchronization
-- Signal handling (SIGTERM, SIGKILL, etc.)
-
-### Network (`@net`)
-
-- Virtual socket layer
-- HTTP request/response parsing
-- Virtual network for testing
 
 ## Installation
 
@@ -111,104 +34,53 @@ Control structures via `exec_script()`:
 moon add mizchi/moonix
 ```
 
-## Usage
-
-### Basic Shell
+## Example: Git-backed filesystem
 
 ```moonbit
-let sh = @shell.ShellContext::new()
+// Create a git-versioned in-memory filesystem
+let gfs = @gitfs.GitBackedFs::new(author="user <user@example.com>")
 
-// Execute commands
-sh.exec("echo hello world")
-sh.exec("mkdir -p /home/user")
-sh.exec("echo content > /home/user/file.txt")
-sh.exec("cat /home/user/file.txt")
+// Write files — just like a normal filesystem
+gfs.write_file("/src/main.mbt", b"fn main { println(\"hello\") }")
 
-// Get output
-let stdout = sh.get_stdout()
+// Snapshot creates a git commit internally
+let snap = gfs.snapshot("initial commit")
+
+// Modify and snapshot again
+gfs.write_file("/src/main.mbt", b"fn main { println(\"world\") }")
+let snap2 = gfs.snapshot("update message")
+
+// Rollback to any previous snapshot
+gfs.rollback(snap)
+
+// Branch and switch
+gfs.branch("feature")
+gfs.switch("feature")
 ```
 
-### Shell Scripts
+## Example: Virtual shell (currently disabled)
 
-```moonbit
-let sh = @shell.ShellContext::new()
+The shell module (`@shell`) with built-in commands is temporarily disabled while its dependency (`mizchi/xsh`) is being stabilized. It will be re-enabled in a future release.
 
-// Control flow
-sh.exec_script("
-  if test -d /home; then
-    echo 'home exists'
-  else
-    mkdir /home
-  fi
-")
+## Packages
 
-// Loops
-sh.exec_script("
-  for f in a b c; do
-    touch /tmp/$f.txt
-  done
-")
-```
+| Package | Description |
+|---------|-------------|
+| `@fs` | `FileSystemBackend` trait + `MemFs` (in-memory inode-based filesystem) |
+| `@gitfs` | `GitBackedFs` — git-versioned filesystem using mizchi/bit |
+| `@bitfs_adapter` | Adapter: bit's `x/fs` → moonix `FileSystemBackend` |
+| `@posix` | POSIX emulation (file descriptors, env, cwd) |
+| `@proc` | Cooperative process scheduler, signals, semaphores |
+| `@net` | Virtual socket layer, HTTP parsing |
+| `@wasm` | WASM module execution with capability control |
+| `@capability` | Capability-based permission system |
+| `@sh` | Shell parser and AST |
+| `@wasi` | WASI host filesystem bridge |
 
-### Custom FileSystem Backend
+## Related projects
 
-```moonbit
-// Implement FileSystemBackend trait for your storage
-pub impl @fs.FileSystemBackend for MyStorage with read_file(self, path) {
-  // Your implementation
-}
-
-// Use with PosixContext
-let ctx = @posix.PosixContext::new(my_storage, streams)
-```
-
-### WASM Command Execution
-
-```moonbit
-let sh = @shell.ShellContext::new()
-
-// Register WASM runner
-sh.set_wasm_runner(@shell.WasmRunnerFn(fn(wasm, stdin, args, env, cwd) {
-  // Execute WASM with your runtime
-  Ok((0, output_bytes, error_bytes))
-}))
-
-// Place WASM at /bin/mycommand.wasm
-sh.get_fs().write_file("/bin/mycommand.wasm", wasm_bytes)
-
-// Execute
-sh.exec("mycommand arg1 arg2")
-```
-
-## Roadmap
-
-### Phase 1: POSIX Compatibility (Complete)
-- [x] Basic shell commands (22 built-ins)
-- [x] Control structures (if/for/while)
-- [x] Pipes and redirects
-- [x] Virtual filesystem
-- [x] Quote handling (single/double quotes, escapes)
-- [x] Glob expansion (*, ?, [...])
-- [x] Command substitution `$()`
-- [x] Arithmetic expansion `$(())`
-
-### Phase 2: WASM Integration
-- [ ] WASI preview2 support
-- [ ] Capability-based permissions
-- [ ] Module caching by content hash
-
-### Phase 3: Immutable Shell
-- [ ] Content-addressed command store
-- [ ] Environment snapshots
-- [ ] Typed pipeline DSL
-- [ ] Nix-style derivations
-
-## Use Cases
-
-- **AI Sandbox**: Safe execution environment for AI-generated code
-- **Browser Playground**: Interactive shell in the browser
-- **Reproducible Scripts**: Hermetic builds with WASM
-- **Testing**: Isolated filesystem for unit tests
+- [mizchi/bit](https://github.com/mizchi/bit) — Pure MoonBit git implementation (used by `@gitfs`)
+- [mizchi/wasi](https://github.com/mizchi/wasi.mbt) — WASIp2 bindings for MoonBit
 
 ## License
 

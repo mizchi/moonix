@@ -10,6 +10,6 @@
   },
   "repository": "https://github.com/mizchi/moonix",
   "license": "MIT",
-  "description": "Virtual POSIX layer for MoonBit - Unix-like filesystem and process emulation",
+  "description": "[EXPERIMENTAL] Virtual POSIX layer for MoonBit - in-memory filesystem, process emulation, and git-backed versioning for WASM",
   "source": "src"
 }
