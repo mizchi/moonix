@@ -1,0 +1,20 @@
+import {
+  "mizchi/xsh/xsh" as @xsh,
+  "mizchi/xsh/capability" as @xsh_capability,
+  "moonbitlang/core/env" as @env,
+  "moonbitlang/x/fs" as @xfs,
+  "moonbitlang/x/path/posix" as @path,
+  "moonbitlang/core/abort" as @abort,
+}
+
+options(
+  is_main: true,
+  targets: {
+    "main.mbt": [ "native" ],
+    "main_wasm.mbt": [ "wasm-gc" ],
+    "cli_cycle_wbtest.mbt": [ "native" ],
+    "cli_cycle_wasm_wbtest.mbt": [ "wasm-gc" ],
+    "cli_script_wbtest.mbt": [ "native" ],
+    "cli_script_wasm_wbtest.mbt": [ "wasm-gc" ],
+  },
+)

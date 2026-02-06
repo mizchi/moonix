@@ -1,6 +1,0 @@
-{
-  "import": [
-    { "path": "moonix-shell/gen/cabi", "alias": "cabi" },
-    { "path": "moonix-shell/gen/interface/wasi/filesystem/types", "alias": "fs_types" }
-  ]
-}

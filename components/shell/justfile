@@ -1,0 +1,26 @@
+default:
+    @just --list
+
+build:
+    moon build --target wasm --release impl
+
+patch: build
+    python3 patch_wasm.py _build/wasm/release/build/impl/impl.wasm impl_patched.wasm
+
+componentize: patch
+    ~/.local/bin/moon-component componentize impl_patched.wasm \
+        --wit-dir wit -o component.wasm
+
+transpile: componentize
+    npx jco transpile component.wasm -o out --instantiation async \
+        --map 'wasi:io/streams@0.2.9=../../hosts/deno/virtual_io.ts#streams' \
+        --map 'wasi:io/error@0.2.9=../../hosts/deno/virtual_io.ts#error' \
+        --map 'wasi:cli/stdin@0.2.9=../../hosts/deno/virtual_cli.ts#stdin' \
+        --map 'wasi:cli/stdout@0.2.9=../../hosts/deno/virtual_cli.ts#stdout' \
+        --map 'wasi:cli/stderr@0.2.9=../../hosts/deno/virtual_cli.ts#stderr' \
+        --map 'wasi:cli/environment@0.2.9=../../hosts/deno/virtual_cli.ts#environment'
+
+all: transpile
+
+clean:
+    rm -rf _build component.wasm impl_patched.wasm out

@@ -1,7 +1,0 @@
-{
-  "import": [
-    { "path": "moonix-component/gen/cabi", "alias": "cabi" },
-    { "path": "moonix-component/gen/interface/wasi/sockets/tcp", "alias": "tcp" },
-    { "path": "moonix-component/gen/interface/wasi/sockets/network", "alias": "network" }
-  ]
-}

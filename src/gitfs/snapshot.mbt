@@ -199,7 +199,7 @@ pub fn GitBackedFs::switch(
   self : GitBackedFs,
   name : String,
 ) -> Unit raise @bit.GitError {
-  @lib.switch_branch(self, self, self.root, name, checkout=true)
+  @lib.switch_branch(self, self, self.root, name, checkout_files=true)
   self.head = @lib.resolve_head_commit(self, self.git_dir)
   self.clear_dirty()
 }

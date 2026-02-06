@@ -1,0 +1,29 @@
+{
+  "is-main": true,
+  "import": [
+    { "path": "mizchi/wasi/gen/cabi", "alias": "cabi" },
+    { "path": "mizchi/wasi/gen/interface/wasi/io/streams", "alias": "streams" },
+    { "path": "mizchi/wasi/gen/interface/wasi/cli/stdout", "alias": "stdout" },
+    { "path": "mizchi/wasi/gen/interface/wasi/cli/stderr", "alias": "stderr" },
+    { "path": "mizchi/wasi/gen/interface/wasi/cli/stdin", "alias": "stdin" },
+    { "path": "mizchi/wasi/gen/interface/wasi/cli/environment", "alias": "environment" },
+    { "path": "mizchi/moonix/shell", "alias": "shell" },
+    { "path": "mizchi/moonix/fs", "alias": "moonix_fs" }
+  ],
+  "link": {
+    "wasm": {
+      "exports": [
+        "cabi_realloc:cabi_realloc",
+        "wasmExportRun:wasi:cli/run@0.2.9#run"
+      ],
+      "export-memory-name": "memory"
+    },
+    "wasm-gc": {
+      "exports": [
+        "cabi_realloc:cabi_realloc",
+        "wasmExportRun:wasi:cli/run@0.2.9#run"
+      ],
+      "export-memory-name": "memory"
+    }
+  }
+}

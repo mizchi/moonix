@@ -1,7 +1,0 @@
-{
-  "import": [
-    { "path": "moonix-shell/gen/cabi", "alias": "cabi" },
-    { "path": "moonix-shell/gen/interface/wasi/io/error", "alias": "error" },
-    { "path": "moonix-shell/gen/interface/wasi/io/poll", "alias": "poll" }
-  ]
-}

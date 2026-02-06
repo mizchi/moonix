@@ -1,0 +1,7 @@
+{
+  "name": "moonix-component",
+  "version": "0.1.0",
+  "deps": {
+    "mizchi/wasi": "0.1.0"
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "name": "moonix-shell",
+  "version": "0.1.0",
+  "deps": {
+    "mizchi/moonix": { "path": "../.." },
+    "mizchi/wasi": "0.1.0",
+    "mizchi/bit": "0.10.0",
+    "mizchi/xsh": { "path": "../../../xsh" },
+    "mizchi/cst": { "path": "../../../cst.mbt" },
+    "mizchi/ripple": { "path": "../../../ripple" },
+    "moonbitlang/x": "0.4.38"
+  }
+}

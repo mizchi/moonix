@@ -1,0 +1,38 @@
+default:
+    @just --list
+
+build:
+    moon build --target wasm --release impl
+
+componentize: build
+    ~/.local/bin/moon-component componentize _build/wasm/release/build/impl/impl.wasm \
+        --wit-dir wit -o component.wasm
+
+transpile: componentize
+    npx jco transpile component.wasm -o out --instantiation async \
+        --map 'wasi:io/streams@0.2.9=../../hosts/deno/virtual_io.ts#streams' \
+        --map 'wasi:io/error@0.2.9=../../hosts/deno/virtual_io.ts#error' \
+        --map 'wasi:io/poll@0.2.9=../../hosts/deno/virtual_poll.ts#poll' \
+        --map 'wasi:cli/stdin@0.2.9=../../hosts/deno/virtual_cli.ts#stdin' \
+        --map 'wasi:cli/stdout@0.2.9=../../hosts/deno/virtual_cli.ts#stdout' \
+        --map 'wasi:cli/stderr@0.2.9=../../hosts/deno/virtual_cli.ts#stderr' \
+        --map 'wasi:cli/environment@0.2.9=../../hosts/deno/virtual_cli.ts#environment' \
+        --map 'wasi:filesystem/types@0.2.9=../../hosts/deno/virtual_fs.ts#types' \
+        --map 'wasi:filesystem/preopens@0.2.9=../../hosts/deno/virtual_fs.ts#preopens' \
+        --map 'wasi:clocks/wall-clock@0.2.9=../../hosts/deno/virtual_clock.ts#wallClock' \
+        --map 'wasi:clocks/monotonic-clock@0.2.9=../../hosts/deno/virtual_clock.ts#monotonicClock' \
+        --map 'wasi:random/random@0.2.9=../../hosts/deno/virtual_random.ts#random' \
+        --map 'wasi:random/insecure@0.2.9=../../hosts/deno/virtual_random.ts#insecure' \
+        --map 'wasi:random/insecure-seed@0.2.9=../../hosts/deno/virtual_random.ts#insecureSeed' \
+        --map 'wasi:sockets/tcp@0.2.9=../../hosts/deno/virtual_sockets.ts#tcp' \
+        --map 'wasi:sockets/tcp-create-socket@0.2.9=../../hosts/deno/virtual_sockets.ts#tcpCreateSocket' \
+        --map 'wasi:sockets/udp@0.2.9=../../hosts/deno/virtual_sockets.ts#udp' \
+        --map 'wasi:sockets/udp-create-socket@0.2.9=../../hosts/deno/virtual_sockets.ts#udpCreateSocket'
+
+run: componentize
+    wasmtime run component.wasm
+
+all: transpile
+
+clean:
+    rm -rf _build component.wasm out

@@ -3,7 +3,12 @@ target/
 .mooncakes
 node_modules/
 
-# moonix_shell build artifacts
-experiments/moonix_shell/impl_*.wasm
-experiments/moonix_shell/moonbit_sys_*.wasm
-experiments/moonix_shell/moonbit_sys_*.wat
+# component build artifacts
+components/*/impl_*.wasm
+components/*/component.wasm
+components/*/out/
+
+# hosts build artifacts
+hosts/wasmtime/target/
+hosts/deno/node_modules/
+hosts/deno/tests/fixtures/target/

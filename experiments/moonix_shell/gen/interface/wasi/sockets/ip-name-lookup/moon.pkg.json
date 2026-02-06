@@ -1,7 +1,0 @@
-{
-  "import": [
-    { "path": "moonix-shell/gen/cabi", "alias": "cabi" },
-    { "path": "moonix-shell/gen/interface/wasi/sockets/network", "alias": "network" },
-    { "path": "moonix-shell/gen/interface/wasi/io/poll", "alias": "poll" }
-  ]
-}
