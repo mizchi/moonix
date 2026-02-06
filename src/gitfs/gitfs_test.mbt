@@ -108,6 +108,131 @@ test "GitBackedFs git paths excluded from dirty tracking" {
   assert_true(fs.has_changes())
 }
 
+test "GitBackedFs tag operations" {
+  let fs = GitBackedFs::new(author="test")
+  fs.set_timestamp_provider(fn() { 1000L })
+
+  @fs.FileSystemBackend::write_string(fs, "/file.txt", "content")
+  let _ = fs.snapshot("Initial")
+
+  // No tags initially
+  assert_eq(fs.list_tags().length(), 0)
+
+  // Create tag at HEAD
+  fs.tag("v1.0")
+  let tags = fs.list_tags()
+  assert_eq(tags.length(), 1)
+  assert_true(tags.contains("v1.0"))
+
+  // Create tag at specific commit
+  let head = fs.get_head()
+  guard head is Some(commit_id)
+  fs.tag_at("v1.0-alias", commit_id)
+  assert_eq(fs.list_tags().length(), 2)
+
+  // Delete tag
+  fs.delete_tag("v1.0")
+  let tags2 = fs.list_tags()
+  assert_eq(tags2.length(), 1)
+  assert_true(tags2.contains("v1.0-alias"))
+}
+
+test "GitBackedFs merge" {
+  let fs = GitBackedFs::new(author="test")
+  let mut ts = 1000L
+  fs.set_timestamp_provider(fn() {
+    let t = ts
+    ts += 1000L
+    t
+  })
+
+  // Create initial commit on main
+  @fs.FileSystemBackend::write_string(fs, "/file.txt", "initial")
+  let _ = fs.snapshot("Initial")
+
+  // Create feature branch and add a file
+  fs.branch("feature")
+  fs.switch("feature")
+  @fs.FileSystemBackend::write_string(fs, "/feature.txt", "new feature")
+  let _ = fs.snapshot("Add feature")
+
+  // Switch back to main
+  fs.switch("main")
+  assert_false(@fs.FileSystemBackend::exists(fs, "/feature.txt"))
+
+  // Merge feature into main
+  let result = fs.merge("feature")
+  guard result.status is (FastForward | Merged)
+  assert_true(@fs.FileSystemBackend::exists(fs, "/feature.txt"))
+  assert_eq(@fs.FileSystemBackend::read_string(fs, "/feature.txt"), "new feature")
+}
+
+test "GitBackedFs diff" {
+  let fs = GitBackedFs::new(author="test")
+  fs.set_timestamp_provider(fn() { 1000L })
+
+  // Create initial commit
+  @fs.FileSystemBackend::write_string(fs, "/file.txt", "original")
+  let _ = fs.snapshot("Initial")
+
+  // Modify file (stage it so diff_index can see it)
+  @fs.FileSystemBackend::write_string(fs, "/file.txt", "modified")
+  @lib.add_paths(fs, fs, "/", ["file.txt"])
+
+  let diffs = fs.diff()
+  assert_true(diffs.length() > 0)
+}
+
+test "GitBackedFs reset" {
+  let fs = GitBackedFs::new(author="test")
+  let mut ts = 1000L
+  fs.set_timestamp_provider(fn() {
+    let t = ts
+    ts += 1000L
+    t
+  })
+
+  @fs.FileSystemBackend::write_string(fs, "/file.txt", "v1")
+  let snap1 = fs.snapshot("First")
+
+  @fs.FileSystemBackend::write_string(fs, "/file.txt", "v2")
+  let _ = fs.snapshot("Second")
+
+  // Reset to first commit (hard)
+  let _ = fs.reset(snap1.commit_id, mode=Hard)
+  assert_eq(@fs.FileSystemBackend::read_string(fs, "/file.txt"), "v1")
+}
+
+test "GitBackedFs cherry_pick" {
+  let fs = GitBackedFs::new(author="test")
+  let mut ts = 1000L
+  fs.set_timestamp_provider(fn() {
+    let t = ts
+    ts += 1000L
+    t
+  })
+
+  // Create initial commit on main
+  @fs.FileSystemBackend::write_string(fs, "/file.txt", "initial")
+  let _ = fs.snapshot("Initial")
+
+  // Create feature branch with a commit
+  fs.branch("feature")
+  fs.switch("feature")
+  @fs.FileSystemBackend::write_string(fs, "/cherry.txt", "cherry content")
+  let feature_snap = fs.snapshot("Cherry commit")
+
+  // Switch back to main
+  fs.switch("main")
+
+  // Cherry-pick the feature commit
+  let result = fs.cherry_pick(feature_snap.commit_id)
+  guard result.status is Success
+  // Cherry-pick updates the tree and creates a new commit,
+  // verify commit was created
+  assert_true(result.commit_id is Some(_))
+}
+
 test "GitBackedFs snapshot handles deep tree and many files" {
   let fs = GitBackedFs::new(author="test")
   fs.set_timestamp_provider(fn() { 1000L })
