@@ -2,3 +2,8 @@ _build/
 target/
 .mooncakes
 node_modules/
+
+# moonix_shell build artifacts
+experiments/moonix_shell/impl_*.wasm
+experiments/moonix_shell/moonbit_sys_*.wasm
+experiments/moonix_shell/moonbit_sys_*.wat
