@@ -34,6 +34,14 @@ moonix provides a sandboxed POSIX-like environment that runs entirely in-memory,
 moon add mizchi/moonix
 ```
 
+CLI runner (for component execution via wasmtime):
+
+```bash
+cd ~/ghq/github.com/mizchi/moonix
+just install
+moonix run dist/your.component.wasm --invoke 'run()'
+```
+
 ## Example: Git-backed filesystem
 
 ```moonbit

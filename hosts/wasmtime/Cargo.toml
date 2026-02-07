@@ -3,6 +3,10 @@ name = "wasmtime_host_experiments"
 version = "0.1.0"
 edition = "2021"
 
+[[bin]]
+name = "moonix"
+path = "src/main.rs"
+
 [dependencies]
 anyhow = "1.0"
 rand_core = "0.6"
