@@ -46,12 +46,14 @@ fn strip_leading_slash(path : String) -> String {
 }
 
 ///|
-fn descriptor_type_to_node_type(t : @wasi_fs.DescriptorType) -> WasiNodeType {
+fn descriptor_type_to_node_type(
+  t : @wasi_fs.DescriptorType,
+) -> @wasi_posix_core.WasiNodeType {
   match t {
-    @wasi_fs.RegularFile => WasiNodeType::File
-    @wasi_fs.Directory => WasiNodeType::Directory
-    @wasi_fs.SymbolicLink => WasiNodeType::Symlink
-    _ => WasiNodeType::Other
+    @wasi_fs.RegularFile => @wasi_posix_core.WasiNodeType::File
+    @wasi_fs.Directory => @wasi_posix_core.WasiNodeType::Directory
+    @wasi_fs.SymbolicLink => @wasi_posix_core.WasiNodeType::Symlink
+    _ => @wasi_posix_core.WasiNodeType::Other
   }
 }
 
@@ -89,7 +91,10 @@ fn open_dir_at(
 }
 
 ///|
-pub impl WasiFsHost for WasiPreview2FsHost with read_file(self, path) {
+pub impl @wasi_posix_core.WasiFsHost for WasiPreview2FsHost with read_file(
+  self,
+  path,
+) {
   let rel = strip_leading_slash(path)
   let fd = match
     @wasi_fs.descriptor_open_at(
@@ -110,7 +115,10 @@ pub impl WasiFsHost for WasiPreview2FsHost with read_file(self, path) {
 }
 
 ///|
-pub impl WasiFsHost for WasiPreview2FsHost with exists(self, path) {
+pub impl @wasi_posix_core.WasiFsHost for WasiPreview2FsHost with exists(
+  self,
+  path,
+) {
   let rel = strip_leading_slash(path)
   match @wasi_fs.descriptor_stat_at(self.root, no_path_flags(), rel) {
     Ok(_) => true
@@ -119,7 +127,10 @@ pub impl WasiFsHost for WasiPreview2FsHost with exists(self, path) {
 }
 
 ///|
-pub impl WasiFsHost for WasiPreview2FsHost with stat(self, path) {
+pub impl @wasi_posix_core.WasiFsHost for WasiPreview2FsHost with stat(
+  self,
+  path,
+) {
   let rel = strip_leading_slash(path)
   let s = match @wasi_fs.descriptor_stat_at(self.root, no_path_flags(), rel) {
     Ok(s) => s
@@ -132,14 +143,17 @@ pub impl WasiFsHost for WasiPreview2FsHost with stat(self, path) {
 }
 
 ///|
-pub impl WasiFsHost for WasiPreview2FsHost with readdir(self, path) {
+pub impl @wasi_posix_core.WasiFsHost for WasiPreview2FsHost with readdir(
+  self,
+  path,
+) {
   let rel = strip_leading_slash(path)
   let dir_desc = open_dir_at(self.root, rel)
   let dir_stream = match @wasi_fs.descriptor_read_directory(dir_desc) {
     Ok(s) => s
     Err(e) => raise wasi_error_to_fs(e)
   }
-  let entries : Array[WasiDirEntry] = []
+  let entries : Array[@wasi_posix_core.WasiDirEntry] = []
   while true {
     match @wasi_fs.directory_entry_stream_read_directory_entry(dir_stream) {
       Ok(Some(entry)) => {
@@ -159,7 +173,11 @@ pub impl WasiFsHost for WasiPreview2FsHost with readdir(self, path) {
 }
 
 ///|
-pub impl WasiFsHost for WasiPreview2FsHost with write_file(self, path, data) {
+pub impl @wasi_posix_core.WasiFsHost for WasiPreview2FsHost with write_file(
+  self,
+  path,
+  data,
+) {
   let rel = strip_leading_slash(path)
   let parent = @fs.parent_path(path)
   if parent != "/" {
@@ -193,7 +211,10 @@ pub impl WasiFsHost for WasiPreview2FsHost with write_file(self, path, data) {
 }
 
 ///|
-pub impl WasiFsHost for WasiPreview2FsHost with mkdir(self, path) {
+pub impl @wasi_posix_core.WasiFsHost for WasiPreview2FsHost with mkdir(
+  self,
+  path,
+) {
   let rel = strip_leading_slash(path)
   match @wasi_fs.descriptor_create_directory_at(self.root, rel) {
     Ok(_) => ()
@@ -202,7 +223,10 @@ pub impl WasiFsHost for WasiPreview2FsHost with mkdir(self, path) {
 }
 
 ///|
-pub impl WasiFsHost for WasiPreview2FsHost with mkdir_p(self, path) {
+pub impl @wasi_posix_core.WasiFsHost for WasiPreview2FsHost with mkdir_p(
+  self,
+  path,
+) {
   let normalized = @fs.normalize_path(path)
   if normalized == "/" {
     return
@@ -238,7 +262,10 @@ pub impl WasiFsHost for WasiPreview2FsHost with mkdir_p(self, path) {
 }
 
 ///|
-pub impl WasiFsHost for WasiPreview2FsHost with remove(self, path) {
+pub impl @wasi_posix_core.WasiFsHost for WasiPreview2FsHost with remove(
+  self,
+  path,
+) {
   let rel = strip_leading_slash(path)
   match @wasi_fs.descriptor_unlink_file_at(self.root, rel) {
     Ok(_) => ()
@@ -247,7 +274,10 @@ pub impl WasiFsHost for WasiPreview2FsHost with remove(self, path) {
 }
 
 ///|
-pub impl WasiFsHost for WasiPreview2FsHost with rmdir(self, path) {
+pub impl @wasi_posix_core.WasiFsHost for WasiPreview2FsHost with rmdir(
+  self,
+  path,
+) {
   let rel = strip_leading_slash(path)
   match @wasi_fs.descriptor_remove_directory_at(self.root, rel) {
     Ok(_) => ()
@@ -256,7 +286,11 @@ pub impl WasiFsHost for WasiPreview2FsHost with rmdir(self, path) {
 }
 
 ///|
-pub impl WasiFsHost for WasiPreview2FsHost with rename(self, old_path, new_path) {
+pub impl @wasi_posix_core.WasiFsHost for WasiPreview2FsHost with rename(
+  self,
+  old_path,
+  new_path,
+) {
   let old_rel = strip_leading_slash(old_path)
   let new_rel = strip_leading_slash(new_path)
   match @wasi_fs.descriptor_rename_at(self.root, old_rel, self.root, new_rel) {

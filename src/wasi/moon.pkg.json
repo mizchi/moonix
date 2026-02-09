@@ -1,6 +1,7 @@
 {
   "import": [
     { "path": "mizchi/moonix/fs", "alias": "fs" },
+    { "path": "mizchi/moonix/p2/wasi_posix", "alias": "p2_wasi_posix" },
     { "path": "mizchi/moonix/posix", "alias": "posix" },
     { "path": "mizchi/moonix/wasi_posix", "alias": "wasi_posix" },
     { "path": "mizchi/wasi/gen/interface/wasi/filesystem/types", "alias": "wasi_fs" }

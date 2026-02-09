@@ -10,12 +10,6 @@ pub fn WasiFs::new(host : &WasiFsHost) -> WasiFs {
 }
 
 ///|
-pub fn WasiFs::from_p2(root : @wasi_fs.Descriptor) -> WasiFs {
-  let host = WasiPreview2FsHost::new(root)
-  { host: host as &WasiFsHost }
-}
-
-///|
 fn node_type_to_file_type(t : WasiNodeType) -> @fs.FileType {
   match t {
     File => @fs.FileType::File

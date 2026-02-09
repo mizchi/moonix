@@ -10,12 +10,6 @@ pub fn WasiStreamHandler::new(host : &WasiCliHost) -> WasiStreamHandler {
 }
 
 ///|
-pub fn WasiStreamHandler::from_p2() -> WasiStreamHandler {
-  let host = WasiPreview2CliHost::new()
-  { host: host as &WasiCliHost }
-}
-
-///|
 pub impl @posix.StdStreamHandler for WasiStreamHandler with read(
   self,
   stream,

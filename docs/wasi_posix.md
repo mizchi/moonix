@@ -6,7 +6,9 @@
 
 1. `WasiFsHost` / `WasiCliHost` (`src/wasi_posix/contracts.mbt`)
 2. `WasiFs` / `WasiStreamHandler` adapters (`src/wasi_posix/fs_adapter.mbt`, `src/wasi_posix/cli_adapter.mbt`)
-3. Preview2 hosts (`src/wasi_posix/p2_fs_host.mbt`, `src/wasi_posix/p2_cli_host.mbt`)
+3. Preview-specific namespaces
+   p2: `src/p2/wasi_posix/` (Preview2 host implementations and constructors)
+   p3: `src/p3/wasi_posix/` (scaffolded)
 
 `@wasi` remains as a backward-compatible facade.
 
@@ -28,7 +30,6 @@ The contract layer keeps these changes local to host implementations.
 
 ## Preview3 migration plan
 
-1. Add `WasiPreview3FsHost` implementing `WasiFsHost`.
-2. Add `WasiPreview3CliHost` implementing `WasiCliHost`.
-3. Add `WasiFs::from_p3(...)` and `WasiStreamHandler::from_p3(...)`.
-4. Keep `WasiFs` / `WasiStreamHandler` adapters unchanged.
+1. Implement `WasiPreview3FsHost` / `WasiPreview3CliHost` with `WasiFsHost` / `WasiCliHost`.
+2. Expose p3 factory functions (parallel to `src/p2/wasi_posix/factory.mbt`).
+3. Switch call sites by namespace (`@p2/wasi_posix` -> `@p3/wasi_posix`) without changing shared adapters.

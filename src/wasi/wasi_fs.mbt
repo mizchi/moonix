@@ -10,7 +10,7 @@ pub struct WasiFs {
 
 ///|
 pub fn WasiFs::new(root : @wasi_fs.Descriptor) -> WasiFs {
-  { inner: @wasi_posix.WasiFs::from_p2(root) }
+  { inner: @p2_wasi_posix.new_fs(root) }
 }
 
 ///|

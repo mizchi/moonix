@@ -1,11 +1,6 @@
 {
   "import": [
     { "path": "mizchi/moonix/fs", "alias": "fs" },
-    { "path": "mizchi/moonix/posix", "alias": "posix" },
-    { "path": "mizchi/wasi/gen/interface/wasi/filesystem/types", "alias": "wasi_fs" },
-    { "path": "mizchi/wasi/gen/interface/wasi/io/streams", "alias": "streams" },
-    { "path": "mizchi/wasi/gen/interface/wasi/cli/stdin", "alias": "stdin" },
-    { "path": "mizchi/wasi/gen/interface/wasi/cli/stdout", "alias": "stdout" },
-    { "path": "mizchi/wasi/gen/interface/wasi/cli/stderr", "alias": "stderr" }
+    { "path": "mizchi/moonix/posix", "alias": "posix" }
   ]
 }

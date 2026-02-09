@@ -17,7 +17,10 @@ fn bytes_to_array(data : Bytes) -> Array[Byte] {
 }
 
 ///|
-pub impl WasiCliHost for WasiPreview2CliHost with read_stdin(_self, len) {
+pub impl @wasi_posix_core.WasiCliHost for WasiPreview2CliHost with read_stdin(
+  _self,
+  len,
+) {
   let stdin_stream = @stdin.get_stdin()
   match
     @streams.input_stream_blocking_read(
@@ -30,7 +33,10 @@ pub impl WasiCliHost for WasiPreview2CliHost with read_stdin(_self, len) {
 }
 
 ///|
-pub impl WasiCliHost for WasiPreview2CliHost with write_stdout(_self, data) {
+pub impl @wasi_posix_core.WasiCliHost for WasiPreview2CliHost with write_stdout(
+  _self,
+  data,
+) {
   let out = @stdout.get_stdout()
   match
     @streams.output_stream_blocking_write_and_flush(out, bytes_to_array(data)) {
@@ -40,7 +46,10 @@ pub impl WasiCliHost for WasiPreview2CliHost with write_stdout(_self, data) {
 }
 
 ///|
-pub impl WasiCliHost for WasiPreview2CliHost with write_stderr(_self, data) {
+pub impl @wasi_posix_core.WasiCliHost for WasiPreview2CliHost with write_stderr(
+  _self,
+  data,
+) {
   let err = @stderr.get_stderr()
   match
     @streams.output_stream_blocking_write_and_flush(err, bytes_to_array(data)) {

@@ -10,7 +10,7 @@ pub struct WasiStreamHandler {
 
 ///|
 pub fn WasiStreamHandler::new() -> WasiStreamHandler {
-  { inner: @wasi_posix.WasiStreamHandler::from_p2() }
+  { inner: @p2_wasi_posix.new_stream_handler() }
 }
 
 ///|
