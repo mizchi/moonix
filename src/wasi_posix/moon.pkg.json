@@ -1,6 +1,0 @@
-{
-  "import": [
-    { "path": "mizchi/moonix/fs", "alias": "fs" },
-    { "path": "mizchi/moonix/posix", "alias": "posix" }
-  ]
-}

@@ -24,7 +24,7 @@ moonix provides a sandboxed POSIX-like environment that runs entirely in-memory,
 │  @wasm    - WASM module execution           │
 │  @capability - Permission control           │
 ├─────────────────────────────────────────────┤
-│  MemFs (in-memory) or WasiFs (host bridge)  │
+│  MemFs (in-memory)                           │
 └─────────────────────────────────────────────┘
 ```
 
@@ -83,16 +83,14 @@ The shell module (`@shell`) with built-in commands is temporarily disabled while
 | `@wasm` | WASM module execution with capability control |
 | `@capability` | Capability-based permission system |
 | `@sh` | Shell parser and AST |
-| `@wasi_posix` | WASI-to-POSIX adapter via host contracts (`WasiFsHost` / `WasiCliHost`) |
-| `@p2/wasi_posix` | WASI Preview2 host implementation namespace for `@wasi_posix` |
-| `@wasi` | Backward-compatible facade to `@wasi_posix` preview2 constructors |
 
-Design note: see `docs/wasi_posix.md` for preview2/preview3 layering.
+WASI host bridge packages (`@wasi_posix`, `@p2/wasi_posix`, `@p3/wasi_posix`) moved to `mizchi/wasi_posix`.
 
 ## Related projects
 
 - [mizchi/bit](https://github.com/mizchi/bit) — Pure MoonBit git implementation (used by `@gitfs`)
 - [mizchi/wasi](https://github.com/mizchi/wasi.mbt) — WASIp2 bindings for MoonBit
+- [mizchi/wasi_posix](https://github.com/mizchi/wasi_posix) — WASI preview-aware POSIX adapters/providers extracted from moonix
 
 ## License
 

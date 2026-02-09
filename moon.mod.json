@@ -5,7 +5,6 @@
     "mizchi/bit": "0.10.0",
     "mizchi/cst": "0.1.0",
     "mizchi/ripple": "0.1.0",
-    "mizchi/wasi": "0.1.0",
     "moonbitlang/x": "0.4.38"
   },
   "repository": "https://github.com/mizchi/moonix",
