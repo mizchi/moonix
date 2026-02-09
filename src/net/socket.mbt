@@ -1,5 +1,6 @@
 ///| Virtual socket implementation
 
+///|
 /// Virtual socket
 pub struct VSocket {
   id : Int
@@ -10,9 +11,11 @@ pub struct VSocket {
   send_buffer : Array[Byte]
 }
 
+///|
 /// Global socket ID counter
 let next_socket_id : Ref[Int] = { val: 1 }
 
+///|
 pub fn VSocket::new() -> VSocket {
   let id = next_socket_id.val
   next_socket_id.val += 1
@@ -26,18 +29,22 @@ pub fn VSocket::new() -> VSocket {
   }
 }
 
+///|
 pub fn VSocket::get_id(self : VSocket) -> Int {
   self.id
 }
 
+///|
 pub fn VSocket::get_state(self : VSocket) -> SocketState {
   self.state
 }
 
+///|
 pub fn VSocket::get_local_addr(self : VSocket) -> NetAddr? {
   self.local_addr
 }
 
+///|
 /// Bind socket to address
 pub fn VSocket::bind(self : VSocket, addr : NetAddr) -> Unit raise NetError {
   match self.state {
@@ -49,6 +56,7 @@ pub fn VSocket::bind(self : VSocket, addr : NetAddr) -> Unit raise NetError {
   }
 }
 
+///|
 /// Start listening
 pub fn VSocket::listen(self : VSocket) -> Unit raise NetError {
   match self.state {
@@ -57,6 +65,7 @@ pub fn VSocket::listen(self : VSocket) -> Unit raise NetError {
   }
 }
 
+///|
 /// Close socket
 pub fn VSocket::close(self : VSocket) -> Unit {
   self.state = Closed
@@ -64,6 +73,7 @@ pub fn VSocket::close(self : VSocket) -> Unit {
   self.send_buffer.clear()
 }
 
+///|
 /// Write data to socket
 pub fn VSocket::write(self : VSocket, data : Bytes) -> Int raise NetError {
   match self.state {
@@ -78,6 +88,7 @@ pub fn VSocket::write(self : VSocket, data : Bytes) -> Int raise NetError {
   }
 }
 
+///|
 /// Read data from socket
 pub fn VSocket::read(self : VSocket, max_len : Int) -> Bytes raise NetError {
   match self.state {
@@ -101,11 +112,13 @@ pub fn VSocket::read(self : VSocket, max_len : Int) -> Bytes raise NetError {
   }
 }
 
+///|
 /// Check if there's data available to read
 pub fn VSocket::has_data(self : VSocket) -> Bool {
   self.recv_buffer.length() > 0
 }
 
+///|
 /// Internal: push data to receive buffer (used by VirtualNetwork)
 pub fn VSocket::push_recv_data(self : VSocket, data : Bytes) -> Unit {
   for b in data {
@@ -113,13 +126,17 @@ pub fn VSocket::push_recv_data(self : VSocket, data : Bytes) -> Unit {
   }
 }
 
+///|
 /// Internal: pop data from send buffer (used by VirtualNetwork)
 pub fn VSocket::pop_send_data(self : VSocket) -> Bytes {
-  let result = Bytes::makei(self.send_buffer.length(), fn(i) { self.send_buffer[i] })
+  let result = Bytes::makei(self.send_buffer.length(), fn(i) {
+    self.send_buffer[i]
+  })
   self.send_buffer.clear()
   result
 }
 
+///|
 /// Internal: set connected state
 pub fn VSocket::set_connected(self : VSocket, remote : NetAddr) -> Unit {
   self.state = Connected

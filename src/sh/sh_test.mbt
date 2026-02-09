@@ -1,36 +1,36 @@
-///| Tests for shell lexer and parser
-
+///|
+/// Tests for shell lexer and parser
 test "lexer: simple command" {
   let lexer = @sh.Lexer::new("echo hello world")
-  let tokens = try { lexer.tokenize() } catch { _ => panic() }
-
-  assert_eq(tokens.length(), 4)  // 3 words + EOF
+  let tokens = lexer.tokenize() catch { _ => panic() }
+  assert_eq(tokens.length(), 4) // 3 words + EOF
   assert_true(tokens[0].is_word())
   assert_eq(tokens[0].get_word(), Some("echo"))
   assert_eq(tokens[1].get_word(), Some("hello"))
   assert_eq(tokens[2].get_word(), Some("world"))
 }
 
+///|
 test "lexer: pipe" {
   let lexer = @sh.Lexer::new("cat file | grep pattern")
-  let tokens = try { lexer.tokenize() } catch { _ => panic() }
-
-  assert_eq(tokens.length(), 6)  // cat file | grep pattern EOF
+  let tokens = lexer.tokenize() catch { _ => panic() }
+  assert_eq(tokens.length(), 6) // cat file | grep pattern EOF
   assert_eq(tokens[2].kind.to_string(), "Pipe")
 }
 
+///|
 test "lexer: redirections" {
   let lexer = @sh.Lexer::new("cmd < in > out >> append")
-  let tokens = try { lexer.tokenize() } catch { _ => panic() }
-
+  let tokens = lexer.tokenize() catch { _ => panic() }
   assert_eq(tokens[1].kind.to_string(), "Less")
   assert_eq(tokens[3].kind.to_string(), "Great")
   assert_eq(tokens[5].kind.to_string(), "DGreat")
 }
 
+///|
 test "lexer: fd redirections" {
   let lexer = @sh.Lexer::new("cmd 2>&1 1>/dev/null")
-  let tokens = try { lexer.tokenize() } catch { _ => panic() }
+  let tokens = lexer.tokenize() catch { _ => panic() }
 
   // cmd 2 >& 1 1 > /dev/null EOF
   assert_eq(tokens[0].get_word(), Some("cmd"))
@@ -42,41 +42,41 @@ test "lexer: fd redirections" {
   assert_eq(tokens[6].get_word(), Some("/dev/null"))
 }
 
+///|
 test "lexer: logical operators" {
   let lexer = @sh.Lexer::new("cmd1 && cmd2 || cmd3")
-  let tokens = try { lexer.tokenize() } catch { _ => panic() }
-
+  let tokens = lexer.tokenize() catch { _ => panic() }
   assert_eq(tokens[1].kind.to_string(), "And")
   assert_eq(tokens[3].kind.to_string(), "Or")
 }
 
+///|
 test "lexer: assignment" {
   let lexer = @sh.Lexer::new("FOO=bar cmd arg")
-  let tokens = try { lexer.tokenize() } catch { _ => panic() }
-
+  let tokens = lexer.tokenize() catch { _ => panic() }
   assert_eq(tokens[0].kind.to_string(), "Assignment(FOO=bar)")
   assert_eq(tokens[1].get_word(), Some("cmd"))
 }
 
+///|
 test "lexer: single quotes" {
   let lexer = @sh.Lexer::new("echo 'hello world'")
-  let tokens = try { lexer.tokenize() } catch { _ => panic() }
-
-  assert_eq(tokens.length(), 3)  // echo 'hello world' EOF
+  let tokens = lexer.tokenize() catch { _ => panic() }
+  assert_eq(tokens.length(), 3) // echo 'hello world' EOF
   assert_eq(tokens[1].get_word(), Some("'hello world'"))
 }
 
+///|
 test "lexer: double quotes" {
   let lexer = @sh.Lexer::new("echo \"hello world\"")
-  let tokens = try { lexer.tokenize() } catch { _ => panic() }
-
+  let tokens = lexer.tokenize() catch { _ => panic() }
   assert_eq(tokens[1].get_word(), Some("\"hello world\""))
 }
 
+///|
 test "lexer: reserved words" {
   let lexer = @sh.Lexer::new("if then else elif fi while for do done case esac")
-  let tokens = try { lexer.tokenize() } catch { _ => panic() }
-
+  let tokens = lexer.tokenize() catch { _ => panic() }
   assert_eq(tokens[0].kind.to_string(), "If")
   assert_eq(tokens[1].kind.to_string(), "Then")
   assert_eq(tokens[2].kind.to_string(), "Else")
@@ -90,32 +90,32 @@ test "lexer: reserved words" {
   assert_eq(tokens[10].kind.to_string(), "Esac")
 }
 
+///|
 test "lexer: background" {
   let lexer = @sh.Lexer::new("cmd &")
-  let tokens = try { lexer.tokenize() } catch { _ => panic() }
-
+  let tokens = lexer.tokenize() catch { _ => panic() }
   assert_eq(tokens[1].kind.to_string(), "Amp")
 }
 
+///|
 test "lexer: semicolon" {
   let lexer = @sh.Lexer::new("cmd1 ; cmd2")
-  let tokens = try { lexer.tokenize() } catch { _ => panic() }
-
+  let tokens = lexer.tokenize() catch { _ => panic() }
   assert_eq(tokens[1].kind.to_string(), "Semi")
 }
 
+///|
 test "lexer: comment" {
   let lexer = @sh.Lexer::new("cmd # this is a comment\nother")
-  let tokens = try { lexer.tokenize() } catch { _ => panic() }
-
+  let tokens = lexer.tokenize() catch { _ => panic() }
   assert_eq(tokens[0].get_word(), Some("cmd"))
   assert_eq(tokens[1].kind.to_string(), "Newline")
   assert_eq(tokens[2].get_word(), Some("other"))
 }
 
+///|
 test "parser: simple command" {
-  let cmd = try { @sh.parse("echo hello") } catch { _ => panic() }
-
+  let cmd = @sh.parse("echo hello") catch { _ => panic() }
   match cmd {
     @sh.List(list) =>
       match list.first.commands[0] {
@@ -130,52 +130,47 @@ test "parser: simple command" {
   }
 }
 
+///|
 test "parser: pipeline" {
-  let cmd = try { @sh.parse("cat file | grep pattern | wc -l") } catch { _ => panic() }
-
+  let cmd = @sh.parse("cat file | grep pattern | wc -l") catch { _ => panic() }
   match cmd {
-    @sh.List(list) => {
-      assert_eq(list.first.commands.length(), 3)
-    }
+    @sh.List(list) => assert_eq(list.first.commands.length(), 3)
     _ => panic()
   }
 }
 
+///|
 test "parser: if statement" {
-  let cmd = try { @sh.parse("if true; then echo yes; fi") } catch { _ => panic() }
-
+  let cmd = @sh.parse("if true; then echo yes; fi") catch { _ => panic() }
   match cmd {
     @sh.List(list) =>
       match list.first.commands[0] {
-        @sh.IfCmd(_) => {
+        @sh.IfCmd(_) =>
           // Condition should be "true"
           // Then body should be "echo yes"
-          assert_true(true)  // Just check it parses
-        }
+          assert_true(true) // Just check it parses
         _ => panic()
       }
     _ => panic()
   }
 }
 
+///|
 test "parser: while loop" {
-  let cmd = try { @sh.parse("while true; do echo loop; done") } catch { _ => panic() }
-
+  let cmd = @sh.parse("while true; do echo loop; done") catch { _ => panic() }
   match cmd {
     @sh.List(list) =>
       match list.first.commands[0] {
-        @sh.WhileCmd(while_clause) => {
-          assert_false(while_clause.is_until)
-        }
+        @sh.WhileCmd(while_clause) => assert_false(while_clause.is_until)
         _ => panic()
       }
     _ => panic()
   }
 }
 
+///|
 test "parser: for loop" {
-  let cmd = try { @sh.parse("for i in a b c; do echo $i; done") } catch { _ => panic() }
-
+  let cmd = @sh.parse("for i in a b c; do echo $i; done") catch { _ => panic() }
   match cmd {
     @sh.List(list) =>
       match list.first.commands[0] {
@@ -192,30 +187,34 @@ test "parser: for loop" {
   }
 }
 
+///|
 test "lexer: parentheses" {
   let lexer = @sh.Lexer::new("( echo )")
-  let tokens = try { lexer.tokenize() } catch { _ => panic() }
-
+  let tokens = lexer.tokenize() catch { _ => panic() }
   assert_eq(tokens[0].kind.to_string(), "LParen")
   assert_eq(tokens[1].get_word(), Some("echo"))
   assert_eq(tokens[2].kind.to_string(), "RParen")
 }
 
+///|
 test "parser: subshell" {
   // Skip for now - needs debugging
   assert_true(true)
 }
 
+///|
 test "parser: brace group" {
   // Skip for now
   assert_true(true)
 }
 
+///|
 test "parser: logical and" {
   // Skip for now - ListOp match issue
   assert_true(true)
 }
 
+///|
 test "parser: logical or" {
   // Skip for now - ListOp match issue
   assert_true(true)
@@ -223,6 +222,7 @@ test "parser: logical or" {
 
 // Word parsing tests
 
+///|
 test "word: simple literal" {
   let word = @sh.parse_word_parts("hello")
   assert_eq(word.parts.length(), 1)
@@ -232,6 +232,7 @@ test "word: simple literal" {
   }
 }
 
+///|
 test "word: variable" {
   let word = @sh.parse_word_parts("$HOME")
   assert_eq(word.parts.length(), 1)
@@ -241,6 +242,7 @@ test "word: variable" {
   }
 }
 
+///|
 test "word: braced variable" {
   let word = @sh.parse_word_parts("${PATH}")
   assert_eq(word.parts.length(), 1)
@@ -250,6 +252,7 @@ test "word: braced variable" {
   }
 }
 
+///|
 test "word: special variable $?" {
   let word = @sh.parse_word_parts("$?")
   assert_eq(word.parts.length(), 1)
@@ -259,6 +262,7 @@ test "word: special variable $?" {
   }
 }
 
+///|
 test "word: special variable $$" {
   let word = @sh.parse_word_parts("$$")
   assert_eq(word.parts.length(), 1)
@@ -268,6 +272,7 @@ test "word: special variable $$" {
   }
 }
 
+///|
 test "word: special variable $1" {
   let word = @sh.parse_word_parts("$1")
   assert_eq(word.parts.length(), 1)
@@ -277,6 +282,7 @@ test "word: special variable $1" {
   }
 }
 
+///|
 test "word: mixed literal and variable" {
   let word = @sh.parse_word_parts("prefix$VAR/suffix")
   assert_eq(word.parts.length(), 3)
@@ -294,6 +300,7 @@ test "word: mixed literal and variable" {
   }
 }
 
+///|
 test "word: single quoted" {
   let word = @sh.parse_word_parts("'hello $VAR'")
   assert_eq(word.parts.length(), 1)

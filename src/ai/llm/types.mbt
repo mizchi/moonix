@@ -1,5 +1,6 @@
 ///| LLM Client types for OpenRouter API
 
+///|
 /// Chat message role
 pub enum Role {
   System
@@ -8,50 +9,57 @@ pub enum Role {
   Tool
 }
 
+///|
 /// Chat message
 pub struct Message {
   role : Role
   content : String
-  tool_call_id : String?      // For tool responses
-  tool_calls : Array[ToolCall]?  // For assistant tool calls
+  tool_call_id : String? // For tool responses
+  tool_calls : Array[ToolCall]? // For assistant tool calls
 }
 
+///|
 /// Tool call from assistant
 pub struct ToolCall {
   id : String
-  tool_type : String  // "function"
+  tool_type : String // "function"
   function : FunctionCall
 }
 
+///|
 /// Function call details
 pub struct FunctionCall {
   name : String
-  arguments : String  // JSON string
+  arguments : String // JSON string
 }
 
+///|
 /// Tool definition
 pub struct Tool {
-  tool_type : String  // "function"
+  tool_type : String // "function"
   function : FunctionDef
 }
 
+///|
 /// Function definition
 pub struct FunctionDef {
   name : String
   description : String
-  parameters : Json  // JSON Schema
+  parameters : Json // JSON Schema
 }
 
+///|
 /// Chat completion request
 pub struct ChatRequest {
   model : String
   messages : Array[Message]
   tools : Array[Tool]?
-  tool_choice : String?  // "auto", "none", or specific
+  tool_choice : String? // "auto", "none", or specific
   max_tokens : Int?
   temperature : Double?
 }
 
+///|
 /// Chat completion response
 pub struct ChatResponse {
   id : String
@@ -60,13 +68,15 @@ pub struct ChatResponse {
   usage : Usage?
 }
 
+///|
 /// Response choice
 pub struct Choice {
   index : Int
   message : Message
-  finish_reason : String  // "stop", "tool_calls", "length"
+  finish_reason : String // "stop", "tool_calls", "length"
 }
 
+///|
 /// Token usage
 pub struct Usage {
   prompt_tokens : Int
@@ -74,6 +84,7 @@ pub struct Usage {
   total_tokens : Int
 }
 
+///|
 /// LLM Client error
 pub suberror LlmError {
   HttpError(Int, String)
@@ -83,6 +94,7 @@ pub suberror LlmError {
   InvalidResponse(String)
 }
 
+///|
 /// Convert Role to string
 pub fn Role::to_string(self : Role) -> String {
   match self {
@@ -93,6 +105,7 @@ pub fn Role::to_string(self : Role) -> String {
   }
 }
 
+///|
 /// Parse Role from string
 pub fn Role::from_string(s : String) -> Role? {
   match s {
@@ -104,34 +117,39 @@ pub fn Role::from_string(s : String) -> Role? {
   }
 }
 
+///|
 /// Create a system message
 pub fn Message::system(content : String) -> Message {
   { role: System, content, tool_call_id: None, tool_calls: None }
 }
 
+///|
 /// Create a user message
 pub fn Message::user(content : String) -> Message {
   { role: User, content, tool_call_id: None, tool_calls: None }
 }
 
+///|
 /// Create an assistant message
 pub fn Message::assistant(content : String) -> Message {
   { role: Assistant, content, tool_call_id: None, tool_calls: None }
 }
 
+///|
 /// Create a tool response message
-pub fn Message::tool_response(tool_call_id : String, content : String) -> Message {
+pub fn Message::tool_response(
+  tool_call_id : String,
+  content : String,
+) -> Message {
   { role: Tool, content, tool_call_id: Some(tool_call_id), tool_calls: None }
 }
 
+///|
 /// Create a function tool definition
 pub fn Tool::function(
   name : String,
   description : String,
-  parameters : Json
+  parameters : Json,
 ) -> Tool {
-  {
-    tool_type: "function",
-    function: { name, description, parameters },
-  }
+  { tool_type: "function", function: { name, description, parameters } }
 }

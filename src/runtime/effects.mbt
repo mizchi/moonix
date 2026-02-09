@@ -4,17 +4,18 @@
 // Clock Operations (Non-deterministic, logged)
 // ============================================================================
 
+///|
 /// Read wall clock time (logs effect)
-pub fn AgentRuntime::wall_clock(self : AgentRuntime) -> Int64 raise RuntimeError {
+pub fn AgentRuntime::wall_clock(
+  self : AgentRuntime,
+) -> Int64 raise RuntimeError {
   if not(self.capabilities.can_read_clock()) {
     raise PermissionDenied("clock_read")
   }
-
   let time = self.get_timestamp()
 
   // Log the effect
   let _ = self.effect_log.record_clock(time)
-
   time
 }
 
@@ -22,10 +23,11 @@ pub fn AgentRuntime::wall_clock(self : AgentRuntime) -> Int64 raise RuntimeError
 // Random Operations (Non-deterministic, logged)
 // ============================================================================
 
+///|
 /// Generate random bytes (logs effect)
 pub fn AgentRuntime::random_bytes(
   self : AgentRuntime,
-  len : Int
+  len : Int,
 ) -> Bytes raise RuntimeError {
   if not(self.capabilities.can_read_random()) {
     raise PermissionDenied("random_read")
@@ -42,7 +44,6 @@ pub fn AgentRuntime::random_bytes(
 
   // Log the effect
   let _ = self.effect_log.record_random(bytes)
-
   bytes
 }
 
@@ -50,12 +51,14 @@ pub fn AgentRuntime::random_bytes(
 // HTTP Operations (Irreversible, logged)
 // ============================================================================
 
+///|
 /// HTTP request result
 pub(all) struct HttpResponse {
   status : Int
   body : Bytes
 }
 
+///|
 /// Perform HTTP request (logs effect)
 /// Note: This is a stub that would be implemented by WASI host
 pub fn AgentRuntime::http_request(
@@ -63,19 +66,17 @@ pub fn AgentRuntime::http_request(
   http_method : String,
   url : String,
   body : Bytes?,
-  handler : (String, String, Bytes?) -> HttpResponse
+  handler : (String, String, Bytes?) -> HttpResponse,
 ) -> HttpResponse raise RuntimeError {
   // Extract host from URL for capability check
   let host = extract_host(url)
   if not(self.capabilities.can_connect(host, 443)) {
     raise PermissionDenied("http_connect: " + host)
   }
-
   let start_time = self.get_timestamp()
 
   // Perform the request (via handler)
   let response = handler(http_method, url, body)
-
   let end_time = self.get_timestamp()
   let duration_ns = (end_time - start_time) * 1_000_000L
 
@@ -88,10 +89,10 @@ pub fn AgentRuntime::http_request(
     Some(response.body),
     duration_ns~,
   )
-
   response
 }
 
+///|
 /// Extract host from URL
 fn extract_host(url : String) -> String {
   // Simple URL parsing - extract host
@@ -131,6 +132,7 @@ fn extract_host(url : String) -> String {
 // MCP Operations (Irreversible, logged)
 // ============================================================================
 
+///|
 /// MCP tool call result
 pub(all) struct McpResult {
   success : Bool
@@ -138,28 +140,26 @@ pub(all) struct McpResult {
   error : String?
 }
 
+///|
 /// Call an MCP tool (logs effect)
 pub fn AgentRuntime::mcp_call(
   self : AgentRuntime,
   tool : String,
   input : String?,
-  handler : (String, String?) -> McpResult
+  handler : (String, String?) -> McpResult,
 ) -> McpResult raise RuntimeError {
   if not(self.capabilities.can_call_mcp(tool)) {
     raise PermissionDenied("mcp_call: " + tool)
   }
-
   let start_time = self.get_timestamp()
 
   // Perform the call (via handler)
   let result = handler(tool, input)
-
   let end_time = self.get_timestamp()
   let duration_ns = (end_time - start_time) * 1_000_000L
 
   // Log the effect
   let _ = self.effect_log.record_mcp(tool, input, result.output, duration_ns~)
-
   result
 }
 
@@ -167,6 +167,7 @@ pub fn AgentRuntime::mcp_call(
 // A2A Operations (Irreversible, logged)
 // ============================================================================
 
+///|
 /// A2A task result
 pub(all) struct A2ATaskResult {
   task_id : String
@@ -174,23 +175,22 @@ pub(all) struct A2ATaskResult {
   result : String?
 }
 
+///|
 /// Delegate task to another agent (logs effect)
 pub fn AgentRuntime::a2a_delegate(
   self : AgentRuntime,
   agent : String,
   task_id : String,
   prompt : String,
-  handler : (String, String, String) -> A2ATaskResult
+  handler : (String, String, String) -> A2ATaskResult,
 ) -> A2ATaskResult raise RuntimeError {
   if not(self.capabilities.can_delegate_a2a(agent)) {
     raise PermissionDenied("a2a_delegate: " + agent)
   }
-
   let start_time = self.get_timestamp()
 
   // Perform delegation (via handler)
   let result = handler(agent, task_id, prompt)
-
   let end_time = self.get_timestamp()
   let duration_ns = (end_time - start_time) * 1_000_000L
 
@@ -202,7 +202,6 @@ pub fn AgentRuntime::a2a_delegate(
     Some(prompt),
     duration_ns~,
   )
-
   result
 }
 
@@ -210,6 +209,7 @@ pub fn AgentRuntime::a2a_delegate(
 // Process Operations (Irreversible, logged)
 // ============================================================================
 
+///|
 /// Process execution result
 pub(all) struct ProcessResult {
   exit_code : Int
@@ -217,22 +217,21 @@ pub(all) struct ProcessResult {
   stderr : Bytes
 }
 
+///|
 /// Spawn a process (logs effect)
 pub fn AgentRuntime::spawn_process(
   self : AgentRuntime,
   cmd : String,
   args : Array[String],
-  handler : (String, Array[String]) -> ProcessResult
+  handler : (String, Array[String]) -> ProcessResult,
 ) -> ProcessResult raise RuntimeError {
   if not(self.capabilities.can_spawn(cmd)) {
     raise PermissionDenied("spawn: " + cmd)
   }
-
   let start_time = self.get_timestamp()
 
   // Perform spawn (via handler)
   let result = handler(cmd, args)
-
   let end_time = self.get_timestamp()
   let duration_ns = (end_time - start_time) * 1_000_000L
 
@@ -243,7 +242,6 @@ pub fn AgentRuntime::spawn_process(
     Some(result.exit_code),
     duration_ns~,
   )
-
   result
 }
 
@@ -251,29 +249,40 @@ pub fn AgentRuntime::spawn_process(
 // Effect Log Access
 // ============================================================================
 
+///|
 /// Get all recorded effects
-pub fn AgentRuntime::get_effects(self : AgentRuntime) -> Array[@effect.EffectEntry] {
+pub fn AgentRuntime::get_effects(
+  self : AgentRuntime,
+) -> Array[@effect.EffectEntry] {
   self.effect_log.get_entries()
 }
 
+///|
 /// Get effects after a specific point
 pub fn AgentRuntime::get_effects_after(
   self : AgentRuntime,
-  seq : Int
+  seq : Int,
 ) -> Array[@effect.EffectEntry] {
   self.effect_log.entries_after(seq)
 }
 
+///|
 /// Get HTTP effects only
-pub fn AgentRuntime::get_http_effects(self : AgentRuntime) -> Array[@effect.EffectEntry] {
+pub fn AgentRuntime::get_http_effects(
+  self : AgentRuntime,
+) -> Array[@effect.EffectEntry] {
   self.effect_log.http_effects()
 }
 
+///|
 /// Get MCP effects only
-pub fn AgentRuntime::get_mcp_effects(self : AgentRuntime) -> Array[@effect.EffectEntry] {
+pub fn AgentRuntime::get_mcp_effects(
+  self : AgentRuntime,
+) -> Array[@effect.EffectEntry] {
   self.effect_log.mcp_effects()
 }
 
+///|
 /// Get effect log head position
 pub fn AgentRuntime::get_effect_log_head(self : AgentRuntime) -> Int {
   self.effect_log.head()

@@ -1,5 +1,5 @@
-///| Demo: Side effects and rollback
-
+///|
+/// Demo: Side effects and rollback
 test "Demo: rollback with irreversible effects" {
   let rt = @runtime.AgentRuntime::unrestricted()
 
@@ -16,7 +16,6 @@ test "Demo: rollback with irreversible effects" {
   rt.mkdir_p("/home/agent")
   rt.write_string("/home/agent/config.json", "{\"version\": 1}")
   rt.write_string("/home/agent/data.txt", "original data")
-
   let snap_initial = rt.snapshot("Initial state")
   println("Snapshot created: " + snap_initial.git_snapshot.message)
   println("Files: config.json, data.txt")
@@ -28,7 +27,9 @@ test "Demo: rollback with irreversible effects" {
   // ファイル変更（ロールバック可能 - コミットなしでも復元される）
   rt.write_string("/home/agent/config.json", "{\"version\": 2}")
   rt.write_string("/home/agent/new_file.txt", "created after snapshot")
-  println("File changes: config.json updated, new_file.txt created (uncommitted)")
+  println(
+    "File changes: config.json updated, new_file.txt created (uncommitted)",
+  )
 
   // 外部効果（ロールバック不可）
   // 1. 現在時刻の取得
@@ -52,10 +53,11 @@ test "Demo: rollback with irreversible effects" {
   let mcp_result = rt.mcp_call(
     "slack_post",
     Some("{\"channel\": \"#general\", \"text\": \"Hello!\"}"),
-    fn(_tool, _input) { { success: true, output: Some("message sent"), error: None } },
+    fn(_tool, _input) {
+      { success: true, output: Some("message sent"), error: None }
+    },
   )
   println("Side effect 4: MCP slack_post -> success=\{mcp_result.success}")
-
   println("")
 
   // === Phase 3: 状態確認 ===
@@ -71,10 +73,10 @@ test "Demo: rollback with irreversible effects" {
   // === Phase 4: ロールバック ===
   println("=== Phase 4: Rollback to initial state ===")
   let rollback_result = rt.rollback(snap_initial)
-
   println("Filesystem restored: \{rollback_result.restored_fs}")
-  println("Irreversible effects count: \{rollback_result.irreversible_effects.length()}")
-
+  println(
+    "Irreversible effects count: \{rollback_result.irreversible_effects.length()}",
+  )
   match rollback_result.warning {
     Some(w) => println("Warning: \{w}")
     None => println("No warning")
@@ -95,7 +97,8 @@ test "Demo: rollback with irreversible effects" {
     let kind_str = match effect.kind {
       @effect.WallClockRead(t) => "WallClockRead(\{t})"
       @effect.RandomGenerate(b) => "RandomGenerate(\{b.length()} bytes)"
-      @effect.HttpRequest(data) => "HttpRequest(\{data.http_method} \{data.url})"
+      @effect.HttpRequest(data) =>
+        "HttpRequest(\{data.http_method} \{data.url})"
       @effect.McpToolCall(data) => "McpToolCall(\{data.tool})"
       _ => "Other"
     }
@@ -110,6 +113,7 @@ test "Demo: rollback with irreversible effects" {
   assert_false(rt.exists("/home/agent/new_file.txt"))
 }
 
+///|
 test "Rollback: comprehensive file operations" {
   let rt = @runtime.AgentRuntime::unrestricted()
   rt.set_timestamp_provider(fn() { 1000L })
@@ -119,9 +123,10 @@ test "Rollback: comprehensive file operations" {
   rt.mkdir_p("/project")
   rt.write_string("/project/readme.md", "# Project")
   rt.write_string("/project/config.json", "{\"v\": 1}")
-
   let snap = rt.snapshot("Initial")
-  println("Snapshot: Initial state with /project/readme.md, /project/config.json")
+  println(
+    "Snapshot: Initial state with /project/readme.md, /project/config.json",
+  )
 
   // === Various File Operations ===
   println("")
@@ -182,7 +187,10 @@ test "Rollback: comprehensive file operations" {
   assert_true(rt.exists("/project/src/main.mbt"))
   assert_true(rt.exists("/project/src/lib/helper.mbt"))
   assert_true(rt.exists("/project/src/lib/utils/string.mbt"))
-  assert_eq(rt.read_string("/project/config.json"), "{\"v\": 4, \"updated\": true}")
+  assert_eq(
+    rt.read_string("/project/config.json"),
+    "{\"v\": 4, \"updated\": true}",
+  )
   assert_false(rt.exists("/project/readme.md"))
   assert_false(rt.exists("/project/temp"))
   assert_true(rt.exists("/project/data.bin"))
@@ -243,12 +251,16 @@ test "Rollback: comprehensive file operations" {
   // Note: Empty directories may remain after rollback (git behavior)
   // The important thing is that FILE contents are correctly restored
   assert_true(file_count >= 2) // At least readme.md and config.json
-  println("9. /project/ has " + file_count.to_string() + " entries (files restored, empty dirs may remain)")
-
+  println(
+    "9. /project/ has " +
+    file_count.to_string() +
+    " entries (files restored, empty dirs may remain)",
+  )
   println("")
   println("=== All rollback tests passed! ===")
 }
 
+///|
 test "Rollback: multiple snapshots and selective rollback" {
   let rt = @runtime.AgentRuntime::unrestricted()
   rt.set_timestamp_provider(fn() { 1000L })
@@ -272,7 +284,6 @@ test "Rollback: multiple snapshots and selective rollback" {
   rt.write_string("/data/counter.txt", "3")
   rt.write_string("/data/log.txt", "step1\nstep2\nstep3")
   let _ = rt.snapshot("counter=3")
-
   println("=== Created 4 snapshots (counter 0->1->2->3) ===")
 
   // Verify current state
@@ -302,11 +313,11 @@ test "Rollback: multiple snapshots and selective rollback" {
   assert_eq(rt.read_string("/data/counter.txt"), "0")
   assert_false(rt.exists("/data/log.txt")) // log.txt didn't exist at snap0
   println("Counter: 0, Log file deleted (correct)")
-
   println("")
   println("=== Selective rollback tests passed! ===")
 }
 
+///|
 test "Rollback: directory operations" {
   let rt = @runtime.AgentRuntime::unrestricted()
   rt.set_timestamp_provider(fn() { 1000L })
@@ -324,9 +335,11 @@ test "Rollback: directory operations" {
   rt.write_string("/workspace/a/b/c/file3.txt", "in a/b/c")
   rt.write_string("/workspace/x/file4.txt", "in x")
   let _ = rt.snapshot("with structure")
-
   println("=== Created nested structure ===")
-  println("/workspace/a/b/c/file3.txt exists: " + rt.exists("/workspace/a/b/c/file3.txt").to_string())
+  println(
+    "/workspace/a/b/c/file3.txt exists: " +
+    rt.exists("/workspace/a/b/c/file3.txt").to_string(),
+  )
 
   // Verify structure exists
   assert_true(rt.exists("/workspace/a/file1.txt"))
@@ -351,11 +364,11 @@ test "Rollback: directory operations" {
   assert_true(rt.exists("/workspace/root.txt"))
   assert_eq(rt.read_string("/workspace/root.txt"), "root file")
   println("/workspace/root.txt restored: correct")
-
   println("")
   println("=== Directory rollback tests passed! ===")
 }
 
+///|
 test "Rollback: uncommitted changes are reverted" {
   let rt = @runtime.AgentRuntime::unrestricted()
   rt.set_timestamp_provider(fn() { 1000L })
@@ -364,17 +377,15 @@ test "Rollback: uncommitted changes are reverted" {
   rt.mkdir_p("/work")
   rt.write_string("/work/original.txt", "original content")
   let snap = rt.snapshot("initial")
-
   println("=== Initial state committed ===")
   assert_eq(rt.read_string("/work/original.txt"), "original content")
 
   // Make uncommitted changes (NO snapshot after these!)
   rt.write_string("/work/original.txt", "modified content") // Modify existing
-  rt.write_string("/work/new1.txt", "new file 1")           // Create new file
-  rt.write_string("/work/new2.txt", "new file 2")           // Create another
+  rt.write_string("/work/new1.txt", "new file 1") // Create new file
+  rt.write_string("/work/new2.txt", "new file 2") // Create another
   rt.mkdir_p("/work/newdir")
   rt.write_string("/work/newdir/nested.txt", "nested file") // Nested new file
-
   println("=== Uncommitted changes made ===")
   assert_eq(rt.read_string("/work/original.txt"), "modified content")
   assert_true(rt.exists("/work/new1.txt"))
@@ -395,15 +406,14 @@ test "Rollback: uncommitted changes are reverted" {
   assert_false(rt.exists("/work/new2.txt"))
   assert_false(rt.exists("/work/newdir/nested.txt"))
   println("new1.txt, new2.txt, nested.txt: all deleted (correct)")
-
   println("")
   println("=== Uncommitted changes rollback passed! ===")
 }
 
+///|
 test "Rollback: file content preservation" {
   let rt = @runtime.AgentRuntime::unrestricted()
   rt.set_timestamp_provider(fn() { 1000L })
-
   rt.mkdir_p("/test")
 
   // Test various content types
@@ -411,12 +421,10 @@ test "Rollback: file content preservation" {
   let json_content = "{\"key\": \"value\", \"nested\": {\"arr\": [1, 2, 3]}}"
   let special_content = "Special chars: <>&\"' \t\n\r end"
   let binary_content = b"\x00\x01\x02\x03\x04\x05"
-
   rt.write_string("/test/text.txt", text_content)
   rt.write_string("/test/data.json", json_content)
   rt.write_string("/test/special.txt", special_content)
   rt.write_file("/test/binary.dat", binary_content)
-
   let snap = rt.snapshot("with content")
 
   // Corrupt all files
@@ -425,7 +433,6 @@ test "Rollback: file content preservation" {
   rt.write_string("/test/special.txt", "CORRUPTED")
   rt.write_file("/test/binary.dat", b"CORRUPTED")
   let _ = rt.snapshot("corrupted")
-
   println("=== Files corrupted ===")
   assert_eq(rt.read_string("/test/text.txt"), "CORRUPTED")
 
@@ -438,16 +445,15 @@ test "Rollback: file content preservation" {
   assert_eq(rt.read_string("/test/data.json"), json_content)
   assert_eq(rt.read_string("/test/special.txt"), special_content)
   assert_eq(rt.read_file("/test/binary.dat"), binary_content)
-
   println("text.txt: restored (correct)")
   println("data.json: restored (correct)")
   println("special.txt: restored (correct)")
   println("binary.dat: restored (correct)")
-
   println("")
   println("=== Content preservation tests passed! ===")
 }
 
+///|
 test "Fork: branch from any snapshot" {
   let rt = @runtime.AgentRuntime::unrestricted()
   rt.set_timestamp_provider(fn() { 1000L })
@@ -523,17 +529,13 @@ test "Fork: branch from any snapshot" {
   println("At v3.0: Features A and B")
 
   // List branches (may throw if refs/heads doesn't exist)
-  let branches = try {
-    rt.list_branches()
-  } catch {
-    _ => []
-  }
+  let branches = rt.list_branches() catch { _ => [] }
   println("Branches: " + branches.length().to_string())
-
   println("")
   println("=== Fork test passed! ===")
 }
 
+///|
 test "Fork: fork_here creates branch at current state" {
   let rt = @runtime.AgentRuntime::unrestricted()
   rt.set_timestamp_provider(fn() { 1000L })
@@ -575,11 +577,11 @@ test "Fork: fork_here creates branch at current state" {
   assert_true(rt.exists("/work/new.txt"))
   assert_false(rt.exists("/work/feature.txt"))
   println("Rolled back to fork point correctly")
-
   println("")
   println("=== fork_here test passed! ===")
 }
 
+///|
 test "Fork: parallel exploration" {
   let rt = @runtime.AgentRuntime::unrestricted()
   rt.set_timestamp_provider(fn() { 1000L })
@@ -600,7 +602,6 @@ test "Fork: parallel exploration" {
   println("")
   println("=== Fork from base to explore approach B ===")
   rt.fork(base_snap, "approach-b")
-
   rt.write_string("/project/config.json", "{\"approach\": \"B\"}")
   rt.write_string("/project/approach_b.txt", "Implementation B")
   let snap_b = rt.snapshot("approach B")
@@ -616,7 +617,6 @@ test "Fork: parallel exploration" {
   println("")
   println("=== Rollback to approach A ===")
   let _ = rt.rollback(snap_a)
-
   let config_a = rt.read_string("/project/config.json")
   assert_true(config_a.contains("A"))
   assert_true(rt.exists("/project/approach_a.txt"))
@@ -627,21 +627,19 @@ test "Fork: parallel exploration" {
   println("")
   println("=== Rollback to approach B ===")
   let _ = rt.rollback(snap_b)
-
   let config_b2 = rt.read_string("/project/config.json")
   assert_true(config_b2.contains("B"))
   assert_true(rt.exists("/project/approach_b.txt"))
   assert_false(rt.exists("/project/approach_a.txt"))
   println("Back to approach B")
-
   println("")
   println("=== Parallel exploration test passed! ===")
 }
 
+///|
 test "Demo: sandbox capability restrictions" {
   let rt = @runtime.AgentRuntime::sandbox()
   rt.set_timestamp_provider(fn() { 1000L })
-
   println("=== Sandbox mode demo ===")
 
   // /tmp への書き込みは許可
@@ -660,7 +658,6 @@ test "Demo: sandbox capability restrictions" {
     }
     _ => Err("other error")
   }
-
   assert_true(result is Err(_))
   println("")
 
@@ -681,21 +678,20 @@ test "Demo: sandbox capability restrictions" {
     }
     _ => Err("other error")
   }
-
   assert_true(mcp_result is Err(_))
 }
 
+///|
 test "Demo: agent mode with specific capabilities" {
   // 特定の MCP ツールとホストのみ許可するエージェント
   let config = @runtime.RuntimeConfig::agent(
     "demo-agent",
-    ["file_read", "web_search"],  // 許可する MCP ツール
-    ["helper-agent"],              // 許可する A2A エージェント
-    ["api.openai.com", "api.anthropic.com"],  // 許可するホスト
+    ["file_read", "web_search"], // 許可する MCP ツール
+    ["helper-agent"], // 許可する A2A エージェント
+    ["api.openai.com", "api.anthropic.com"], // 許可するホスト
   )
   let rt = @runtime.AgentRuntime::new(config)
   rt.set_timestamp_provider(fn() { 1000L })
-
   println("=== Agent mode with specific capabilities ===")
 
   // 許可されたツール
@@ -721,7 +717,11 @@ test "Demo: agent mode with specific capabilities" {
   assert_true(result2 is Err(_))
 
   // 許可されたホストへの HTTP
-  let http1 = rt.http_request("GET", "https://api.openai.com/v1/models", None, fn(_, _, _) {
+  let http1 = rt.http_request("GET", "https://api.openai.com/v1/models", None, fn(
+    _,
+    _,
+    _,
+  ) {
     { status: 200, body: b"[]" }
   })
   println("api.openai.com: status=" + http1.status.to_string())

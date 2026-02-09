@@ -1,5 +1,6 @@
 ///| Agent implementation - autonomous goal-oriented execution
 
+///|
 /// Agent error
 pub suberror AgentError {
   AgentRuntimeError(String)
@@ -8,6 +9,7 @@ pub suberror AgentError {
   BranchError(String)
 }
 
+///|
 /// Convert runtime error to string
 fn runtime_error_to_string(e : @runtime.RuntimeError) -> String {
   match e {
@@ -18,6 +20,7 @@ fn runtime_error_to_string(e : @runtime.RuntimeError) -> String {
   }
 }
 
+///|
 /// Convert LLM error to string
 fn llm_error_to_string(e : @llm.LlmError) -> String {
   match e {
@@ -29,6 +32,7 @@ fn llm_error_to_string(e : @llm.LlmError) -> String {
   }
 }
 
+///|
 /// Autonomous agent
 pub struct Agent {
   /// Runtime environment
@@ -49,13 +53,14 @@ pub struct Agent {
   mut total_tokens : Int
 }
 
+///|
 /// Create a new agent
 pub fn Agent::new(
   runtime : @runtime.AgentRuntime,
   llm : @llm.OpenRouterClient,
   llm_handler : @llm.LlmHttpHandler,
   goal : CompositeGoal,
-  config~ : AgentConfig = AgentConfig::default()
+  config? : AgentConfig = AgentConfig::default(),
 ) -> Agent {
   {
     runtime,
@@ -69,6 +74,7 @@ pub fn Agent::new(
   }
 }
 
+///|
 /// Run the agent until goal is achieved or timeout
 pub fn Agent::run(self : Agent) -> AgentResult raise AgentError {
   // Create initial checkpoint
@@ -99,7 +105,7 @@ pub fn Agent::run(self : Agent) -> AgentResult raise AgentError {
 
     // Execute action
     match thought.action {
-      Done(result) => {
+      Done(result) =>
         // Agent claims goal is achieved
         if self.goal.is_achieved(self.runtime) {
           return {
@@ -113,8 +119,7 @@ pub fn Agent::run(self : Agent) -> AgentResult raise AgentError {
           // Goal not actually achieved, continue
           continue
         }
-      }
-      Fail(reason) => {
+      Fail(reason) =>
         return {
           status: Failed(reason),
           final_state: self.state,
@@ -122,13 +127,8 @@ pub fn Agent::run(self : Agent) -> AgentResult raise AgentError {
           total_steps: self.state.step,
           total_tokens: self.total_tokens,
         }
-      }
-      Fork(branch~, approach~) => {
-        self.create_branch(branch, approach)
-      }
-      action => {
-        self.execute_action(action)
-      }
+      Fork(branch~, approach~) => self.create_branch(branch, approach)
+      action => self.execute_action(action)
     }
   }
 
@@ -142,6 +142,7 @@ pub fn Agent::run(self : Agent) -> AgentResult raise AgentError {
   }
 }
 
+///|
 /// Think about next action
 fn Agent::think(self : Agent) -> Thought raise AgentError {
   // Build observation
@@ -152,7 +153,10 @@ fn Agent::think(self : Agent) -> Thought raise AgentError {
   messages.push(@llm.Message::system(self.config.system_prompt))
 
   // Add goal description
-  let goal_msg = "GOAL: " + self.goal.description() + "\n\nCurrent step: " + self.state.step.to_string()
+  let goal_msg = "GOAL: " +
+    self.goal.description() +
+    "\n\nCurrent step: " +
+    self.state.step.to_string()
   messages.push(@llm.Message::user(goal_msg))
 
   // Add history (last few thoughts)
@@ -163,12 +167,23 @@ fn Agent::think(self : Agent) -> Thought raise AgentError {
   }
   for i = history_start; i < self.state.history.length(); i = i + 1 {
     let t = self.state.history[i]
-    let thought_msg = "Step " + i.to_string() + ":\nObservation: " + t.observation + "\nReasoning: " + t.reasoning
+    let thought_msg = "Step " +
+      i.to_string() +
+      ":\nObservation: " +
+      t.observation +
+      "\nReasoning: " +
+      t.reasoning
     messages.push(@llm.Message::assistant(thought_msg))
   }
 
   // Add current observation
-  messages.push(@llm.Message::user("Current observation:\n" + observation + "\n\nWhat action should you take next?"))
+  messages.push(
+    @llm.Message::user(
+      "Current observation:\n" +
+      observation +
+      "\n\nWhat action should you take next?",
+    ),
+  )
 
   // Call LLM
   let response = self.llm.chat(
@@ -190,7 +205,6 @@ fn Agent::think(self : Agent) -> Thought raise AgentError {
   if response.choices.length() == 0 {
     raise AgentLlmError("No response from LLM")
   }
-
   let choice = response.choices[0]
   let msg = choice.message
 
@@ -199,14 +213,9 @@ fn Agent::think(self : Agent) -> Thought raise AgentError {
     Some(calls) if calls.length() > 0 => {
       let call = calls[0]
       let action = parse_tool_call(call)
-      {
-        observation,
-        reasoning: msg.content,
-        action,
-        confidence: 0.8,
-      }
+      { observation, reasoning: msg.content, action, confidence: 0.8 }
     }
-    _ => {
+    _ =>
       // No tool call, parse from content
       {
         observation,
@@ -214,24 +223,24 @@ fn Agent::think(self : Agent) -> Thought raise AgentError {
         action: Done("Completed based on reasoning"),
         confidence: 0.5,
       }
-    }
   }
 }
 
+///|
 /// Get empty JSON object
 fn empty_json() -> Json {
   // "{}" is always valid JSON, so this will never fail
-  try { @json.parse("{}") } catch { _ => abort("impossible: {} is valid JSON") }
+  @json.parse("{}") catch {
+    _ => abort("impossible: {} is valid JSON")
+  }
 }
 
+///|
 /// Parse tool call into action
 fn parse_tool_call(call : @llm.ToolCall) -> AgentAction {
-  let args : Json = try {
-    @json.parse(call.function.arguments)
-  } catch {
+  let args : Json = @json.parse(call.function.arguments) catch {
     _ => empty_json()
   }
-
   match call.function.name {
     "exec" => {
       let cmd = get_json_string(args, "value")
@@ -275,19 +284,20 @@ fn parse_tool_call(call : @llm.ToolCall) -> AgentAction {
   }
 }
 
+///|
 /// Get string from JSON object
 fn get_json_string(json : Json, key : String) -> String {
   match json {
-    Object(obj) => {
+    Object(obj) =>
       match obj.get(key) {
         Some(String(s)) => s
         _ => ""
       }
-    }
     _ => ""
   }
 }
 
+///|
 /// Build current observation
 fn Agent::build_observation(self : Agent) -> String {
   let buf = StringBuilder::new()
@@ -298,11 +308,7 @@ fn Agent::build_observation(self : Agent) -> String {
   buf.write_string("\n")
 
   // List files in current directory
-  let files = try {
-    self.runtime.readdir(self.runtime.getcwd())
-  } catch {
-    _ => []
-  }
+  let files = self.runtime.readdir(self.runtime.getcwd()) catch { _ => [] }
   buf.write_string("Files: ")
   for i, f in files {
     if i > 0 {
@@ -326,18 +332,20 @@ fn Agent::build_observation(self : Agent) -> String {
     }
     None => ()
   }
-
   buf.to_string()
 }
 
+///|
 /// Execute an action
-fn Agent::execute_action(self : Agent, action : AgentAction) -> Unit raise AgentError {
+fn Agent::execute_action(
+  self : Agent,
+  action : AgentAction,
+) -> Unit raise AgentError {
   match action {
-    Exec(cmd) => {
+    Exec(cmd) =>
       // Note: In WASM environment, exec is not directly available
       // This would need to be handled by the host
       ()
-    }
     WriteFile(path~, content~) => {
       // Ensure parent directory exists
       let parts = path.split("/").collect()
@@ -346,9 +354,15 @@ fn Agent::execute_action(self : Agent, action : AgentAction) -> Unit raise Agent
         for i = 0; i < parts.length() - 1; i = i + 1 {
           dir_parts.push(parts[i].to_string())
         }
-        let dir = dir_parts.iter().fold(init="", fn(acc, s) {
-          if acc == "" { s } else { acc + "/" + s }
-        })
+        let dir = dir_parts
+          .iter()
+          .fold(init="", fn(acc, s) {
+            if acc == "" {
+              s
+            } else {
+              acc + "/" + s
+            }
+          })
         if dir != "" {
           self.runtime.mkdir_p(dir) catch {
             e => raise AgentRuntimeError(runtime_error_to_string(e))
@@ -366,43 +380,39 @@ fn Agent::execute_action(self : Agent, action : AgentAction) -> Unit raise Agent
       }
 
     }
-    Mkdir(path) => {
+    Mkdir(path) =>
       self.runtime.mkdir_p(path) catch {
         e => raise AgentRuntimeError(runtime_error_to_string(e))
       }
-    }
-    Remove(path) => {
+    Remove(path) =>
       self.runtime.rm_rf(path) catch {
         e => raise AgentRuntimeError(runtime_error_to_string(e))
       }
-    }
     Checkpoint(msg) => {
       let snap = self.runtime.snapshot(msg) catch {
         e => raise AgentRuntimeError(runtime_error_to_string(e))
       }
       self.state.checkpoint = Some(snap)
     }
-    Fork(branch~, approach~) => {
-      self.create_branch(branch, approach)
-    }
+    Fork(branch~, approach~) => self.create_branch(branch, approach)
     ToolCall(name~, args~) => {
       // External tool call - would be handled by MCP in a full implementation
       let _ = name
       let _ = args
       ()
     }
-    Done(_) | Fail(_) => {
+    Done(_) | Fail(_) =>
       // Handled in main loop
       ()
-    }
   }
 }
 
+///|
 /// Create a new exploration branch
 fn Agent::create_branch(
   self : Agent,
   name : String,
-  approach : String
+  approach : String,
 ) -> Unit raise AgentError {
   if self.branches.length() >= self.config.max_branches {
     // Too many branches, abandon oldest non-successful one
@@ -458,10 +468,11 @@ fn Agent::create_branch(
   self.state.branch = Some(name)
 }
 
+///|
 /// Run agent in parallel exploration mode
 pub fn Agent::run_parallel(
   self : Agent,
-  approaches : Array[String]
+  approaches : Array[String],
 ) -> AgentResult raise AgentError {
   // Create initial checkpoint
   let initial_snap = self.runtime.snapshot("parallel_start") catch {
@@ -494,7 +505,6 @@ pub fn Agent::run_parallel(
   while true {
     let mut all_done = true
     let mut any_running = false
-
     for i = 0; i < self.branches.length(); i = i + 1 {
       match self.branches[i].status {
         Running => {
@@ -522,15 +532,13 @@ pub fn Agent::run_parallel(
                 total_tokens: self.total_tokens,
               }
             }
-            Failed(reason) => {
-              self.branches[i].status = Failed(reason)
-            }
-            Timeout => {
-              self.branches[i].status = Failed("Timeout")
-            }
+            Failed(reason) => self.branches[i].status = Failed(reason)
+            Timeout => self.branches[i].status = Failed("Timeout")
             InProgress => {
               // Save state back
-              let snap = self.runtime.snapshot("step_" + self.branches[i].state.step.to_string()) catch {
+              let snap = self.runtime.snapshot(
+                "step_" + self.branches[i].state.step.to_string(),
+              ) catch {
                 _ => self.branches[i].snapshot
               }
               self.branches[i].snapshot = snap
@@ -540,7 +548,6 @@ pub fn Agent::run_parallel(
         _ => ()
       }
     }
-
     if not(any_running) || all_done {
       break
     }
@@ -556,8 +563,12 @@ pub fn Agent::run_parallel(
   }
 }
 
+///|
 /// Run one step for a branch
-fn Agent::run_one_step(self : Agent, branch_idx : Int) -> GoalStatus raise AgentError {
+fn Agent::run_one_step(
+  self : Agent,
+  branch_idx : Int,
+) -> GoalStatus raise AgentError {
   let branch = self.branches[branch_idx]
 
   // Check step limit
@@ -576,18 +587,18 @@ fn Agent::run_one_step(self : Agent, branch_idx : Int) -> GoalStatus raise Agent
 
   // Update branch state
   self.branches[branch_idx].state.history.push(thought)
-  self.branches[branch_idx].state.step = self.branches[branch_idx].state.step + 1
+  self.branches[branch_idx].state.step = self.branches[branch_idx].state.step +
+    1
   self.state.step = self.state.step + 1
 
   // Execute
   match thought.action {
-    Done(_) => {
+    Done(_) =>
       if self.goal.is_achieved(self.runtime) {
         Achieved
       } else {
         InProgress
       }
-    }
     Fail(reason) => Failed(reason)
     action => {
       self.execute_action(action)

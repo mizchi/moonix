@@ -1,10 +1,12 @@
 ///| OpenRouter LLM Client - handler-based for WASI integration
 
+///|
 /// HTTP handler type
 pub struct LlmHttpHandler {
   handler : (String, String, Bytes?) -> (Int, Bytes)
 }
 
+///|
 /// OpenRouter client configuration
 pub struct OpenRouterConfig {
   api_key : String
@@ -12,11 +14,13 @@ pub struct OpenRouterConfig {
   default_model : String
 }
 
+///|
 /// OpenRouter client
 pub struct OpenRouterClient {
   config : OpenRouterConfig
 }
 
+///|
 /// Create default config
 pub fn OpenRouterConfig::default(api_key : String) -> OpenRouterConfig {
   {
@@ -26,11 +30,13 @@ pub fn OpenRouterConfig::default(api_key : String) -> OpenRouterConfig {
   }
 }
 
+///|
 /// Create new client
 pub fn OpenRouterClient::new(config : OpenRouterConfig) -> OpenRouterClient {
-  { config }
+  { config, }
 }
 
+///|
 /// Convert Bytes to String
 fn bytes_to_string(b : Bytes) -> String {
   let buf = StringBuilder::new()
@@ -40,6 +46,7 @@ fn bytes_to_string(b : Bytes) -> String {
   buf.to_string()
 }
 
+///|
 /// Escape string for JSON
 fn escape_json_string(s : String) -> String {
   let buf = StringBuilder::new()
@@ -56,11 +63,13 @@ fn escape_json_string(s : String) -> String {
   buf.to_string()
 }
 
+///|
 /// Build JSON string value
 fn json_string(s : String) -> String {
   "\"" + escape_json_string(s) + "\""
 }
 
+///|
 /// Encode chat request to JSON bytes
 fn encode_request(req : ChatRequest, api_key : String) -> (Bytes, String) {
   let buf = StringBuilder::new()
@@ -68,7 +77,6 @@ fn encode_request(req : ChatRequest, api_key : String) -> (Bytes, String) {
   buf.write_string("\"model\":")
   buf.write_string(json_string(req.model))
   buf.write_string(",\"messages\":[")
-
   for i, msg in req.messages {
     if i > 0 {
       buf.write_string(",")
@@ -154,22 +162,16 @@ fn encode_request(req : ChatRequest, api_key : String) -> (Bytes, String) {
     }
     None => ()
   }
-
   buf.write_string("}")
-
   let auth = "Bearer " + api_key
   (buf.to_string().to_bytes(), auth)
 }
 
+///|
 /// Decode chat response from JSON
 fn decode_response(data : Bytes) -> ChatResponse raise LlmError {
   let text = bytes_to_string(data)
-  let json = try {
-    @json.parse(text)
-  } catch {
-    e => raise ParseError(e.to_string())
-  }
-
+  let json = @json.parse(text) catch { e => raise ParseError(e.to_string()) }
   match json {
     Object(obj) => {
       // Check for error
@@ -183,7 +185,6 @@ fn decode_response(data : Bytes) -> ChatResponse raise LlmError {
         }
         _ => ()
       }
-
       let id = match obj.get("id") {
         Some(String(s)) => s
         _ => ""
@@ -192,10 +193,9 @@ fn decode_response(data : Bytes) -> ChatResponse raise LlmError {
         Some(String(s)) => s
         _ => ""
       }
-
       let choices : Array[Choice] = []
       match obj.get("choices") {
-        Some(Array(arr)) => {
+        Some(Array(arr)) =>
           for item in arr {
             match item {
               Object(c) => {
@@ -216,10 +216,8 @@ fn decode_response(data : Bytes) -> ChatResponse raise LlmError {
               _ => ()
             }
           }
-        }
         _ => ()
       }
-
       let usage : Usage? = match obj.get("usage") {
         Some(Object(u)) => {
           let prompt = match u.get("prompt_tokens") {
@@ -238,13 +236,13 @@ fn decode_response(data : Bytes) -> ChatResponse raise LlmError {
         }
         _ => None
       }
-
       { id, model, choices, usage }
     }
     _ => raise InvalidResponse("expected object")
   }
 }
 
+///|
 /// Parse message from JSON object
 fn parse_message(obj : Map[String, Json]) -> Message {
   let role = match obj.get("role") {
@@ -260,7 +258,6 @@ fn parse_message(obj : Map[String, Json]) -> Message {
     Some(String(s)) => Some(s)
     _ => None
   }
-
   let tool_calls : Array[ToolCall]? = match obj.get("tool_calls") {
     Some(Array(arr)) => {
       let calls : Array[ToolCall] = []
@@ -294,56 +291,62 @@ fn parse_message(obj : Map[String, Json]) -> Message {
           _ => ()
         }
       }
-      if calls.length() > 0 { Some(calls) } else { None }
+      if calls.length() > 0 {
+        Some(calls)
+      } else {
+        None
+      }
     }
     _ => None
   }
-
   { role, content, tool_call_id, tool_calls }
 }
 
+///|
 /// Send chat completion request
 pub fn OpenRouterClient::chat(
   self : OpenRouterClient,
   messages : Array[Message],
   handler : LlmHttpHandler,
-  tools~ : Array[Tool]? = None,
-  model~ : String? = None,
-  max_tokens~ : Int? = None,
-  temperature~ : Double? = None
+  tools? : Array[Tool]? = None,
+  model? : String? = None,
+  max_tokens? : Int? = None,
+  temperature? : Double? = None,
 ) -> ChatResponse raise LlmError {
   let req : ChatRequest = {
     model: model.or(self.config.default_model),
     messages,
     tools,
-    tool_choice: if tools is Some(_) { Some("auto") } else { None },
+    tool_choice: if tools is Some(_) {
+      Some("auto")
+    } else {
+      None
+    },
     max_tokens,
     temperature,
   }
-
   let url = self.config.base_url + "/chat/completions"
   let (body, _auth) = encode_request(req, self.config.api_key)
 
   // Note: The handler should add Authorization header
   let (status, response_body) = (handler.handler)("POST", url, Some(body))
-
   if status == 429 {
     raise RateLimited
   }
   if status < 200 || status >= 300 {
     raise HttpError(status, bytes_to_string(response_body))
   }
-
   decode_response(response_body)
 }
 
+///|
 /// Simple chat without tools
 pub fn OpenRouterClient::simple_chat(
   self : OpenRouterClient,
   prompt : String,
   handler : LlmHttpHandler,
-  system~ : String? = None,
-  model~ : String? = None
+  system? : String? = None,
+  model? : String? = None,
 ) -> String raise LlmError {
   let messages : Array[Message] = []
   match system {
@@ -351,9 +354,7 @@ pub fn OpenRouterClient::simple_chat(
     None => ()
   }
   messages.push(Message::user(prompt))
-
   let response = self.chat(messages, handler, model~)
-
   if response.choices.length() == 0 {
     raise InvalidResponse("no choices")
   }

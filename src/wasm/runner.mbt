@@ -1,5 +1,6 @@
 ///| WASM Runner trait - implemented by host environment
 
+///|
 /// Context for WASM execution
 pub struct WasmExecContext {
   /// Input bytes (stdin or function input)
@@ -12,16 +13,18 @@ pub struct WasmExecContext {
   cwd : String
 }
 
+///|
 /// Create execution context
 pub fn WasmExecContext::new(
   stdin : Bytes,
   args : Array[String],
   env : Array[(String, String)],
-  cwd : String
+  cwd : String,
 ) -> WasmExecContext {
   { stdin, args, env, cwd }
 }
 
+///|
 /// WASM Runner trait
 /// Host environment (browser, Deno, etc.) implements this
 pub(open) trait WasmRunner {
@@ -32,16 +35,19 @@ pub(open) trait WasmRunner {
   run(Self, wasm_bytes : Bytes, ctx : WasmExecContext) -> WasmExecResult raise WasmError
 }
 
+///|
 /// Stub runner that always returns an error
 /// Used when no WASM runtime is available
 pub struct StubWasmRunner {
   _placeholder : Int
 }
 
+///|
 pub fn StubWasmRunner::new() -> StubWasmRunner {
   { _placeholder: 0 }
 }
 
+///|
 pub impl WasmRunner for StubWasmRunner with run(_self, _wasm_bytes, _ctx) {
   raise WasmError::Unsupported("No WASM runtime available")
 }

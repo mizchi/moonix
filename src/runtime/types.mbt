@@ -1,5 +1,6 @@
 ///| Agent Runtime - integrates GitBackedFs, EffectLog, and Capability control
 
+///|
 /// Error type for runtime operations
 pub suberror RuntimeError {
   PermissionDenied(String)
@@ -8,6 +9,7 @@ pub suberror RuntimeError {
   ValidationError(String)
 }
 
+///|
 /// Snapshot state for rollback
 pub struct RuntimeSnapshot {
   /// Git commit ID
@@ -20,6 +22,7 @@ pub struct RuntimeSnapshot {
   cwd : String
 }
 
+///|
 /// Rollback result
 pub struct RollbackResult {
   /// Whether filesystem was restored
@@ -30,6 +33,7 @@ pub struct RollbackResult {
   warning : String?
 }
 
+///|
 /// Agent runtime configuration
 pub struct RuntimeConfig {
   /// Author name for git commits
@@ -38,14 +42,13 @@ pub struct RuntimeConfig {
   capabilities : @capability.CapabilitySet
 }
 
+///|
 /// Default configuration
 pub fn RuntimeConfig::default() -> RuntimeConfig {
-  {
-    author: "moonix-agent",
-    capabilities: @capability.CapabilitySet::sandbox(),
-  }
+  { author: "moonix-agent", capabilities: @capability.CapabilitySet::sandbox() }
 }
 
+///|
 /// Developer configuration (more permissive)
 pub fn RuntimeConfig::developer() -> RuntimeConfig {
   {
@@ -54,19 +57,23 @@ pub fn RuntimeConfig::developer() -> RuntimeConfig {
   }
 }
 
+///|
 /// Agent configuration with specific permissions
 pub fn RuntimeConfig::agent(
   author : String,
   mcp_tools : Array[String],
   a2a_agents : Array[String],
-  allowed_hosts : Array[String]
+  allowed_hosts : Array[String],
 ) -> RuntimeConfig {
   {
     author,
-    capabilities: @capability.CapabilitySet::agent(mcp_tools, a2a_agents, allowed_hosts),
+    capabilities: @capability.CapabilitySet::agent(
+      mcp_tools, a2a_agents, allowed_hosts,
+    ),
   }
 }
 
+///|
 /// Unrestricted configuration (for testing only)
 pub fn RuntimeConfig::unrestricted() -> RuntimeConfig {
   {

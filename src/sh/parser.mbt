@@ -1,14 +1,16 @@
-///| Shell parser - parses tokens into AST
-
+///|
+/// Shell parser - parses tokens into AST
 pub struct Parser {
   tokens : Array[Token]
   mut pos : Int
 }
 
+///|
 pub fn Parser::new(tokens : Array[Token]) -> Parser {
   { tokens, pos: 0 }
 }
 
+///|
 /// Parse from string
 pub fn parse(input : String) -> Command raise ParseError {
   let lexer = Lexer::new(input)
@@ -19,6 +21,7 @@ pub fn parse(input : String) -> Command raise ParseError {
   parser.parse_command()
 }
 
+///|
 /// Parse into command list
 pub fn parse_list(input : String) -> CommandList raise ParseError {
   let lexer = Lexer::new(input)
@@ -29,6 +32,7 @@ pub fn parse_list(input : String) -> CommandList raise ParseError {
   parser.parse_command_list()
 }
 
+///|
 /// Peek current token
 fn Parser::peek(self : Parser) -> Token {
   if self.pos < self.tokens.length() {
@@ -38,11 +42,13 @@ fn Parser::peek(self : Parser) -> Token {
   }
 }
 
+///|
 /// Peek token kind
 fn Parser::peek_kind(self : Parser) -> TokenKind {
   self.peek().kind
 }
 
+///|
 /// Advance to next token
 fn Parser::advance(self : Parser) -> Token {
   let tok = self.peek()
@@ -52,26 +58,40 @@ fn Parser::advance(self : Parser) -> Token {
   tok
 }
 
+///|
 /// Expect a specific token kind
-fn Parser::expect(self : Parser, expected : TokenKind) -> Token raise ParseError {
+fn Parser::expect(
+  self : Parser,
+  expected : TokenKind,
+) -> Token raise ParseError {
   let tok = self.peek()
   if token_kind_matches(tok.kind, expected) {
     self.advance()
   } else {
-    raise ParseError::UnexpectedToken(tok.kind.to_string(), expected.to_string(), tok.line, tok.col)
+    raise ParseError::UnexpectedToken(
+      tok.kind.to_string(),
+      expected.to_string(),
+      tok.line,
+      tok.col,
+    )
   }
 }
 
+///|
 /// Skip newlines
 fn Parser::skip_newlines(self : Parser) -> Unit {
   while true {
     match self.peek_kind() {
-      Newline => { let _ = self.advance() }
+      Newline => {
+        let _ = self.advance()
+
+      }
       _ => break
     }
   }
 }
 
+///|
 /// Parse complete command
 pub fn Parser::parse_command(self : Parser) -> Command raise ParseError {
   self.skip_newlines()
@@ -79,19 +99,33 @@ pub fn Parser::parse_command(self : Parser) -> Command raise ParseError {
   List(list)
 }
 
+///|
 /// Parse command list: pipeline ((; | & | && | ||) pipeline)*
-pub fn Parser::parse_command_list(self : Parser) -> CommandList raise ParseError {
+pub fn Parser::parse_command_list(
+  self : Parser,
+) -> CommandList raise ParseError {
   self.skip_newlines()
   let first = self.parse_pipeline()
   let rest : Array[(ListOp, Pipeline)] = []
-
   while true {
     self.skip_newlines()
     let op = match self.peek_kind() {
-      Semi => { let _ = self.advance(); Some(Seq) }
-      Amp => { let _ = self.advance(); Some(Background) }
-      And => { let _ = self.advance(); Some(ListOp::And) }
-      Or => { let _ = self.advance(); Some(ListOp::Or) }
+      Semi => {
+        let _ = self.advance()
+        Some(Seq)
+      }
+      Amp => {
+        let _ = self.advance()
+        Some(Background)
+      }
+      And => {
+        let _ = self.advance()
+        Some(ListOp::And)
+      }
+      Or => {
+        let _ = self.advance()
+        Some(ListOp::Or)
+      }
       _ => None
     }
     match op {
@@ -113,10 +147,10 @@ pub fn Parser::parse_command_list(self : Parser) -> CommandList raise ParseError
       None => break
     }
   }
-
   CommandList::new(first, rest)
 }
 
+///|
 /// Parse pipeline: [!] command (| command)*
 pub fn Parser::parse_pipeline(self : Parser) -> Pipeline raise ParseError {
   let bang = match self.peek_kind() {
@@ -126,11 +160,9 @@ pub fn Parser::parse_pipeline(self : Parser) -> Pipeline raise ParseError {
     }
     _ => false
   }
-
   let commands : Array[Command] = []
   let first = self.parse_single_command()
   commands.push(first)
-
   while true {
     match self.peek_kind() {
       Pipe | PipeAnd => {
@@ -142,11 +174,15 @@ pub fn Parser::parse_pipeline(self : Parser) -> Pipeline raise ParseError {
       _ => break
     }
   }
-
   let pipeline = Pipeline::new(commands)
-  if bang { pipeline.with_bang() } else { pipeline }
+  if bang {
+    pipeline.with_bang()
+  } else {
+    pipeline
+  }
 }
 
+///|
 /// Parse a single command (simple, compound, or function)
 pub fn Parser::parse_single_command(self : Parser) -> Command raise ParseError {
   self.skip_newlines()
@@ -163,6 +199,7 @@ pub fn Parser::parse_single_command(self : Parser) -> Command raise ParseError {
   }
 }
 
+///|
 /// Parse simple command: [assignments] [words] [redirections]
 pub fn Parser::parse_simple_command(self : Parser) -> Command raise ParseError {
   let assigns : Array[(String, Word)] = []
@@ -198,13 +235,13 @@ pub fn Parser::parse_simple_command(self : Parser) -> Command raise ParseError {
       _ => break
     }
   }
-
   let cmd = SimpleCommand::new(words)
     .with_assigns(assigns)
     .with_redirects(redirects)
   Simple(cmd)
 }
 
+///|
 /// Parse redirection
 fn Parser::parse_redirect(self : Parser) -> Redirect raise ParseError {
   let tok = self.advance()
@@ -217,7 +254,13 @@ fn Parser::parse_redirect(self : Parser) -> Redirect raise ParseError {
     GreatAnd => OutputDup
     LessGreat => ReadWrite
     Clobber => RedirectKind::Clobber
-    _ => raise ParseError::UnexpectedToken(tok.kind.to_string(), "redirection".to_string(), tok.line, tok.col)
+    _ =>
+      raise ParseError::UnexpectedToken(
+        tok.kind.to_string(),
+        "redirection".to_string(),
+        tok.line,
+        tok.col,
+      )
   }
 
   // Get target word
@@ -228,10 +271,10 @@ fn Parser::parse_redirect(self : Parser) -> Redirect raise ParseError {
     }
     _ => raise ParseError::ExpectedWord(self.peek().line, self.peek().col)
   }
-
   { kind, fd: None, target }
 }
 
+///|
 /// Parse subshell: ( list )
 fn Parser::parse_subshell(self : Parser) -> Command raise ParseError {
   let _ = self.expect(LParen)
@@ -242,6 +285,7 @@ fn Parser::parse_subshell(self : Parser) -> Command raise ParseError {
   Subshell(list)
 }
 
+///|
 /// Parse brace group: { list; }
 fn Parser::parse_brace_group(self : Parser) -> Command raise ParseError {
   let _ = self.expect(LBrace)
@@ -252,6 +296,7 @@ fn Parser::parse_brace_group(self : Parser) -> Command raise ParseError {
   BraceGroup(list)
 }
 
+///|
 /// Parse if: if list then list [elif list then list]* [else list] fi
 fn Parser::parse_if(self : Parser) -> Command raise ParseError {
   let _ = self.expect(If)
@@ -261,7 +306,6 @@ fn Parser::parse_if(self : Parser) -> Command raise ParseError {
   let _ = self.expect(Then)
   self.skip_newlines()
   let then_body = self.parse_command_list()
-
   let elif_parts : Array[(CommandList, CommandList)] = []
   while true {
     self.skip_newlines()
@@ -279,7 +323,6 @@ fn Parser::parse_if(self : Parser) -> Command raise ParseError {
       _ => break
     }
   }
-
   self.skip_newlines()
   let else_body = match self.peek_kind() {
     Else => {
@@ -289,13 +332,12 @@ fn Parser::parse_if(self : Parser) -> Command raise ParseError {
     }
     _ => None
   }
-
   self.skip_newlines()
   let _ = self.expect(Fi)
-
   IfCmd({ condition, then_body, elif_parts, else_body })
 }
 
+///|
 /// Parse while: while list do list done
 fn Parser::parse_while(self : Parser) -> Command raise ParseError {
   let _ = self.expect(While)
@@ -310,6 +352,7 @@ fn Parser::parse_while(self : Parser) -> Command raise ParseError {
   WhileCmd(WhileClause::while_(condition, body))
 }
 
+///|
 /// Parse until: until list do list done
 fn Parser::parse_until(self : Parser) -> Command raise ParseError {
   let _ = self.expect(Until)
@@ -324,11 +367,11 @@ fn Parser::parse_until(self : Parser) -> Command raise ParseError {
   WhileCmd(WhileClause::until_(condition, body))
 }
 
+///|
 /// Parse for: for name [in words] do list done
 fn Parser::parse_for(self : Parser) -> Command raise ParseError {
   let _ = self.expect(For)
   self.skip_newlines()
-
   let varname = match self.peek_kind() {
     Word(s) => {
       let _ = self.advance()
@@ -336,9 +379,7 @@ fn Parser::parse_for(self : Parser) -> Command raise ParseError {
     }
     _ => raise ParseError::ExpectedWord(self.peek().line, self.peek().col)
   }
-
   self.skip_newlines()
-
   let words : Array[Word]? = match self.peek_kind() {
     In => {
       let _ = self.advance()
@@ -360,25 +401,26 @@ fn Parser::parse_for(self : Parser) -> Command raise ParseError {
   // Skip ; or newline before do
   while true {
     match self.peek_kind() {
-      Semi | Newline => { let _ = self.advance() }
+      Semi | Newline => {
+        let _ = self.advance()
+
+      }
       _ => break
     }
   }
-
   let _ = self.expect(Do)
   self.skip_newlines()
   let body = self.parse_command_list()
   self.skip_newlines()
   let _ = self.expect(Done)
-
   ForCmd(ForClause::new(varname, words, body))
 }
 
+///|
 /// Parse case: case word in [pattern) list ;;]* esac
 fn Parser::parse_case(self : Parser) -> Command raise ParseError {
   let _ = self.expect(Case)
   self.skip_newlines()
-
   let word = match self.peek_kind() {
     Word(s) => {
       let _ = self.advance()
@@ -386,11 +428,9 @@ fn Parser::parse_case(self : Parser) -> Command raise ParseError {
     }
     _ => raise ParseError::ExpectedWord(self.peek().line, self.peek().col)
   }
-
   self.skip_newlines()
   let _ = self.expect(In)
   self.skip_newlines()
-
   let items : Array[CaseItem] = []
   // Simplified: just expect esac for now
   // Full implementation would parse pattern) list ;; pairs
@@ -399,11 +439,11 @@ fn Parser::parse_case(self : Parser) -> Command raise ParseError {
   CaseCmd(CaseClause::new(word, items))
 }
 
+///|
 /// Parse function: function name { list } or name() { list }
 fn Parser::parse_function(self : Parser) -> Command raise ParseError {
   let _ = self.expect(Function)
   self.skip_newlines()
-
   let name = match self.peek_kind() {
     Word(s) => {
       let _ = self.advance()
@@ -411,27 +451,37 @@ fn Parser::parse_function(self : Parser) -> Command raise ParseError {
     }
     _ => raise ParseError::ExpectedWord(self.peek().line, self.peek().col)
   }
-
   self.skip_newlines()
   let body = self.parse_single_command()
-
   FuncDef(FunctionDef::new(name, body))
 }
 
+///|
 /// Check if current token can start a command
 fn Parser::is_command_start(self : Parser) -> Bool {
   match self.peek_kind() {
-    Word(_) | Assignment(_, _) | LParen | LBrace |
-    If | While | Until | For | Case | Function | Bang => true
+    Word(_)
+    | Assignment(_, _)
+    | LParen
+    | LBrace
+    | If
+    | While
+    | Until
+    | For
+    | Case
+    | Function
+    | Bang => true
     _ => false
   }
 }
 
+///|
 /// Parse a word string into Word AST
 fn parse_word(s : String) -> Word {
   parse_word_parts(s)
 }
 
+///|
 /// Check if token kinds match (for expect)
 fn token_kind_matches(actual : TokenKind, expected : TokenKind) -> Bool {
   match (actual, expected) {
@@ -476,20 +526,25 @@ fn token_kind_matches(actual : TokenKind, expected : TokenKind) -> Bool {
   }
 }
 
+///|
 /// Parser errors
 pub suberror ParseError {
   LexError(String)
-  UnexpectedToken(String, String, Int, Int)  // got, expected, line, col
+  UnexpectedToken(String, String, Int, Int) // got, expected, line, col
   ExpectedWord(Int, Int)
   UnexpectedEof
 }
 
+///|
 pub impl Show for ParseError with output(self, logger) {
   match self {
     LexError(msg) => logger.write_string("Lex error: \{msg}")
     UnexpectedToken(got, expected, line, col) =>
-      logger.write_string("Unexpected token '\{got}', expected '\{expected}' at \{line}:\{col}")
-    ExpectedWord(line, col) => logger.write_string("Expected word at \{line}:\{col}")
+      logger.write_string(
+        "Unexpected token '\{got}', expected '\{expected}' at \{line}:\{col}",
+      )
+    ExpectedWord(line, col) =>
+      logger.write_string("Expected word at \{line}:\{col}")
     UnexpectedEof => logger.write_string("Unexpected end of input")
   }
 }

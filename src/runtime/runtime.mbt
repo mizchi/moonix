@@ -1,5 +1,6 @@
 ///| Agent Runtime implementation
 
+///|
 /// The main runtime that integrates all components
 pub struct AgentRuntime {
   /// Git-backed filesystem
@@ -16,6 +17,7 @@ pub struct AgentRuntime {
   mut timestamp_provider : () -> Int64
 }
 
+///|
 /// Create a new agent runtime
 pub fn AgentRuntime::new(config : RuntimeConfig) -> AgentRuntime {
   let fs = @gitfs.GitBackedFs::new(author=config.author)
@@ -34,31 +36,36 @@ pub fn AgentRuntime::new(config : RuntimeConfig) -> AgentRuntime {
   }
 }
 
+///|
 /// Create with default sandbox configuration
 pub fn AgentRuntime::sandbox() -> AgentRuntime {
   AgentRuntime::new(RuntimeConfig::default())
 }
 
+///|
 /// Create with developer configuration
 pub fn AgentRuntime::developer() -> AgentRuntime {
   AgentRuntime::new(RuntimeConfig::developer())
 }
 
+///|
 /// Create with unrestricted configuration (for testing only)
 pub fn AgentRuntime::unrestricted() -> AgentRuntime {
   AgentRuntime::new(RuntimeConfig::unrestricted())
 }
 
+///|
 /// Set timestamp provider (for testing)
 pub fn AgentRuntime::set_timestamp_provider(
   self : AgentRuntime,
-  provider : () -> Int64
+  provider : () -> Int64,
 ) -> Unit {
   self.timestamp_provider = provider
   self.fs.set_timestamp_provider(provider)
   self.effect_log.set_timestamp_provider(provider)
 }
 
+///|
 /// Get current timestamp
 fn AgentRuntime::get_timestamp(self : AgentRuntime) -> Int64 {
   (self.timestamp_provider)()
@@ -68,10 +75,11 @@ fn AgentRuntime::get_timestamp(self : AgentRuntime) -> Int64 {
 // Filesystem Operations (with capability checks)
 // ============================================================================
 
+///|
 /// Read a file (checks FsRead capability)
 pub fn AgentRuntime::read_file(
   self : AgentRuntime,
-  path : String
+  path : String,
 ) -> Bytes raise RuntimeError {
   let abs_path = self.resolve_path(path)
   if not(self.capabilities.can_read(abs_path)) {
@@ -82,10 +90,11 @@ pub fn AgentRuntime::read_file(
   }
 }
 
+///|
 /// Read a file as string
 pub fn AgentRuntime::read_string(
   self : AgentRuntime,
-  path : String
+  path : String,
 ) -> String raise RuntimeError {
   let abs_path = self.resolve_path(path)
   if not(self.capabilities.can_read(abs_path)) {
@@ -96,11 +105,12 @@ pub fn AgentRuntime::read_string(
   }
 }
 
+///|
 /// Write to a file (checks FsWrite capability)
 pub fn AgentRuntime::write_file(
   self : AgentRuntime,
   path : String,
-  data : Bytes
+  data : Bytes,
 ) -> Unit raise RuntimeError {
   let abs_path = self.resolve_path(path)
   if not(self.capabilities.can_write(abs_path)) {
@@ -111,11 +121,12 @@ pub fn AgentRuntime::write_file(
   }
 }
 
+///|
 /// Write string to a file
 pub fn AgentRuntime::write_string(
   self : AgentRuntime,
   path : String,
-  content : String
+  content : String,
 ) -> Unit raise RuntimeError {
   let abs_path = self.resolve_path(path)
   if not(self.capabilities.can_write(abs_path)) {
@@ -126,6 +137,7 @@ pub fn AgentRuntime::write_string(
   }
 }
 
+///|
 /// Check if path exists
 pub fn AgentRuntime::exists(self : AgentRuntime, path : String) -> Bool {
   let abs_path = self.resolve_path(path)
@@ -133,22 +145,25 @@ pub fn AgentRuntime::exists(self : AgentRuntime, path : String) -> Bool {
   @fs.FileSystemBackend::exists(self.fs, abs_path)
 }
 
+///|
 /// Check if path is a file
 pub fn AgentRuntime::is_file(self : AgentRuntime, path : String) -> Bool {
   let abs_path = self.resolve_path(path)
   @fs.FileSystemBackend::is_file(self.fs, abs_path)
 }
 
+///|
 /// Check if path is a directory
 pub fn AgentRuntime::is_dir(self : AgentRuntime, path : String) -> Bool {
   let abs_path = self.resolve_path(path)
   @fs.FileSystemBackend::is_dir(self.fs, abs_path)
 }
 
+///|
 /// Create a directory
 pub fn AgentRuntime::mkdir(
   self : AgentRuntime,
-  path : String
+  path : String,
 ) -> Unit raise RuntimeError {
   let abs_path = self.resolve_path(path)
   if not(self.capabilities.can_write(abs_path)) {
@@ -159,10 +174,11 @@ pub fn AgentRuntime::mkdir(
   }
 }
 
+///|
 /// Create directory and parents
 pub fn AgentRuntime::mkdir_p(
   self : AgentRuntime,
-  path : String
+  path : String,
 ) -> Unit raise RuntimeError {
   let abs_path = self.resolve_path(path)
   if not(self.capabilities.can_write(abs_path)) {
@@ -173,10 +189,11 @@ pub fn AgentRuntime::mkdir_p(
   }
 }
 
+///|
 /// Remove a file
 pub fn AgentRuntime::remove(
   self : AgentRuntime,
-  path : String
+  path : String,
 ) -> Unit raise RuntimeError {
   let abs_path = self.resolve_path(path)
   if not(self.capabilities.can_delete(abs_path)) {
@@ -187,10 +204,11 @@ pub fn AgentRuntime::remove(
   }
 }
 
+///|
 /// Remove directory and contents
 pub fn AgentRuntime::rm_rf(
   self : AgentRuntime,
-  path : String
+  path : String,
 ) -> Unit raise RuntimeError {
   let abs_path = self.resolve_path(path)
   if not(self.capabilities.can_delete(abs_path)) {
@@ -201,10 +219,11 @@ pub fn AgentRuntime::rm_rf(
   }
 }
 
+///|
 /// List directory contents
 pub fn AgentRuntime::readdir(
   self : AgentRuntime,
-  path : String
+  path : String,
 ) -> Array[@fs.DirEntry] raise RuntimeError {
   let abs_path = self.resolve_path(path)
   if not(self.capabilities.can_read(abs_path)) {
@@ -219,6 +238,7 @@ pub fn AgentRuntime::readdir(
 // Path and Environment
 // ============================================================================
 
+///|
 /// Resolve path to absolute
 pub fn AgentRuntime::resolve_path(self : AgentRuntime, path : String) -> String {
   if path.has_prefix("/") {
@@ -228,15 +248,17 @@ pub fn AgentRuntime::resolve_path(self : AgentRuntime, path : String) -> String 
   }
 }
 
+///|
 /// Get current working directory
 pub fn AgentRuntime::getcwd(self : AgentRuntime) -> String {
   self.cwd
 }
 
+///|
 /// Change working directory
 pub fn AgentRuntime::chdir(
   self : AgentRuntime,
-  path : String
+  path : String,
 ) -> Unit raise RuntimeError {
   let abs_path = self.resolve_path(path)
   if not(@fs.FileSystemBackend::is_dir(self.fs, abs_path)) {
@@ -246,6 +268,7 @@ pub fn AgentRuntime::chdir(
   self.env.set("PWD", abs_path)
 }
 
+///|
 /// Get environment variable
 pub fn AgentRuntime::getenv(self : AgentRuntime, name : String) -> String? {
   if not(self.capabilities.can_read_env(name)) {
@@ -254,18 +277,22 @@ pub fn AgentRuntime::getenv(self : AgentRuntime, name : String) -> String? {
   self.env.get(name)
 }
 
+///|
 /// Set environment variable
 pub fn AgentRuntime::setenv(
   self : AgentRuntime,
   name : String,
-  value : String
+  value : String,
 ) -> Unit {
   // setenv typically doesn't need capability check for own env
   self.env.set(name, value)
 }
 
+///|
 /// Get all environment variables
-pub fn AgentRuntime::get_all_env(self : AgentRuntime) -> Array[(String, String)] {
+pub fn AgentRuntime::get_all_env(
+  self : AgentRuntime,
+) -> Array[(String, String)] {
   let result : Array[(String, String)] = []
   for k, v in self.env {
     if self.capabilities.can_read_env(k) {

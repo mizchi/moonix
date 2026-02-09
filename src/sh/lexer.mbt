@@ -1,5 +1,5 @@
-///| Shell lexer - tokenizes shell input
-
+///|
+/// Shell lexer - tokenizes shell input
 pub struct Lexer {
   input : String
   chars : Array[Char]
@@ -8,6 +8,7 @@ pub struct Lexer {
   mut col : Int
 }
 
+///|
 pub fn Lexer::new(input : String) -> Lexer {
   let chars : Array[Char] = []
   for c in input {
@@ -16,6 +17,7 @@ pub fn Lexer::new(input : String) -> Lexer {
   { input, chars, pos: 0, line: 1, col: 1 }
 }
 
+///|
 /// Peek current character
 fn Lexer::peek(self : Lexer) -> Char? {
   if self.pos < self.chars.length() {
@@ -25,6 +27,7 @@ fn Lexer::peek(self : Lexer) -> Char? {
   }
 }
 
+///|
 /// Advance and return current character
 fn Lexer::advance(self : Lexer) -> Char? {
   match self.peek() {
@@ -42,42 +45,65 @@ fn Lexer::advance(self : Lexer) -> Char? {
   }
 }
 
+///|
 /// Skip whitespace (but not newlines - they're significant)
 fn Lexer::skip_whitespace(self : Lexer) -> Unit {
   while true {
     match self.peek() {
-      Some(' ') | Some('\t') => { let _ = self.advance() }
+      Some(' ') | Some('\t') => {
+        let _ = self.advance()
+
+      }
       _ => break
     }
   }
 }
 
+///|
 /// Skip comment (from # to end of line)
 fn Lexer::skip_comment(self : Lexer) -> Unit {
   while true {
     match self.peek() {
       Some('\n') | None => break
-      _ => { let _ = self.advance() }
+      _ => {
+        let _ = self.advance()
+
+      }
     }
   }
 }
 
+///|
 /// Check if character is a word character
 fn is_word_char(c : Char) -> Bool {
   not(is_meta_char(c)) && c != '\'' && c != '"' && c != '`'
 }
 
+///|
 /// Check if character is a metacharacter
 fn is_meta_char(c : Char) -> Bool {
   match c {
-    '|' | '&' | ';' | '<' | '>' | '(' | ')' | '{' | '}' | ' ' | '\t' | '\n' | '#' => true
+    '|'
+    | '&'
+    | ';'
+    | '<'
+    | '>'
+    | '('
+    | ')'
+    | '{'
+    | '}'
+    | ' '
+    | '\t'
+    | '\n'
+    | '#' => true
     _ => false
   }
 }
 
+///|
 /// Read a single-quoted string
 fn Lexer::read_single_quoted(self : Lexer) -> String raise LexError {
-  let _ = self.advance()  // consume opening '
+  let _ = self.advance() // consume opening '
   let buf = StringBuilder::new()
   while true {
     match self.advance() {
@@ -89,9 +115,10 @@ fn Lexer::read_single_quoted(self : Lexer) -> String raise LexError {
   buf.to_string()
 }
 
+///|
 /// Read a double-quoted string (returns raw content, expansion done later)
 fn Lexer::read_double_quoted(self : Lexer) -> String raise LexError {
-  let _ = self.advance()  // consume opening "
+  let _ = self.advance() // consume opening "
   let buf = StringBuilder::new()
   while true {
     match self.peek() {
@@ -102,7 +129,7 @@ fn Lexer::read_double_quoted(self : Lexer) -> String raise LexError {
       Some('\\') => {
         let _ = self.advance()
         match self.advance() {
-          Some(c) => {
+          Some(c) =>
             // In double quotes, only these escapes are special
             match c {
               '$' | '`' | '"' | '\\' | '\n' => buf.write_char(c)
@@ -111,13 +138,13 @@ fn Lexer::read_double_quoted(self : Lexer) -> String raise LexError {
                 buf.write_char(c)
               }
             }
-          }
           None => raise LexError::UnterminatedString(self.line, self.col)
         }
       }
       Some(c) => {
         buf.write_char(c)
         let _ = self.advance()
+
       }
       None => raise LexError::UnterminatedString(self.line, self.col)
     }
@@ -125,6 +152,7 @@ fn Lexer::read_double_quoted(self : Lexer) -> String raise LexError {
   buf.to_string()
 }
 
+///|
 /// Read digits only
 fn Lexer::read_digits(self : Lexer) -> String {
   let buf = StringBuilder::new()
@@ -133,6 +161,7 @@ fn Lexer::read_digits(self : Lexer) -> String {
       Some(c) if is_digit(c) => {
         buf.write_char(c)
         let _ = self.advance()
+
       }
       _ => break
     }
@@ -140,6 +169,7 @@ fn Lexer::read_digits(self : Lexer) -> String {
   buf.to_string()
 }
 
+///|
 /// Read a word (unquoted)
 fn Lexer::read_word(self : Lexer) -> String {
   let buf = StringBuilder::new()
@@ -148,7 +178,7 @@ fn Lexer::read_word(self : Lexer) -> String {
       Some('\\') => {
         let _ = self.advance()
         match self.advance() {
-          Some('\n') => ()  // line continuation
+          Some('\n') => () // line continuation
           Some(c) => buf.write_char(c)
           None => ()
         }
@@ -156,6 +186,7 @@ fn Lexer::read_word(self : Lexer) -> String {
       Some(c) if is_word_char(c) => {
         buf.write_char(c)
         let _ = self.advance()
+
       }
       _ => break
     }
@@ -163,6 +194,7 @@ fn Lexer::read_word(self : Lexer) -> String {
   buf.to_string()
 }
 
+///|
 /// Check if a word is a reserved word and return appropriate token
 fn word_to_token(word : String, line : Int, col : Int) -> Token {
   let kind = match word {
@@ -188,26 +220,22 @@ fn word_to_token(word : String, line : Int, col : Int) -> Token {
   Token::new(kind, line, col)
 }
 
+///|
 /// Get next token
 pub fn Lexer::next_token(self : Lexer) -> Token raise LexError {
   self.skip_whitespace()
-
   let start_line = self.line
   let start_col = self.col
-
   match self.peek() {
     None => Token::eof(start_line, start_col)
-
     Some('#') => {
       self.skip_comment()
       self.next_token()
     }
-
     Some('\n') => {
       let _ = self.advance()
       Token::new(Newline, start_line, start_col)
     }
-
     Some('|') => {
       let _ = self.advance()
       match self.peek() {
@@ -222,7 +250,6 @@ pub fn Lexer::next_token(self : Lexer) -> Token raise LexError {
         _ => Token::new(Pipe, start_line, start_col)
       }
     }
-
     Some('&') => {
       let _ = self.advance()
       match self.peek() {
@@ -233,12 +260,10 @@ pub fn Lexer::next_token(self : Lexer) -> Token raise LexError {
         _ => Token::new(Amp, start_line, start_col)
       }
     }
-
     Some(';') => {
       let _ = self.advance()
       Token::new(Semi, start_line, start_col)
     }
-
     Some('<') => {
       let _ = self.advance()
       match self.peek() {
@@ -257,7 +282,6 @@ pub fn Lexer::next_token(self : Lexer) -> Token raise LexError {
         _ => Token::new(Less, start_line, start_col)
       }
     }
-
     Some('>') => {
       let _ = self.advance()
       match self.peek() {
@@ -276,29 +300,24 @@ pub fn Lexer::next_token(self : Lexer) -> Token raise LexError {
         _ => Token::new(Great, start_line, start_col)
       }
     }
-
     Some('(') => {
       let _ = self.advance()
       Token::new(LParen, start_line, start_col)
     }
-
     Some(')') => {
       let _ = self.advance()
       Token::new(RParen, start_line, start_col)
     }
-
     Some('\'') => {
       let s = self.read_single_quoted()
       // Single-quoted strings become a word with the content
       Token::word("'" + s + "'", start_line, start_col)
     }
-
     Some('"') => {
       let s = self.read_double_quoted()
       // Double-quoted strings become a word with the content (marked)
       Token::word("\"" + s + "\"", start_line, start_col)
     }
-
     Some(c) if is_digit(c) => {
       // Check if this is an IO number (digit followed by < or >)
       let saved_pos = self.pos
@@ -310,7 +329,7 @@ pub fn Lexer::next_token(self : Lexer) -> Token raise LexError {
 
       // Check if followed by redirection
       match self.peek() {
-        Some('<') | Some('>') => {
+        Some('<') | Some('>') =>
           // This is an IO number
           match parse_int_str(num_str) {
             Some(n) => Token::new(IoNumber(n), start_line, start_col)
@@ -323,7 +342,6 @@ pub fn Lexer::next_token(self : Lexer) -> Token raise LexError {
               word_to_token(word, start_line, start_col)
             }
           }
-        }
         _ => {
           // Not an IO number, restore and read as word
           self.pos = saved_pos
@@ -332,7 +350,8 @@ pub fn Lexer::next_token(self : Lexer) -> Token raise LexError {
           let word = self.read_word()
           if word.is_empty() {
             match self.advance() {
-              Some(ch) => raise LexError::UnexpectedChar(ch, start_line, start_col)
+              Some(ch) =>
+                raise LexError::UnexpectedChar(ch, start_line, start_col)
               None => Token::eof(start_line, start_col)
             }
           } else {
@@ -348,7 +367,6 @@ pub fn Lexer::next_token(self : Lexer) -> Token raise LexError {
         }
       }
     }
-
     Some(_) => {
       let word = self.read_word()
       if word.is_empty() {
@@ -372,6 +390,7 @@ pub fn Lexer::next_token(self : Lexer) -> Token raise LexError {
   }
 }
 
+///|
 /// Tokenize entire input
 pub fn Lexer::tokenize(self : Lexer) -> Array[Token] raise LexError {
   let tokens : Array[Token] = []
@@ -389,6 +408,7 @@ pub fn Lexer::tokenize(self : Lexer) -> Array[Token] raise LexError {
   tokens
 }
 
+///|
 /// Lexer errors
 pub suberror LexError {
   UnterminatedString(Int, Int)
@@ -396,6 +416,7 @@ pub suberror LexError {
   InvalidEscape(Char, Int, Int)
 }
 
+///|
 pub impl Show for LexError with output(self, logger) {
   match self {
     UnterminatedString(line, col) =>
@@ -409,6 +430,7 @@ pub impl Show for LexError with output(self, logger) {
 
 // Helper functions
 
+///|
 fn find_unquoted_equals(s : String) -> Int? {
   let chars : Array[Char] = []
   for c in s {
@@ -422,6 +444,7 @@ fn find_unquoted_equals(s : String) -> Int? {
   None
 }
 
+///|
 fn is_valid_name(s : String) -> Bool {
   if s.is_empty() {
     return false
@@ -445,20 +468,24 @@ fn is_valid_name(s : String) -> Bool {
   true
 }
 
+///|
 fn is_alpha(c : Char) -> Bool {
   let code = c.to_int()
   (code >= 65 && code <= 90) || (code >= 97 && code <= 122)
 }
 
+///|
 fn is_alnum(c : Char) -> Bool {
   is_alpha(c) || is_digit(c)
 }
 
+///|
 fn is_digit(c : Char) -> Bool {
   let code = c.to_int()
   code >= 48 && code <= 57
 }
 
+///|
 fn parse_int_str(s : String) -> Int? {
   if s.is_empty() {
     return None
@@ -475,6 +502,7 @@ fn parse_int_str(s : String) -> Int? {
   Some(result)
 }
 
+///|
 fn substring_str(s : String, start : Int, end : Int) -> String {
   let chars : Array[Char] = []
   for c in s {

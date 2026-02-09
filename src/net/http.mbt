@@ -1,10 +1,10 @@
 ///| HTTP parsing and generation
 
+///|
 /// Parse HTTP request from bytes
 pub fn parse_http_request(data : Bytes) -> HttpRequest? {
   let s = bytes_to_string(data)
   let lines = split_lines(s)
-
   if lines.length() == 0 {
     return None
   }
@@ -15,7 +15,6 @@ pub fn parse_http_request(data : Bytes) -> HttpRequest? {
   if parts.length() < 2 {
     return None
   }
-
   let http_method = match HttpMethod::from_string(parts[0]) {
     Some(m) => m
     None => return None
@@ -55,10 +54,10 @@ pub fn parse_http_request(data : Bytes) -> HttpRequest? {
   } else {
     Bytes::new(0)
   }
-
   Some(HttpRequest::new(http_method, path, headers, body))
 }
 
+///|
 /// Generate HTTP response bytes
 pub fn generate_http_response(resp : HttpResponse) -> Bytes {
   let buf = StringBuilder::new()
@@ -92,6 +91,7 @@ pub fn generate_http_response(resp : HttpResponse) -> Bytes {
   concat_bytes(string_to_bytes(buf.to_string()), resp.body)
 }
 
+///|
 /// Generate HTTP request bytes
 pub fn generate_http_request(req : HttpRequest) -> Bytes {
   let buf = StringBuilder::new()
@@ -124,11 +124,11 @@ pub fn generate_http_request(req : HttpRequest) -> Bytes {
   concat_bytes(string_to_bytes(buf.to_string()), req.body)
 }
 
+///|
 /// Parse HTTP response from bytes
 pub fn parse_http_response(data : Bytes) -> HttpResponse? {
   let s = bytes_to_string(data)
   let lines = split_lines(s)
-
   if lines.length() == 0 {
     return None
   }
@@ -139,7 +139,6 @@ pub fn parse_http_response(data : Bytes) -> HttpResponse? {
   if parts.length() < 2 {
     return None
   }
-
   let status = match parse_int(parts[1]) {
     Some(n) => n
     None => return None
@@ -179,21 +178,26 @@ pub fn parse_http_response(data : Bytes) -> HttpResponse? {
   } else {
     Bytes::new(0)
   }
-
   Some({ status, status_text, headers, body })
 }
 
 // Helper functions
 
+///|
 fn concat_bytes(a : Bytes, b : Bytes) -> Bytes {
   if b.length() == 0 {
     return a
   }
   Bytes::makei(a.length() + b.length(), fn(i) {
-    if i < a.length() { a[i] } else { b[i - a.length()] }
+    if i < a.length() {
+      a[i]
+    } else {
+      b[i - a.length()]
+    }
   })
 }
 
+///|
 fn bytes_to_string(b : Bytes) -> String {
   let buf = StringBuilder::new()
   for byte in b {
@@ -202,15 +206,16 @@ fn bytes_to_string(b : Bytes) -> String {
   buf.to_string()
 }
 
+///|
 fn string_to_bytes(s : String) -> Bytes {
   Bytes::makei(s.length(), fn(i) { s[i].to_int().to_byte() })
 }
 
+///|
 fn split_lines(s : String) -> Array[String] {
   let lines : Array[String] = []
   let current = StringBuilder::new()
   let mut prev_cr = false
-
   for c in s {
     if c == '\r' {
       prev_cr = true
@@ -226,18 +231,16 @@ fn split_lines(s : String) -> Array[String] {
       current.write_char(c)
     }
   }
-
   if current.to_string().length() > 0 {
     lines.push(current.to_string())
   }
-
   lines
 }
 
+///|
 fn split_spaces(s : String) -> Array[String] {
   let parts : Array[String] = []
   let current = StringBuilder::new()
-
   for c in s {
     if c == ' ' {
       if current.to_string().length() > 0 {
@@ -248,14 +251,13 @@ fn split_spaces(s : String) -> Array[String] {
       current.write_char(c)
     }
   }
-
   if current.to_string().length() > 0 {
     parts.push(current.to_string())
   }
-
   parts
 }
 
+///|
 fn find_char(s : String, target : Char) -> Int? {
   let target_code = target.to_int()
   for i, c in s {
@@ -266,6 +268,7 @@ fn find_char(s : String, target : Char) -> Int? {
   None
 }
 
+///|
 fn substring(s : String, start : Int, end : Int) -> String {
   let buf = StringBuilder::new()
   let mut idx = 0
@@ -278,22 +281,20 @@ fn substring(s : String, start : Int, end : Int) -> String {
   buf.to_string()
 }
 
+///|
 fn trim(s : String) -> String {
   let chars : Array[Char] = []
   for c in s {
     chars.push(c)
   }
-
   let mut start = 0
   let mut end = chars.length()
-
   while start < end && (chars[start] == ' ' || chars[start] == '\t') {
     start += 1
   }
   while end > start && (chars[end - 1] == ' ' || chars[end - 1] == '\t') {
     end -= 1
   }
-
   let buf = StringBuilder::new()
   for i = start; i < end; i = i + 1 {
     buf.write_char(chars[i])
@@ -301,10 +302,10 @@ fn trim(s : String) -> String {
   buf.to_string()
 }
 
+///|
 fn parse_int(s : String) -> Int? {
   let mut result = 0
   let mut has_digit = false
-
   for c in s {
     let code = c.to_int()
     if code >= 48 && code <= 57 {
@@ -314,6 +315,9 @@ fn parse_int(s : String) -> Int? {
       break
     }
   }
-
-  if has_digit { Some(result) } else { None }
+  if has_digit {
+    Some(result)
+  } else {
+    None
+  }
 }

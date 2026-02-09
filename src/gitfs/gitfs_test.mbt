@@ -1,5 +1,5 @@
-///| Tests for GitBackedFs
-
+///|
+/// Tests for GitBackedFs
 test "GitBackedFs::new initializes git directory" {
   let fs = GitBackedFs::new()
   assert_true(@fs.FileSystemBackend::is_dir(fs, "/.git"))
@@ -8,6 +8,7 @@ test "GitBackedFs::new initializes git directory" {
   assert_true(@fs.FileSystemBackend::is_file(fs, "/.git/HEAD"))
 }
 
+///|
 test "GitBackedFs basic file operations" {
   let fs = GitBackedFs::new()
 
@@ -22,6 +23,7 @@ test "GitBackedFs basic file operations" {
   assert_true(dirty.contains("/hello.txt"))
 }
 
+///|
 test "GitBackedFs snapshot and rollback" {
   let fs = GitBackedFs::new(author="test")
   fs.set_timestamp_provider(fn() { 1000L })
@@ -42,6 +44,7 @@ test "GitBackedFs snapshot and rollback" {
   assert_eq(@fs.FileSystemBackend::read_string(fs, "/file.txt"), "version 1")
 }
 
+///|
 test "GitBackedFs history" {
   let fs = GitBackedFs::new(author="test")
   let mut ts = 1000L
@@ -54,10 +57,8 @@ test "GitBackedFs history" {
   // Create commits
   @fs.FileSystemBackend::write_string(fs, "/a.txt", "a")
   let _ = fs.snapshot("First")
-
   @fs.FileSystemBackend::write_string(fs, "/b.txt", "b")
   let _ = fs.snapshot("Second")
-
   @fs.FileSystemBackend::write_string(fs, "/c.txt", "c")
   let _ = fs.snapshot("Third")
 
@@ -69,6 +70,7 @@ test "GitBackedFs history" {
   assert_eq(hist[2].message, "First")
 }
 
+///|
 test "GitBackedFs multiple files" {
   let fs = GitBackedFs::new(author="test")
   fs.set_timestamp_provider(fn() { 1000L })
@@ -76,7 +78,9 @@ test "GitBackedFs multiple files" {
   // Create directory structure
   @fs.FileSystemBackend::mkdir_p(fs, "/src/lib")
   @fs.FileSystemBackend::write_string(fs, "/src/main.mbt", "fn main() {}")
-  @fs.FileSystemBackend::write_string(fs, "/src/lib/utils.mbt", "fn helper() {}")
+  @fs.FileSystemBackend::write_string(
+    fs, "/src/lib/utils.mbt", "fn helper() {}",
+  )
   @fs.FileSystemBackend::write_string(fs, "/README.md", "# Project")
 
   // Snapshot
@@ -93,9 +97,13 @@ test "GitBackedFs multiple files" {
   assert_true(@fs.FileSystemBackend::exists(fs, "/src/main.mbt"))
   assert_true(@fs.FileSystemBackend::exists(fs, "/src/lib/utils.mbt"))
   assert_true(@fs.FileSystemBackend::exists(fs, "/README.md"))
-  assert_eq(@fs.FileSystemBackend::read_string(fs, "/src/main.mbt"), "fn main() {}")
+  assert_eq(
+    @fs.FileSystemBackend::read_string(fs, "/src/main.mbt"),
+    "fn main() {}",
+  )
 }
 
+///|
 test "GitBackedFs git paths excluded from dirty tracking" {
   let fs = GitBackedFs::new()
 
@@ -108,10 +116,10 @@ test "GitBackedFs git paths excluded from dirty tracking" {
   assert_true(fs.has_changes())
 }
 
+///|
 test "GitBackedFs tag operations" {
   let fs = GitBackedFs::new(author="test")
   fs.set_timestamp_provider(fn() { 1000L })
-
   @fs.FileSystemBackend::write_string(fs, "/file.txt", "content")
   let _ = fs.snapshot("Initial")
 
@@ -137,6 +145,7 @@ test "GitBackedFs tag operations" {
   assert_true(tags2.contains("v1.0-alias"))
 }
 
+///|
 test "GitBackedFs merge" {
   let fs = GitBackedFs::new(author="test")
   let mut ts = 1000L
@@ -164,9 +173,13 @@ test "GitBackedFs merge" {
   let result = fs.merge("feature")
   guard result.status is (FastForward | Merged)
   assert_true(@fs.FileSystemBackend::exists(fs, "/feature.txt"))
-  assert_eq(@fs.FileSystemBackend::read_string(fs, "/feature.txt"), "new feature")
+  assert_eq(
+    @fs.FileSystemBackend::read_string(fs, "/feature.txt"),
+    "new feature",
+  )
 }
 
+///|
 test "GitBackedFs diff" {
   let fs = GitBackedFs::new(author="test")
   fs.set_timestamp_provider(fn() { 1000L })
@@ -178,11 +191,11 @@ test "GitBackedFs diff" {
   // Modify file (stage it so diff_index can see it)
   @fs.FileSystemBackend::write_string(fs, "/file.txt", "modified")
   @lib.add_paths(fs, fs, "/", ["file.txt"])
-
   let diffs = fs.diff()
   assert_true(diffs.length() > 0)
 }
 
+///|
 test "GitBackedFs reset" {
   let fs = GitBackedFs::new(author="test")
   let mut ts = 1000L
@@ -191,10 +204,8 @@ test "GitBackedFs reset" {
     ts += 1000L
     t
   })
-
   @fs.FileSystemBackend::write_string(fs, "/file.txt", "v1")
   let snap1 = fs.snapshot("First")
-
   @fs.FileSystemBackend::write_string(fs, "/file.txt", "v2")
   let _ = fs.snapshot("Second")
 
@@ -203,6 +214,7 @@ test "GitBackedFs reset" {
   assert_eq(@fs.FileSystemBackend::read_string(fs, "/file.txt"), "v1")
 }
 
+///|
 test "GitBackedFs cherry_pick" {
   let fs = GitBackedFs::new(author="test")
   let mut ts = 1000L
@@ -233,10 +245,10 @@ test "GitBackedFs cherry_pick" {
   assert_true(result.commit_id is Some(_))
 }
 
+///|
 test "GitBackedFs snapshot handles deep tree and many files" {
   let fs = GitBackedFs::new(author="test")
   fs.set_timestamp_provider(fn() { 1000L })
-
   let deep_files : Array[(String, String)] = []
   @fs.FileSystemBackend::mkdir_p(fs, "/deep")
   let mut deep_path = "/deep"
@@ -249,7 +261,6 @@ test "GitBackedFs snapshot handles deep tree and many files" {
     @fs.FileSystemBackend::write_string(fs, path, content)
     deep_files.push((path, content))
   }
-
   let bulk_files : Array[(String, String)] = []
   @fs.FileSystemBackend::mkdir_p(fs, "/bulk")
   let bulk_count = 200
@@ -259,12 +270,9 @@ test "GitBackedFs snapshot handles deep tree and many files" {
     @fs.FileSystemBackend::write_string(fs, path, content)
     bulk_files.push((path, content))
   }
-
   let snap = fs.snapshot("big tree")
-
   @fs.FileSystemBackend::rm_rf(fs, "/deep/d0")
   assert_false(@fs.FileSystemBackend::exists(fs, deep_files[0].0))
-
   for i in 0..<10 {
     let path = bulk_files[i].0
     @fs.FileSystemBackend::write_string(fs, path, "mutated")
@@ -274,11 +282,8 @@ test "GitBackedFs snapshot handles deep tree and many files" {
     @fs.FileSystemBackend::remove(fs, path)
   }
   @fs.FileSystemBackend::write_string(fs, "/bulk/new.txt", "new")
-
   fs.rollback(snap)
-
   assert_false(@fs.FileSystemBackend::exists(fs, "/bulk/new.txt"))
-
   for _, entry in deep_files {
     let (path, content) = entry
     assert_true(@fs.FileSystemBackend::is_file(fs, path))

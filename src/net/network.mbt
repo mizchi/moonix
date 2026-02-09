@@ -1,11 +1,13 @@
 ///| Virtual network - manages connections between virtual sockets
 
+///|
 /// Connection between two sockets
 struct Connection {
   client : VSocket
   server : VSocket
 }
 
+///|
 /// Virtual network manager
 pub struct VirtualNetwork {
   /// Listening sockets: port -> socket
@@ -16,14 +18,16 @@ pub struct VirtualNetwork {
   pending : Map[Int, Array[VSocket]]
 }
 
+///|
 pub fn VirtualNetwork::new() -> VirtualNetwork {
   { listeners: {}, connections: [], pending: {} }
 }
 
+///|
 /// Register a listening socket
 pub fn VirtualNetwork::register_listener(
   self : VirtualNetwork,
-  socket : VSocket
+  socket : VSocket,
 ) -> Unit raise NetError {
   match socket.get_local_addr() {
     Some(addr) => {
@@ -37,11 +41,12 @@ pub fn VirtualNetwork::register_listener(
   }
 }
 
+///|
 /// Connect to a listening socket
 pub fn VirtualNetwork::connect(
   self : VirtualNetwork,
   client : VSocket,
-  addr : NetAddr
+  addr : NetAddr,
 ) -> Unit raise NetError {
   match self.listeners.get(addr.port) {
     Some(_listener) => {
@@ -54,19 +59,21 @@ pub fn VirtualNetwork::connect(
         None => self.pending[addr.port] = [client]
       }
     }
-    None => raise NetError::ConnectionRefused("No listener on port \{addr.port}")
+    None =>
+      raise NetError::ConnectionRefused("No listener on port \{addr.port}")
   }
 }
 
+///|
 /// Accept a pending connection (returns client socket)
 pub fn VirtualNetwork::accept(
   self : VirtualNetwork,
-  server : VSocket
+  server : VSocket,
 ) -> VSocket? {
   match server.get_local_addr() {
-    Some(addr) => {
+    Some(addr) =>
       match self.pending.get(addr.port) {
-        Some(pending_list) => {
+        Some(pending_list) =>
           if pending_list.length() > 0 {
             let client = pending_list.remove(0)
             // Create server-side socket for this connection
@@ -75,19 +82,17 @@ pub fn VirtualNetwork::accept(
 
             // Register connection
             self.connections.push({ client, server: conn_socket })
-
             Some(conn_socket)
           } else {
             None
           }
-        }
         None => None
       }
-    }
     None => None
   }
 }
 
+///|
 /// Transfer data between connected sockets
 pub fn VirtualNetwork::transfer(self : VirtualNetwork) -> Unit {
   for conn in self.connections {
@@ -105,6 +110,7 @@ pub fn VirtualNetwork::transfer(self : VirtualNetwork) -> Unit {
   }
 }
 
+///|
 /// Check if there are pending connections
 pub fn VirtualNetwork::has_pending(self : VirtualNetwork, port : Int) -> Bool {
   match self.pending.get(port) {
@@ -113,6 +119,7 @@ pub fn VirtualNetwork::has_pending(self : VirtualNetwork, port : Int) -> Bool {
   }
 }
 
+///|
 /// Remove closed connections
 pub fn VirtualNetwork::cleanup(self : VirtualNetwork) -> Unit {
   let active : Array[Connection] = []

@@ -1,6 +1,7 @@
 ///| POSIX context - the main interface for POSIX operations
 
-///| Helper: copy bytes slice
+///|
+/// Helper: copy bytes slice
 fn bytes_slice(data : Bytes, start : Int, end : Int) -> Bytes {
   let len = end - start
   if len <= 0 {
@@ -9,47 +10,56 @@ fn bytes_slice(data : Bytes, start : Int, end : Int) -> Bytes {
   Bytes::makei(len, fn(i) { data[start + i] })
 }
 
-///| Helper: concatenate bytes
+///|
+/// Helper: concatenate bytes
 fn bytes_concat(a : Bytes, b : Bytes) -> Bytes {
   a + b
 }
 
-///| Open file handle
+///|
+/// Open file handle
 struct FileHandle {
   path : String
   flags : OpenFlags
   mut position : Int
 }
 
-///| Standard stream type
+///|
+/// Standard stream type
 pub(all) enum StdStream {
   Stdin
   Stdout
   Stderr
 }
 
-///| Standard stream handler
+///|
+/// Standard stream handler
 pub(open) trait StdStreamHandler {
   read(Self, StdStream, Int) -> Bytes
   write(Self, StdStream, Bytes) -> Int
 }
 
-///| Null stream handler (discards output, returns empty input)
+///|
+/// Null stream handler (discards output, returns empty input)
 pub struct NullStreamHandler {}
 
+///|
 pub fn NullStreamHandler::new() -> NullStreamHandler {
   NullStreamHandler::{  }
 }
 
+///|
 pub impl StdStreamHandler for NullStreamHandler with read(_self, _stream, _len) {
   b""
 }
 
+///|
 pub impl StdStreamHandler for NullStreamHandler with write(_self, _stream, data) {
   data.length()
 }
 
-///| Buffered stream handler (stores output in memory)
+///|
+/// Buffered stream handler (stores output in memory)
 pub struct BufferedStreamHandler {
   mut stdout : Bytes
   mut stderr : Bytes
@@ -57,27 +67,30 @@ pub struct BufferedStreamHandler {
   mut stdin_pos : Int
 }
 
+///|
 pub fn BufferedStreamHandler::new() -> BufferedStreamHandler {
   { stdout: b"", stderr: b"", stdin: b"", stdin_pos: 0 }
 }
 
-pub fn BufferedStreamHandler::with_stdin(input : Bytes) -> BufferedStreamHandler {
+///|
+pub fn BufferedStreamHandler::with_stdin(
+  input : Bytes,
+) -> BufferedStreamHandler {
   { stdout: b"", stderr: b"", stdin: input, stdin_pos: 0 }
 }
 
+///|
 pub fn BufferedStreamHandler::get_stdout(self : BufferedStreamHandler) -> Bytes {
   self.stdout
 }
 
+///|
 pub fn BufferedStreamHandler::get_stderr(self : BufferedStreamHandler) -> Bytes {
   self.stderr
 }
 
-pub impl StdStreamHandler for BufferedStreamHandler with read(
-  self,
-  stream,
-  len
-) {
+///|
+pub impl StdStreamHandler for BufferedStreamHandler with read(self, stream, len) {
   match stream {
     Stdin => {
       let available = self.stdin.length() - self.stdin_pos
@@ -85,7 +98,11 @@ pub impl StdStreamHandler for BufferedStreamHandler with read(
       if to_read <= 0 {
         return b""
       }
-      let result = bytes_slice(self.stdin, self.stdin_pos, self.stdin_pos + to_read)
+      let result = bytes_slice(
+        self.stdin,
+        self.stdin_pos,
+        self.stdin_pos + to_read,
+      )
       self.stdin_pos += to_read
       result
     }
@@ -93,10 +110,11 @@ pub impl StdStreamHandler for BufferedStreamHandler with read(
   }
 }
 
+///|
 pub impl StdStreamHandler for BufferedStreamHandler with write(
   self,
   stream,
-  data
+  data,
 ) {
   match stream {
     Stdin => 0 // Cannot write to input stream
@@ -111,7 +129,8 @@ pub impl StdStreamHandler for BufferedStreamHandler with write(
   }
 }
 
-///| POSIX context
+///|
+/// POSIX context
 pub struct PosixContext {
   fs : &@fs.FileSystemBackend
   streams : &StdStreamHandler
@@ -121,32 +140,31 @@ pub struct PosixContext {
   mut next_fd : Int
 }
 
-///| Create a new POSIX context
+///|
+/// Create a new POSIX context
 pub fn PosixContext::new(
   fs : &@fs.FileSystemBackend,
-  streams : &StdStreamHandler
+  streams : &StdStreamHandler,
 ) -> PosixContext {
   let env : Map[String, String] = {}
   env.set("HOME", "/home")
   env.set("PATH", "/bin:/usr/bin")
   env.set("PWD", "/")
-  {
-    fs,
-    streams,
-    cwd: "/",
-    env,
-    fds: {},
-    next_fd: 3, // 0, 1, 2 are reserved for stdin/stdout/stderr
-  }
+  { fs, streams, cwd: "/", env, fds: {}, next_fd: 3 } // 0, 1, 2 are reserved for stdin/stdout/stderr
 }
 
-///| Get current working directory
+///|
+/// Get current working directory
 pub fn PosixContext::getcwd(self : PosixContext) -> String {
   self.cwd
 }
 
-///| Change current working directory
-pub fn PosixContext::chdir(self : PosixContext, path : String) -> Unit raise PosixError {
+///|
+/// Change current working directory
+pub fn PosixContext::chdir(
+  self : PosixContext,
+  path : String,
+) -> Unit raise PosixError {
   let abs_path = self.resolve_path(path)
   if not(self.fs.is_dir(abs_path)) {
     raise PosixError::ENOTDIR(path)
@@ -155,7 +173,8 @@ pub fn PosixContext::chdir(self : PosixContext, path : String) -> Unit raise Pos
   self.env.set("PWD", abs_path)
 }
 
-///| Resolve relative path to absolute
+///|
+/// Resolve relative path to absolute
 pub fn PosixContext::resolve_path(self : PosixContext, path : String) -> String {
   if path.has_prefix("/") {
     @fs.normalize_path(path)
@@ -164,27 +183,33 @@ pub fn PosixContext::resolve_path(self : PosixContext, path : String) -> String 
   }
 }
 
-///| Get environment variable
+///|
+/// Get environment variable
 pub fn PosixContext::getenv(self : PosixContext, name : String) -> String? {
   self.env.get(name)
 }
 
-///| Set environment variable
+///|
+/// Set environment variable
 pub fn PosixContext::setenv(
   self : PosixContext,
   name : String,
-  value : String
+  value : String,
 ) -> Unit {
   self.env.set(name, value)
 }
 
-///| Unset environment variable
+///|
+/// Unset environment variable
 pub fn PosixContext::unsetenv(self : PosixContext, name : String) -> Unit {
   self.env.remove(name)
 }
 
-///| Get all environment variables
-pub fn PosixContext::get_all_env(self : PosixContext) -> Array[(String, String)] {
+///|
+/// Get all environment variables
+pub fn PosixContext::get_all_env(
+  self : PosixContext,
+) -> Array[(String, String)] {
   let result : Array[(String, String)] = []
   for k, v in self.env {
     result.push((k, v))
@@ -192,11 +217,12 @@ pub fn PosixContext::get_all_env(self : PosixContext) -> Array[(String, String)]
   result
 }
 
-///| Open a file
+///|
+/// Open a file
 pub fn PosixContext::open(
   self : PosixContext,
   path : String,
-  flags : OpenFlags
+  flags : OpenFlags,
 ) -> Int raise PosixError {
   let abs_path = self.resolve_path(path)
 
@@ -219,13 +245,14 @@ pub fn PosixContext::open(
 
   // Truncate if requested
   if flags.truncate && flags.write {
-    self.fs.write_file(abs_path, b"") catch { e => raise fs_error_to_posix(e) }
+    self.fs.write_file(abs_path, b"") catch {
+      e => raise fs_error_to_posix(e)
+    }
   }
 
   // Allocate file descriptor
   let fd = self.next_fd
   self.next_fd += 1
-
   let handle = FileHandle::{ path: abs_path, flags, position: 0 }
 
   // Set position to end if append mode
@@ -233,13 +260,16 @@ pub fn PosixContext::open(
     let stat = self.fs.stat(abs_path) catch { e => raise fs_error_to_posix(e) }
     handle.position = stat.size
   }
-
   self.fds.set(fd, handle)
   fd
 }
 
-///| Close a file
-pub fn PosixContext::close(self : PosixContext, fd : Int) -> Unit raise PosixError {
+///|
+/// Close a file
+pub fn PosixContext::close(
+  self : PosixContext,
+  fd : Int,
+) -> Unit raise PosixError {
   if fd < 3 {
     // Cannot close standard streams
     return
@@ -250,11 +280,12 @@ pub fn PosixContext::close(self : PosixContext, fd : Int) -> Unit raise PosixErr
   self.fds.remove(fd)
 }
 
-///| Read from file descriptor
+///|
+/// Read from file descriptor
 pub fn PosixContext::read(
   self : PosixContext,
   fd : Int,
-  len : Int
+  len : Int,
 ) -> Bytes raise PosixError {
   // Handle standard streams
   if fd == STDIN_FD {
@@ -263,36 +294,32 @@ pub fn PosixContext::read(
   if fd == STDOUT_FD || fd == STDERR_FD {
     return b"" // Cannot read from output streams
   }
-
   let handle = match self.fds.get(fd) {
     None => raise PosixError::EBADF("invalid fd: " + fd.to_string())
     Some(h) => h
   }
-
   if not(handle.flags.read) {
     raise PosixError::EBADF("fd not open for reading")
   }
-
   let data = self.fs.read_file(handle.path) catch {
     e => raise fs_error_to_posix(e)
   }
-
   let available = data.length() - handle.position
   let to_read = if len < available { len } else { available }
   if to_read <= 0 {
     return b""
   }
-
   let result = bytes_slice(data, handle.position, handle.position + to_read)
   handle.position += to_read
   result
 }
 
-///| Write to file descriptor
+///|
+/// Write to file descriptor
 pub fn PosixContext::write(
   self : PosixContext,
   fd : Int,
-  data : Bytes
+  data : Bytes,
 ) -> Int raise PosixError {
   // Handle standard streams
   if fd == STDOUT_FD {
@@ -304,16 +331,13 @@ pub fn PosixContext::write(
   if fd == STDIN_FD {
     return 0 // Cannot write to stdin
   }
-
   let handle = match self.fds.get(fd) {
     None => raise PosixError::EBADF("invalid fd: " + fd.to_string())
     Some(h) => h
   }
-
   if not(handle.flags.write) {
     raise PosixError::EBADF("fd not open for writing")
   }
-
   let current = self.fs.read_file(handle.path) catch { _ => b"" }
 
   // Build new content
@@ -333,44 +357,38 @@ pub fn PosixContext::write(
     }
     bytes_concat(bytes_concat(before, data), after)
   }
-
   self.fs.write_file(handle.path, new_data) catch {
     e => raise fs_error_to_posix(e)
   }
-
   handle.position += data.length()
   data.length()
 }
 
-///| Seek in file
+///|
+/// Seek in file
 pub fn PosixContext::lseek(
   self : PosixContext,
   fd : Int,
   offset : Int,
-  whence : Int // 0=SEEK_SET, 1=SEEK_CUR, 2=SEEK_END
+  whence : Int, // 0=SEEK_SET, 1=SEEK_CUR, 2=SEEK_END
 ) -> Int raise PosixError {
   if fd < 3 {
     raise PosixError::EINVAL("cannot seek on standard streams")
   }
-
   let handle = match self.fds.get(fd) {
     None => raise PosixError::EBADF("invalid fd")
     Some(h) => h
   }
-
   let stat = self.fs.stat(handle.path) catch { e => raise fs_error_to_posix(e) }
-
   let new_pos = match whence {
     0 => offset // SEEK_SET
     1 => handle.position + offset // SEEK_CUR
     2 => stat.size + offset // SEEK_END
     _ => raise PosixError::EINVAL("invalid whence")
   }
-
   if new_pos < 0 {
     raise PosixError::EINVAL("negative position")
   }
-
   handle.position = new_pos
   new_pos
 }

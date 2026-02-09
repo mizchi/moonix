@@ -1,35 +1,36 @@
 ///| Shell token types
 
+///|
 /// Token types for shell lexer
 pub enum TokenKind {
   // Literals
-  Word(String)           // command name, argument, etc.
-  IoNumber(Int)          // file descriptor number before redirection
+  Word(String) // command name, argument, etc.
+  IoNumber(Int) // file descriptor number before redirection
 
   // Operators
-  Pipe                   // |
-  PipeAnd                // |&  (pipe stdout and stderr)
-  And                    // &&
-  Or                     // ||
-  Semi                   // ;
-  Amp                    // &
-  Newline                // \n (significant in shell)
+  Pipe // |
+  PipeAnd // |&  (pipe stdout and stderr)
+  And // &&
+  Or // ||
+  Semi // ;
+  Amp // &
+  Newline // \n (significant in shell)
 
   // Redirections
-  Less                   // <
-  Great                  // >
-  DLess                  // <<  (here-doc)
-  DGreat                 // >>  (append)
-  LessAnd                // <&
-  GreatAnd               // >&
-  LessGreat              // <>  (open for read/write)
-  Clobber                // >|  (force overwrite)
+  Less // <
+  Great // >
+  DLess // <<  (here-doc)
+  DGreat // >>  (append)
+  LessAnd // <&
+  GreatAnd // >&
+  LessGreat // <>  (open for read/write)
+  Clobber // >|  (force overwrite)
 
   // Grouping
-  LParen                 // (
-  RParen                 // )
-  LBrace                 // {
-  RBrace                 // }
+  LParen // (
+  RParen // )
+  LBrace // {
+  RBrace // }
 
   // Reserved words
   If
@@ -48,15 +49,16 @@ pub enum TokenKind {
   Function
 
   // Special
-  Bang                   // ! (negation)
+  Bang // ! (negation)
 
   // Assignment
-  Assignment(String, String)  // name=value
+  Assignment(String, String) // name=value
 
   // End of input
   Eof
 }
 
+///|
 /// Token with position information
 pub struct Token {
   kind : TokenKind
@@ -64,18 +66,22 @@ pub struct Token {
   col : Int
 }
 
+///|
 pub fn Token::new(kind : TokenKind, line : Int, col : Int) -> Token {
   { kind, line, col }
 }
 
+///|
 pub fn Token::word(s : String, line : Int, col : Int) -> Token {
   { kind: Word(s), line, col }
 }
 
+///|
 pub fn Token::eof(line : Int, col : Int) -> Token {
   { kind: Eof, line, col }
 }
 
+///|
 /// Check if token is a word
 pub fn Token::is_word(self : Token) -> Bool {
   match self.kind {
@@ -84,6 +90,7 @@ pub fn Token::is_word(self : Token) -> Bool {
   }
 }
 
+///|
 /// Get word value if token is a word
 pub fn Token::get_word(self : Token) -> String? {
   match self.kind {
@@ -92,14 +99,29 @@ pub fn Token::get_word(self : Token) -> String? {
   }
 }
 
+///|
 /// Check if token is a reserved word
 pub fn Token::is_reserved(self : Token) -> Bool {
   match self.kind {
-    If | Then | Else | Elif | Fi | While | Until | For | Do | Done | Case | Esac | In | Function => true
+    If
+    | Then
+    | Else
+    | Elif
+    | Fi
+    | While
+    | Until
+    | For
+    | Do
+    | Done
+    | Case
+    | Esac
+    | In
+    | Function => true
     _ => false
   }
 }
 
+///|
 /// Check if token is a separator
 pub fn Token::is_separator(self : Token) -> Bool {
   match self.kind {
@@ -108,14 +130,17 @@ pub fn Token::is_separator(self : Token) -> Bool {
   }
 }
 
+///|
 /// Check if token starts a redirection
 pub fn Token::is_redirect(self : Token) -> Bool {
   match self.kind {
-    Less | Great | DLess | DGreat | LessAnd | GreatAnd | LessGreat | Clobber => true
+    Less | Great | DLess | DGreat | LessAnd | GreatAnd | LessGreat | Clobber =>
+      true
     _ => false
   }
 }
 
+///|
 pub impl Show for TokenKind with output(self, logger) {
   match self {
     Word(s) => logger.write_string("Word(\{s})")

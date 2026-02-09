@@ -83,7 +83,10 @@ The shell module (`@shell`) with built-in commands is temporarily disabled while
 | `@wasm` | WASM module execution with capability control |
 | `@capability` | Capability-based permission system |
 | `@sh` | Shell parser and AST |
-| `@wasi` | WASI host filesystem bridge |
+| `@wasi_posix` | WASI-to-POSIX adapter via host contracts (`WasiFsHost` / `WasiCliHost`) |
+| `@wasi` | Backward-compatible facade to `@wasi_posix` preview2 constructors |
+
+Design note: see `docs/wasi_posix.md` for preview2/preview3 layering.
 
 ## Related projects
 

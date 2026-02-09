@@ -1,5 +1,6 @@
 ///| Cooperative scheduler for process management
 
+///|
 /// Process table
 pub struct Scheduler {
   processes : Map[Int, Process]
@@ -9,22 +10,18 @@ pub struct Scheduler {
   mut tick : Int
 }
 
+///|
 pub fn Scheduler::new() -> Scheduler {
-  {
-    processes: {},
-    current: None,
-    ready_queue: [],
-    semaphores: {},
-    tick: 0,
-  }
+  { processes: {}, current: None, ready_queue: [], semaphores: {}, tick: 0 }
 }
 
+///|
 /// Spawn a new process
 pub fn Scheduler::spawn(
   self : Scheduler,
   name : String,
   step_fn : ProcessFn,
-  parent : Pid?
+  parent : Pid?,
 ) -> Pid {
   let proc = Process::new(name, step_fn, parent)
   let pid = proc.get_pid()
@@ -43,34 +40,34 @@ pub fn Scheduler::spawn(
     }
     None => ()
   }
-
   pid
 }
 
+///|
 /// Kill a process
 pub fn Scheduler::kill(
   self : Scheduler,
   pid : Pid,
-  sig : Signal
+  sig : Signal,
 ) -> Unit raise ProcError {
   let Pid(p) = pid
   match self.processes.get(p) {
-    Some(proc) => {
+    Some(proc) =>
       match sig {
         SIGKILL => {
           // Force kill - immediately terminate
           proc.state = Zombie
-          proc.exit_code = Some(137)  // 128 + 9
+          proc.exit_code = Some(137) // 128 + 9
           self.remove_from_ready(pid)
           self.cleanup_waiters(pid)
         }
         _ => proc.send_signal(sig)
       }
-    }
     None => raise ProcError::NotFound("Process \{p} not found")
   }
 }
 
+///|
 /// Wait for a process to finish
 pub fn Scheduler::waitpid(self : Scheduler, pid : Pid) -> Int? {
   let Pid(p) = pid
@@ -78,12 +75,13 @@ pub fn Scheduler::waitpid(self : Scheduler, pid : Pid) -> Int? {
     Some(proc) =>
       match proc.get_state() {
         Zombie => proc.get_exit_code()
-        _ => None  // Not finished yet
+        _ => None // Not finished yet
       }
-    None => Some(-1)  // Process doesn't exist
+    None => Some(-1) // Process doesn't exist
   }
 }
 
+///|
 /// Reap a zombie process
 pub fn Scheduler::reap(self : Scheduler, pid : Pid) -> Int raise ProcError {
   let Pid(p) = pid
@@ -99,6 +97,7 @@ pub fn Scheduler::reap(self : Scheduler, pid : Pid) -> Int raise ProcError {
               match self.processes.get(pp) {
                 Some(parent_proc) => {
                   let _ = parent_proc.remove_child(pid)
+
                 }
                 None => ()
               }
@@ -115,16 +114,19 @@ pub fn Scheduler::reap(self : Scheduler, pid : Pid) -> Int raise ProcError {
   }
 }
 
+///|
 /// Register a semaphore
 pub fn Scheduler::register_semaphore(self : Scheduler, sem : Semaphore) -> Unit {
   self.semaphores[sem.get_id()] = sem
 }
 
+///|
 /// Get a semaphore
 pub fn Scheduler::get_semaphore(self : Scheduler, id : Int) -> Semaphore? {
   self.semaphores.get(id)
 }
 
+///|
 /// Run one scheduling tick - execute one ready process
 pub fn Scheduler::tick(self : Scheduler) -> Bool {
   self.tick += 1
@@ -145,14 +147,12 @@ pub fn Scheduler::tick(self : Scheduler) -> Bool {
 
   // Get next ready process
   if self.ready_queue.is_empty() {
-    return false  // No runnable processes
+    return false // No runnable processes
   }
-
   let pid = self.ready_queue.remove(0)
   let Pid(p) = pid
-
   match self.processes.get(p) {
-    Some(proc) => {
+    Some(proc) =>
       match proc.get_state() {
         Ready | Running => {
           self.current = Some(pid)
@@ -161,22 +161,21 @@ pub fn Scheduler::tick(self : Scheduler) -> Bool {
           self.current = None
           true
         }
-        _ => {
+        _ =>
           // Process not ready, try next
           self.tick()
-        }
       }
-    }
-    None => self.tick()  // Process disappeared, try next
+    None => self.tick() // Process disappeared, try next
   }
 }
 
+///|
 /// Handle the result of a process step
 fn Scheduler::handle_step_result(
   self : Scheduler,
   pid : Pid,
   proc : Process,
-  result : StepResult
+  result : StepResult,
 ) -> Unit {
   match result {
     Continue => {
@@ -193,10 +192,10 @@ fn Scheduler::handle_step_result(
       proc.state = Sleeping
       proc.sleep_ticks = ticks
     }
-    WaitSem(sem_id) => {
+    WaitSem(sem_id) =>
       // Block on semaphore
       match self.semaphores.get(sem_id) {
-        Some(sem) => {
+        Some(sem) =>
           if sem.try_acquire(pid) {
             // Got the semaphore, continue
             proc.state = Ready
@@ -206,14 +205,12 @@ fn Scheduler::handle_step_result(
             proc.state = Blocked
             proc.waiting_sem = Some(sem_id)
           }
-        }
         None => {
           // Invalid semaphore, just continue
           proc.state = Ready
           self.ready_queue.push(pid)
         }
       }
-    }
     WaitPid(wait_pid) => {
       // Wait for another process
       let Pid(wp) = wait_pid
@@ -246,6 +243,7 @@ fn Scheduler::handle_step_result(
   }
 }
 
+///|
 /// Wake processes waiting for a specific PID
 fn Scheduler::wake_waiters_for(self : Scheduler, finished_pid : Pid) -> Unit {
   let Pid(fp) = finished_pid
@@ -264,10 +262,11 @@ fn Scheduler::wake_waiters_for(self : Scheduler, finished_pid : Pid) -> Unit {
   }
 }
 
+///|
 /// Release a semaphore and wake blocked processes
 pub fn Scheduler::release_semaphore(self : Scheduler, sem_id : Int) -> Unit {
   match self.semaphores.get(sem_id) {
-    Some(sem) => {
+    Some(sem) =>
       match sem.release() {
         Some(woken_pid) => {
           let Pid(wp) = woken_pid
@@ -282,11 +281,11 @@ pub fn Scheduler::release_semaphore(self : Scheduler, sem_id : Int) -> Unit {
         }
         None => ()
       }
-    }
     None => ()
   }
 }
 
+///|
 /// Remove PID from ready queue
 fn Scheduler::remove_from_ready(self : Scheduler, pid : Pid) -> Unit {
   let Pid(target) = pid
@@ -299,16 +298,19 @@ fn Scheduler::remove_from_ready(self : Scheduler, pid : Pid) -> Unit {
   }
 }
 
+///|
 /// Cleanup waiters when a process is killed
 fn Scheduler::cleanup_waiters(self : Scheduler, pid : Pid) -> Unit {
   // Remove from semaphore waiters
   for _, sem in self.semaphores {
     let _ = sem.remove_waiter(pid)
+
   }
   // Wake processes waiting for this one
   self.wake_waiters_for(pid)
 }
 
+///|
 /// Run until no processes are ready
 pub fn Scheduler::run(self : Scheduler) -> Unit {
   while self.tick() {
@@ -316,6 +318,7 @@ pub fn Scheduler::run(self : Scheduler) -> Unit {
   }
 }
 
+///|
 /// Run for at most N ticks
 pub fn Scheduler::run_n(self : Scheduler, max_ticks : Int) -> Int {
   let mut count = 0
@@ -325,27 +328,32 @@ pub fn Scheduler::run_n(self : Scheduler, max_ticks : Int) -> Int {
   count
 }
 
+///|
 /// Get current tick count
 pub fn Scheduler::get_tick(self : Scheduler) -> Int {
   self.tick
 }
 
+///|
 /// Get number of processes
 pub fn Scheduler::process_count(self : Scheduler) -> Int {
   self.processes.length()
 }
 
+///|
 /// Get ready queue length
 pub fn Scheduler::ready_count(self : Scheduler) -> Int {
   self.ready_queue.length()
 }
 
+///|
 /// Get a process by PID
 pub fn Scheduler::get_process(self : Scheduler, pid : Pid) -> Process? {
   let Pid(p) = pid
   self.processes.get(p)
 }
 
+///|
 /// List all PIDs
 pub fn Scheduler::list_pids(self : Scheduler) -> Array[Pid] {
   let pids : Array[Pid] = []
@@ -355,6 +363,7 @@ pub fn Scheduler::list_pids(self : Scheduler) -> Array[Pid] {
   pids
 }
 
+///|
 /// Get currently running process
 pub fn Scheduler::current_pid(self : Scheduler) -> Pid? {
   self.current

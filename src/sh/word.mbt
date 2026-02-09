@@ -1,14 +1,13 @@
 ///| Word parsing - converts raw word strings into WordPart structures
 
+///|
 /// Parse a word string into Word with parts
 pub fn parse_word_parts(s : String) -> Word {
   let parts : Array[WordPart] = []
   let chars = string_to_chars(s)
   let mut i = 0
-
   while i < chars.length() {
     let c = chars[i]
-
     if c == '\'' {
       // Single-quoted string - find closing quote
       let start = i + 1
@@ -18,14 +17,14 @@ pub fn parse_word_parts(s : String) -> Word {
       }
       let content = chars_to_string(chars, start, i)
       parts.push(SingleQuoted(content))
-      i += 1  // skip closing quote
+      i += 1 // skip closing quote
     } else if c == '"' {
       // Double-quoted string - parse with expansion
       let inner_parts = parse_double_quoted(chars, i + 1)
       for p in inner_parts.0 {
         parts.push(p)
       }
-      i = inner_parts.1 + 1  // skip past closing quote
+      i = inner_parts.1 + 1 // skip past closing quote
     } else if c == '$' {
       // Variable or special
       let var_result = parse_variable(chars, i)
@@ -53,7 +52,6 @@ pub fn parse_word_parts(s : String) -> Word {
       }
     }
   }
-
   if parts.is_empty() {
     Word::literal("")
   } else {
@@ -61,12 +59,15 @@ pub fn parse_word_parts(s : String) -> Word {
   }
 }
 
+///|
 /// Parse inside double quotes, returns (parts, end_position)
-fn parse_double_quoted(chars : Array[Char], start : Int) -> (Array[WordPart], Int) {
+fn parse_double_quoted(
+  chars : Array[Char],
+  start : Int,
+) -> (Array[WordPart], Int) {
   let parts : Array[WordPart] = []
   let mut i = start
   let buf = StringBuilder::new()
-
   fn flush_literal() -> Unit {
     if buf.to_string().length() > 0 {
       parts.push(Literal(buf.to_string()))
@@ -76,7 +77,6 @@ fn parse_double_quoted(chars : Array[Char], start : Int) -> (Array[WordPart], In
 
   while i < chars.length() && chars[i] != '"' {
     let c = chars[i]
-
     if c == '$' {
       flush_literal()
       let var_result = parse_variable(chars, i)
@@ -118,28 +118,39 @@ fn parse_double_quoted(chars : Array[Char], start : Int) -> (Array[WordPart], In
       i += 1
     }
   }
-
   flush_literal()
   (parts, i)
 }
 
+///|
 /// Parse a variable starting at position i (which is $)
 fn parse_variable(chars : Array[Char], start : Int) -> (WordPart, Int) {
-  let mut i = start + 1  // skip $
-
+  let mut i = start + 1 // skip $
   if i >= chars.length() {
     // Just a bare $ at end
     return (Literal("$"), i)
   }
-
   let c = chars[i]
 
   // Special single-character variables
   match c {
-    '?' | '$' | '!' | '@' | '*' | '#' | '-' | '0' | '1' | '2' | '3' |
-    '4' | '5' | '6' | '7' | '8' | '9' => {
-      return (SpecialVar(c), i + 1)
-    }
+    '?'
+    | '$'
+    | '!'
+    | '@'
+    | '*'
+    | '#'
+    | '-'
+    | '0'
+    | '1'
+    | '2'
+    | '3'
+    | '4'
+    | '5'
+    | '6'
+    | '7'
+    | '8'
+    | '9' => return (SpecialVar(c), i + 1)
     _ => ()
   }
 
@@ -154,7 +165,7 @@ fn parse_variable(chars : Array[Char], start : Int) -> (WordPart, Int) {
     }
     let name = chars_to_string(chars, name_start, i)
     if i < chars.length() {
-      i += 1  // skip }
+      i += 1 // skip }
     }
     return (Variable(name), i)
   }
@@ -178,7 +189,7 @@ fn parse_variable(chars : Array[Char], start : Int) -> (WordPart, Int) {
         i += 1
       }
       let expr = chars_to_string(chars, expr_start, i)
-      i += 2  // skip ))
+      i += 2 // skip ))
       return (ArithSub(expr), i)
     } else {
       // Command substitution $(cmd)
@@ -196,7 +207,7 @@ fn parse_variable(chars : Array[Char], start : Int) -> (WordPart, Int) {
       }
       let cmd_str = chars_to_string(chars, cmd_start, i)
       if i < chars.length() {
-        i += 1  // skip )
+        i += 1 // skip )
       }
       // TODO: Actually parse the command
       // For now, store as literal placeholder
@@ -225,6 +236,7 @@ fn parse_variable(chars : Array[Char], start : Int) -> (WordPart, Int) {
 
 // Helper functions
 
+///|
 fn string_to_chars(s : String) -> Array[Char] {
   let chars : Array[Char] = []
   for c in s {
@@ -233,6 +245,7 @@ fn string_to_chars(s : String) -> Array[Char] {
   chars
 }
 
+///|
 fn chars_to_string(chars : Array[Char], start : Int, end : Int) -> String {
   let buf = StringBuilder::new()
   for i = start; i < end && i < chars.length(); i = i + 1 {
@@ -241,6 +254,7 @@ fn chars_to_string(chars : Array[Char], start : Int, end : Int) -> String {
   buf.to_string()
 }
 
+///|
 fn find_char_from(chars : Array[Char], target : Char, start : Int) -> Int? {
   for i = start; i < chars.length(); i = i + 1 {
     if chars[i] == target {

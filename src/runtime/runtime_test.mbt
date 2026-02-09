@@ -1,11 +1,12 @@
-///| Tests for AgentRuntime
-
+///|
+/// Tests for AgentRuntime
 test "AgentRuntime::sandbox creates sandbox runtime" {
   let rt = @runtime.AgentRuntime::sandbox()
   assert_true(rt.exists("/"))
   assert_eq(rt.getcwd(), "/")
 }
 
+///|
 test "AgentRuntime::read_write with sandbox permissions" {
   let rt = @runtime.AgentRuntime::sandbox()
   rt.set_timestamp_provider(fn() { 1000L })
@@ -17,6 +18,7 @@ test "AgentRuntime::read_write with sandbox permissions" {
   assert_eq(content, "hello")
 }
 
+///|
 test "AgentRuntime::sandbox denies write outside /tmp" {
   let rt = @runtime.AgentRuntime::sandbox()
 
@@ -31,6 +33,7 @@ test "AgentRuntime::sandbox denies write outside /tmp" {
   assert_true(result is Err(_))
 }
 
+///|
 test "AgentRuntime::snapshot and rollback" {
   let rt = @runtime.AgentRuntime::developer()
   rt.set_timestamp_provider(fn() { 1000L })
@@ -50,6 +53,7 @@ test "AgentRuntime::snapshot and rollback" {
   assert_eq(rt.read_string("/home/file.txt"), "version 1")
 }
 
+///|
 test "AgentRuntime::rollback reports irreversible effects" {
   let rt = @runtime.AgentRuntime::developer()
   let mut ts = 1000L
@@ -74,6 +78,7 @@ test "AgentRuntime::rollback reports irreversible effects" {
   assert_true(result.warning is Some(_))
 }
 
+///|
 test "AgentRuntime::mcp_call checks capability" {
   let config = @runtime.RuntimeConfig::agent(
     "test-agent",
@@ -102,18 +107,20 @@ test "AgentRuntime::mcp_call checks capability" {
   assert_true(denied is Err(_))
 }
 
+///|
 test "AgentRuntime::http_request logs effect" {
-  let config = @runtime.RuntimeConfig::agent(
-    "test-agent",
-    [],
-    [],
-    ["api.example.com"],
-  )
+  let config = @runtime.RuntimeConfig::agent("test-agent", [], [], [
+    "api.example.com",
+  ])
   let rt = @runtime.AgentRuntime::new(config)
   rt.set_timestamp_provider(fn() { 1000L })
 
   // Make request
-  let response = rt.http_request("GET", "https://api.example.com/data", None, fn(_, _, _) {
+  let response = rt.http_request("GET", "https://api.example.com/data", None, fn(
+    _,
+    _,
+    _,
+  ) {
     { status: 200, body: b"response" }
   })
   assert_eq(response.status, 200)
@@ -123,6 +130,7 @@ test "AgentRuntime::http_request logs effect" {
   assert_eq(effects.length(), 1)
 }
 
+///|
 test "AgentRuntime::environment variables" {
   let rt = @runtime.AgentRuntime::developer()
 
@@ -135,10 +143,10 @@ test "AgentRuntime::environment variables" {
   assert_true(all_env.length() > 0)
 }
 
+///|
 test "AgentRuntime::working directory" {
   let rt = @runtime.AgentRuntime::developer()
   rt.mkdir_p("/home/user")
-
   assert_eq(rt.getcwd(), "/")
   rt.chdir("/home/user")
   assert_eq(rt.getcwd(), "/home/user")
@@ -148,20 +156,19 @@ test "AgentRuntime::working directory" {
   assert_eq(abs, "/home/user/file.txt")
 }
 
+///|
 test "AgentRuntime::has_changes tracks dirty state" {
   let rt = @runtime.AgentRuntime::developer()
   rt.set_timestamp_provider(fn() { 1000L })
-
   assert_false(rt.has_changes())
-
   rt.mkdir_p("/home")
   rt.write_string("/home/test.txt", "content")
   assert_true(rt.has_changes())
-
   let _ = rt.snapshot("Save changes")
   assert_false(rt.has_changes())
 }
 
+///|
 test "AgentRuntime::history returns commits" {
   let rt = @runtime.AgentRuntime::developer()
   let mut ts = 1000L
@@ -170,14 +177,11 @@ test "AgentRuntime::history returns commits" {
     ts = ts + 100L
     t
   })
-
   rt.mkdir_p("/home")
   rt.write_string("/home/a.txt", "a")
   let _ = rt.snapshot("First")
-
   rt.write_string("/home/b.txt", "b")
   let _ = rt.snapshot("Second")
-
   let history = rt.history()
   assert_eq(history.length(), 2)
   assert_eq(history[0].message, "Second")

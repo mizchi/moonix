@@ -1,19 +1,21 @@
 ///| POSIX types and constants
 
-///| POSIX error codes
+///|
+/// POSIX error codes
 pub(all) suberror PosixError {
-  ENOENT(String)   // No such file or directory
-  EEXIST(String)   // File exists
-  ENOTDIR(String)  // Not a directory
-  EISDIR(String)   // Is a directory
-  EBADF(String)    // Bad file descriptor
-  EINVAL(String)   // Invalid argument
-  EIO(String)      // I/O error
-  EACCES(String)   // Permission denied
+  ENOENT(String) // No such file or directory
+  EEXIST(String) // File exists
+  ENOTDIR(String) // Not a directory
+  EISDIR(String) // Is a directory
+  EBADF(String) // Bad file descriptor
+  EINVAL(String) // Invalid argument
+  EIO(String) // I/O error
+  EACCES(String) // Permission denied
   ENOTEMPTY(String) // Directory not empty
 } derive(Show, Eq)
 
-///| Convert FsError to PosixError
+///|
+/// Convert FsError to PosixError
 pub fn fs_error_to_posix(err : @fs.FsError) -> PosixError {
   match err {
     @fs.FsError::NotFound(p) => PosixError::ENOENT(p)
@@ -28,7 +30,8 @@ pub fn fs_error_to_posix(err : @fs.FsError) -> PosixError {
   }
 }
 
-///| File descriptor flags
+///|
+/// File descriptor flags
 pub(all) struct OpenFlags {
   read : Bool
   write : Bool
@@ -37,22 +40,30 @@ pub(all) struct OpenFlags {
   append : Bool
 } derive(Show, Eq)
 
-///| Default: read only
+///|
+/// Default: read only
 pub fn OpenFlags::default() -> OpenFlags {
   { read: true, write: false, create: false, truncate: false, append: false }
 }
 
-///| Read-write
+///|
+/// Read-write
 pub fn OpenFlags::read_write() -> OpenFlags {
   { read: true, write: true, create: false, truncate: false, append: false }
 }
 
-///| Create or truncate for writing
+///|
+/// Create or truncate for writing
 pub fn OpenFlags::create_write() -> OpenFlags {
   { read: false, write: true, create: true, truncate: true, append: false }
 }
 
-///| Standard file descriptors
+///|
+/// Standard file descriptors
 pub const STDIN_FD : Int = 0
+
+///|
 pub const STDOUT_FD : Int = 1
+
+///|
 pub const STDERR_FD : Int = 2

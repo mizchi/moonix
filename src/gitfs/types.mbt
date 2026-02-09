@@ -1,13 +1,15 @@
 ///| Git-backed virtual filesystem with snapshot and rollback support
 
-///| Snapshot identifier
+///|
+/// Snapshot identifier
 pub struct SnapshotId {
   commit_id : @bit.ObjectId
   message : String
   timestamp : Int64
 }
 
-///| GitBackedFs - A filesystem backed by git for versioning
+///|
+/// GitBackedFs - A filesystem backed by git for versioning
 pub struct GitBackedFs {
   /// In-memory filesystem for working tree
   memfs : @fs.MemFs
@@ -25,8 +27,9 @@ pub struct GitBackedFs {
   mut timestamp_provider : () -> Int64
 }
 
-///| Create a new GitBackedFs
-pub fn GitBackedFs::new(author~ : String = "moonix") -> GitBackedFs {
+///|
+/// Create a new GitBackedFs
+pub fn GitBackedFs::new(author? : String = "moonix") -> GitBackedFs {
   let memfs = @fs.MemFs::new()
   let fs = {
     memfs,
@@ -42,16 +45,16 @@ pub fn GitBackedFs::new(author~ : String = "moonix") -> GitBackedFs {
   fs
 }
 
-///| Initialize .git directory structure
+///|
+/// Initialize .git directory structure
 fn GitBackedFs::init_git_dir(self : GitBackedFs) -> Unit {
-  try {
-    @lib.init_repo(self, self.root, default_branch="main", bare=false)
-  } catch {
+  @lib.init_repo(self, self.root, default_branch="main", bare=false) catch {
     _ => ()
   }
 }
 
-///| Set timestamp provider (for testing)
+///|
+/// Set timestamp provider (for testing)
 pub fn GitBackedFs::set_timestamp_provider(
   self : GitBackedFs,
   provider : () -> Int64,
@@ -59,23 +62,27 @@ pub fn GitBackedFs::set_timestamp_provider(
   self.timestamp_provider = provider
 }
 
-///| Get current timestamp
+///|
+/// Get current timestamp
 fn GitBackedFs::get_timestamp(self : GitBackedFs) -> Int64 {
   (self.timestamp_provider)()
 }
 
-///| Get underlying MemFs (for direct access)
+///|
+/// Get underlying MemFs (for direct access)
 pub fn GitBackedFs::get_memfs(self : GitBackedFs) -> @fs.MemFs {
   self.memfs
 }
 
-///| Check if path is inside .git directory
+///|
+/// Check if path is inside .git directory
 fn GitBackedFs::is_git_path(self : GitBackedFs, path : String) -> Bool {
   let normalized = @fs.normalize_path(path)
   normalized.has_prefix(self.git_dir) || normalized == self.git_dir
 }
 
-///| Mark a path as dirty
+///|
+/// Mark a path as dirty
 fn GitBackedFs::mark_dirty(self : GitBackedFs, path : String) -> Unit {
   if not(self.is_git_path(path)) {
     let normalized = @fs.normalize_path(path)
@@ -83,17 +90,20 @@ fn GitBackedFs::mark_dirty(self : GitBackedFs, path : String) -> Unit {
   }
 }
 
-///| Clear dirty flags
+///|
+/// Clear dirty flags
 fn GitBackedFs::clear_dirty(self : GitBackedFs) -> Unit {
   self.dirty = {}
 }
 
-///| Check if there are uncommitted changes
+///|
+/// Check if there are uncommitted changes
 pub fn GitBackedFs::has_changes(self : GitBackedFs) -> Bool {
   self.dirty.length() > 0
 }
 
-///| Get list of dirty paths
+///|
+/// Get list of dirty paths
 pub fn GitBackedFs::get_dirty_paths(self : GitBackedFs) -> Array[String] {
   let paths : Array[String] = []
   for entry in self.dirty {

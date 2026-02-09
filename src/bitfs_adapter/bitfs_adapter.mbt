@@ -1,12 +1,14 @@
 ///| Adapter: mizchi/bit/x/fs -> moonix FileSystemBackend
 
-///| BitFsAdapter wraps bitfs.Fs with a RepoFileSystem to implement FileSystemBackend.
+///|
+/// BitFsAdapter wraps bitfs.Fs with a RepoFileSystem to implement FileSystemBackend.
 pub struct BitFsAdapter {
   fs : @bitfs.Fs
   repo : &@bit.RepoFileSystem
 }
 
-///| Create a new adapter
+///|
+/// Create a new adapter
 pub fn BitFsAdapter::new(
   fs : @bitfs.Fs,
   repo : &@bit.RepoFileSystem,
@@ -14,11 +16,13 @@ pub fn BitFsAdapter::new(
   { fs, repo }
 }
 
-///| Get underlying bitfs instance
+///|
+/// Get underlying bitfs instance
 pub fn BitFsAdapter::get_fs(self : BitFsAdapter) -> @bitfs.Fs {
   self.fs
 }
 
+///|
 fn to_rel_path(path : String) -> String {
   let normalized = @fs.normalize_path(path)
   if normalized == "/" {
@@ -30,6 +34,7 @@ fn to_rel_path(path : String) -> String {
   }
 }
 
+///|
 fn join_rel(dir : String, name : String) -> String {
   if dir.length() == 0 {
     name
@@ -38,6 +43,7 @@ fn join_rel(dir : String, name : String) -> String {
   }
 }
 
+///|
 fn bytes_to_string(bytes : Bytes) -> String {
   let buf = StringBuilder::new()
   for b in bytes {
@@ -46,12 +52,14 @@ fn bytes_to_string(bytes : Bytes) -> String {
   buf.to_string()
 }
 
+///|
 fn string_to_bytes(content : String) -> Bytes {
   Bytes::from_array(
     FixedArray::makei(content.length(), fn(i) { content[i].to_int().to_byte() }),
   )
 }
 
+///|
 fn BitFsAdapter::ensure_parent_dir(
   self : BitFsAdapter,
   abs_path : String,
@@ -68,6 +76,7 @@ fn BitFsAdapter::ensure_parent_dir(
   }
 }
 
+///|
 fn BitFsAdapter::check_no_file_in_path(
   self : BitFsAdapter,
   abs_path : String,
@@ -90,11 +99,13 @@ fn BitFsAdapter::check_no_file_in_path(
   }
 }
 
+///|
 fn git_error_to_fs(err : @bit.GitError) -> @fs.FsError {
   @fs.FsError::IoError(err.to_string())
 }
 
-///| FileSystemBackend implementation
+///|
+/// FileSystemBackend implementation
 pub impl @fs.FileSystemBackend for BitFsAdapter with read_file(self, path) {
   let abs = @fs.normalize_path(path)
   if self.is_dir(abs) {
@@ -109,25 +120,30 @@ pub impl @fs.FileSystemBackend for BitFsAdapter with read_file(self, path) {
   }
 }
 
+///|
 pub impl @fs.FileSystemBackend for BitFsAdapter with read_string(self, path) {
   bytes_to_string(self.read_file(path))
 }
 
+///|
 pub impl @fs.FileSystemBackend for BitFsAdapter with exists(self, path) {
   let abs = @fs.normalize_path(path)
   self.is_file(abs) || self.is_dir(abs)
 }
 
+///|
 pub impl @fs.FileSystemBackend for BitFsAdapter with is_file(self, path) {
   let rel = to_rel_path(path)
   self.fs.is_file(self.repo, rel)
 }
 
+///|
 pub impl @fs.FileSystemBackend for BitFsAdapter with is_dir(self, path) {
   let rel = to_rel_path(path)
   self.fs.is_dir(self.repo, rel)
 }
 
+///|
 pub impl @fs.FileSystemBackend for BitFsAdapter with stat(self, path) {
   let abs = @fs.normalize_path(path)
   if self.is_file(abs) {
@@ -140,6 +156,7 @@ pub impl @fs.FileSystemBackend for BitFsAdapter with stat(self, path) {
   }
 }
 
+///|
 pub impl @fs.FileSystemBackend for BitFsAdapter with readdir(self, path) {
   let abs = @fs.normalize_path(path)
   if not(self.is_dir(abs)) {
@@ -165,7 +182,12 @@ pub impl @fs.FileSystemBackend for BitFsAdapter with readdir(self, path) {
   out
 }
 
-pub impl @fs.FileSystemBackend for BitFsAdapter with write_file(self, path, data) {
+///|
+pub impl @fs.FileSystemBackend for BitFsAdapter with write_file(
+  self,
+  path,
+  data,
+) {
   let abs = @fs.normalize_path(path)
   if abs == "/" {
     raise @fs.FsError::IsADirectory(path)
@@ -178,6 +200,7 @@ pub impl @fs.FileSystemBackend for BitFsAdapter with write_file(self, path, data
   self.fs.write_file(rel, data)
 }
 
+///|
 pub impl @fs.FileSystemBackend for BitFsAdapter with write_string(
   self,
   path,
@@ -186,6 +209,7 @@ pub impl @fs.FileSystemBackend for BitFsAdapter with write_string(
   self.write_file(path, string_to_bytes(content))
 }
 
+///|
 pub impl @fs.FileSystemBackend for BitFsAdapter with mkdir(self, path) {
   let abs = @fs.normalize_path(path)
   if abs == "/" {
@@ -199,6 +223,7 @@ pub impl @fs.FileSystemBackend for BitFsAdapter with mkdir(self, path) {
   self.fs.mkdir_p(rel)
 }
 
+///|
 pub impl @fs.FileSystemBackend for BitFsAdapter with mkdir_p(self, path) {
   let abs = @fs.normalize_path(path)
   if abs == "/" {
@@ -209,6 +234,7 @@ pub impl @fs.FileSystemBackend for BitFsAdapter with mkdir_p(self, path) {
   self.fs.mkdir_p(rel)
 }
 
+///|
 pub impl @fs.FileSystemBackend for BitFsAdapter with remove(self, path) {
   let abs = @fs.normalize_path(path)
   if abs == "/" {
@@ -224,6 +250,7 @@ pub impl @fs.FileSystemBackend for BitFsAdapter with remove(self, path) {
   self.fs.remove_file(rel)
 }
 
+///|
 pub impl @fs.FileSystemBackend for BitFsAdapter with rmdir(self, path) {
   let abs = @fs.normalize_path(path)
   if abs == "/" {
@@ -243,7 +270,12 @@ pub impl @fs.FileSystemBackend for BitFsAdapter with rmdir(self, path) {
   self.fs.remove_dir(rel)
 }
 
-pub impl @fs.FileSystemBackend for BitFsAdapter with rename(self, old_path, new_path) {
+///|
+pub impl @fs.FileSystemBackend for BitFsAdapter with rename(
+  self,
+  old_path,
+  new_path,
+) {
   let old_abs = @fs.normalize_path(old_path)
   let new_abs = @fs.normalize_path(new_path)
   if old_abs == new_abs {
@@ -260,6 +292,7 @@ pub impl @fs.FileSystemBackend for BitFsAdapter with rename(self, old_path, new_
   }
 }
 
+///|
 pub impl @fs.FileSystemBackend for BitFsAdapter with copy_file(self, src, dst) {
   let src_abs = @fs.normalize_path(src)
   let dst_abs = @fs.normalize_path(dst)
@@ -273,6 +306,7 @@ pub impl @fs.FileSystemBackend for BitFsAdapter with copy_file(self, src, dst) {
   self.write_file(dst_abs, data)
 }
 
+///|
 pub impl @fs.FileSystemBackend for BitFsAdapter with rm_rf(self, path) {
   let abs = @fs.normalize_path(path)
   if abs == "/" {

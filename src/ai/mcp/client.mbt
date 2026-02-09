@@ -1,10 +1,12 @@
 ///| MCP Client - handler-based for WASI integration
 
+///|
 /// HTTP transport handler type
 pub struct HttpHandler {
   handler : (String, String, Bytes?) -> (Int, Bytes)
 }
 
+///|
 /// MCP Client configuration
 pub(all) struct McpClientConfig {
   endpoint : String
@@ -12,6 +14,7 @@ pub(all) struct McpClientConfig {
   client_version : String
 }
 
+///|
 /// MCP Client
 pub struct McpClient {
   config : McpClientConfig
@@ -21,6 +24,7 @@ pub struct McpClient {
   mut server_info : McpServerInfo?
 }
 
+///|
 /// Client error
 pub suberror McpClientError {
   NotInitialized
@@ -30,6 +34,7 @@ pub suberror McpClientError {
   InvalidResponse(String)
 }
 
+///|
 /// Create new MCP client
 pub fn McpClient::new(config : McpClientConfig) -> McpClient {
   {
@@ -41,6 +46,7 @@ pub fn McpClient::new(config : McpClientConfig) -> McpClient {
   }
 }
 
+///|
 /// Get next request ID
 fn McpClient::next_id(self : McpClient) -> Int {
   let id = self.request_id
@@ -48,6 +54,7 @@ fn McpClient::next_id(self : McpClient) -> Int {
   id
 }
 
+///|
 /// Convert Bytes to String
 fn bytes_to_string(b : Bytes) -> String {
   let buf = StringBuilder::new()
@@ -57,6 +64,7 @@ fn bytes_to_string(b : Bytes) -> String {
   buf.to_string()
 }
 
+///|
 /// Escape string for JSON
 fn escape_json_string(s : String) -> String {
   let buf = StringBuilder::new()
@@ -73,16 +81,19 @@ fn escape_json_string(s : String) -> String {
   buf.to_string()
 }
 
+///|
 /// Build JSON string
 fn build_json_string(s : String) -> String {
   "\"" + escape_json_string(s) + "\""
 }
 
+///|
 /// Build JSON number
 fn build_json_number(n : Int) -> String {
   n.to_string()
 }
 
+///|
 /// Encode JSON-RPC request to bytes
 fn encode_request(req : JsonRpcRequest) -> Bytes {
   let buf = StringBuilder::new()
@@ -101,14 +112,11 @@ fn encode_request(req : JsonRpcRequest) -> Bytes {
   buf.to_string().to_bytes()
 }
 
+///|
 /// Decode JSON-RPC response from bytes
 fn decode_response(data : Bytes) -> JsonRpcResponse raise McpClientError {
   let text = bytes_to_string(data)
-  let json = try {
-    @json.parse(text)
-  } catch {
-    e => raise ParseError(e.to_string())
-  }
+  let json = @json.parse(text) catch { e => raise ParseError(e.to_string()) }
   match json {
     Object(obj) => {
       let id = match obj.get("id") {
@@ -136,41 +144,44 @@ fn decode_response(data : Bytes) -> JsonRpcResponse raise McpClientError {
   }
 }
 
+///|
 /// Send request and get response
 fn McpClient::send_request(
   self : McpClient,
   rpc_method : String,
   params : Json?,
-  handler : HttpHandler
+  handler : HttpHandler,
 ) -> Json raise McpClientError {
   let req = make_request(self.next_id(), rpc_method, params)
   let body = encode_request(req)
-
-  let (status, response_body) = (handler.handler)("POST", self.config.endpoint, Some(body))
-
+  let (status, response_body) = (handler.handler)(
+    "POST",
+    self.config.endpoint,
+    Some(body),
+  )
   if status < 200 || status >= 300 {
     raise HttpError(status, bytes_to_string(response_body))
   }
-
   let response = decode_response(response_body)
-
   match response.error {
     Some(err) => raise RpcError(err.code, err.message)
     None =>
       match response.result {
         Some(result) => result
         None =>
-          try {
-            @json.parse("null")
-          } catch {
+          @json.parse("null") catch {
             _ => raise ParseError("null parse failed")
           }
       }
   }
 }
 
+///|
 /// Build initialize params JSON
-fn build_initialize_params(client_name : String, client_version : String) -> String {
+fn build_initialize_params(
+  client_name : String,
+  client_version : String,
+) -> String {
   let buf = StringBuilder::new()
   buf.write_string("{")
   buf.write_string("\"protocolVersion\":\"2024-11-05\",")
@@ -185,30 +196,26 @@ fn build_initialize_params(client_name : String, client_version : String) -> Str
   buf.to_string()
 }
 
+///|
 /// Initialize connection to MCP server
 pub fn McpClient::initialize(
   self : McpClient,
-  handler : HttpHandler
+  handler : HttpHandler,
 ) -> McpInitializeResult raise McpClientError {
   let params_str = build_initialize_params(
     self.config.client_name,
     self.config.client_version,
   )
-  let params = try {
-    @json.parse(params_str)
-  } catch {
+  let params = @json.parse(params_str) catch {
     e => raise ParseError(e.to_string())
   }
-
   let result = self.send_request("initialize", Some(params), handler)
-
   match result {
     Object(obj) => {
       let protocol_version = match obj.get("protocolVersion") {
         Some(String(s)) => s
         _ => "unknown"
       }
-
       let server_info : McpServerInfo = match obj.get("serverInfo") {
         Some(Object(si)) => {
           let name = match si.get("name") {
@@ -223,7 +230,6 @@ pub fn McpClient::initialize(
         }
         _ => { name: "unknown", version: "unknown" }
       }
-
       let capabilities = match obj.get("capabilities") {
         Some(Object(caps)) => {
           let tools = caps.get("tools") is Some(Object(_))
@@ -233,28 +239,25 @@ pub fn McpClient::initialize(
         }
         _ => { tools: false, resources: false, prompts: false }
       }
-
       self.initialized = true
       self.server_info = Some(server_info)
       self.server_capabilities = Some(capabilities)
-
       { protocol_version, server_info, capabilities }
     }
     _ => raise InvalidResponse("expected object for initialize result")
   }
 }
 
+///|
 /// List available tools
 pub fn McpClient::list_tools(
   self : McpClient,
-  handler : HttpHandler
+  handler : HttpHandler,
 ) -> Array[McpTool] raise McpClientError {
   if not(self.initialized) {
     raise NotInitialized
   }
-
   let result = self.send_request("tools/list", None, handler)
-
   match result {
     Object(obj) =>
       match obj.get("tools") {
@@ -273,12 +276,7 @@ pub fn McpClient::list_tools(
                 }
                 let input_schema = match t.get("inputSchema") {
                   Some(schema) => schema
-                  _ =>
-                    try {
-                      @json.parse("{}")
-                    } catch {
-                      _ => continue
-                    }
+                  _ => @json.parse("{}") catch { _ => continue }
                 }
                 parsed.push({ name, description, input_schema })
               }
@@ -293,6 +291,7 @@ pub fn McpClient::list_tools(
   }
 }
 
+///|
 /// Build tool call params JSON
 fn build_tool_call_params(name : String, arguments : Json?) -> String {
   let buf = StringBuilder::new()
@@ -309,30 +308,25 @@ fn build_tool_call_params(name : String, arguments : Json?) -> String {
   buf.to_string()
 }
 
+///|
 /// Call a tool
 pub fn McpClient::call_tool(
   self : McpClient,
   name : String,
   arguments : Json?,
-  handler : HttpHandler
+  handler : HttpHandler,
 ) -> McpCallToolResult raise McpClientError {
   if not(self.initialized) {
     raise NotInitialized
   }
-
   let params_str = build_tool_call_params(name, arguments)
-  let params = try {
-    @json.parse(params_str)
-  } catch {
+  let params = @json.parse(params_str) catch {
     e => raise ParseError(e.to_string())
   }
-
   let result = self.send_request("tools/call", Some(params), handler)
-
   match result {
     Object(obj) => {
       let is_error = obj.get("isError") is Some(True)
-
       let content : Array[McpContent] = []
       match obj.get("content") {
         Some(Array(items)) =>
@@ -363,24 +357,22 @@ pub fn McpClient::call_tool(
           }
         _ => ()
       }
-
       { content, is_error }
     }
     _ => { content: [], is_error: true }
   }
 }
 
+///|
 /// List resources
 pub fn McpClient::list_resources(
   self : McpClient,
-  handler : HttpHandler
+  handler : HttpHandler,
 ) -> Array[McpResource] raise McpClientError {
   if not(self.initialized) {
     raise NotInitialized
   }
-
   let result = self.send_request("resources/list", None, handler)
-
   match result {
     Object(obj) =>
       match obj.get("resources") {
@@ -418,25 +410,21 @@ pub fn McpClient::list_resources(
   }
 }
 
+///|
 /// Read a resource
 pub fn McpClient::read_resource(
   self : McpClient,
   uri : String,
-  handler : HttpHandler
+  handler : HttpHandler,
 ) -> McpReadResourceResult raise McpClientError {
   if not(self.initialized) {
     raise NotInitialized
   }
-
   let params_str = "{\"uri\":" + build_json_string(uri) + "}"
-  let params = try {
-    @json.parse(params_str)
-  } catch {
+  let params = @json.parse(params_str) catch {
     e => raise ParseError(e.to_string())
   }
-
   let result = self.send_request("resources/read", Some(params), handler)
-
   match result {
     Object(obj) => {
       let contents : Array[McpResourceContent] = []
@@ -468,23 +456,28 @@ pub fn McpClient::read_resource(
           }
         _ => ()
       }
-      { contents }
+      { contents, }
     }
     _ => { contents: [] }
   }
 }
 
+///|
 /// Check if client is initialized
 pub fn McpClient::is_initialized(self : McpClient) -> Bool {
   self.initialized
 }
 
+///|
 /// Get server info (after initialization)
 pub fn McpClient::get_server_info(self : McpClient) -> McpServerInfo? {
   self.server_info
 }
 
+///|
 /// Get server capabilities (after initialization)
-pub fn McpClient::get_server_capabilities(self : McpClient) -> McpServerCapabilities? {
+pub fn McpClient::get_server_capabilities(
+  self : McpClient,
+) -> McpServerCapabilities? {
   self.server_capabilities
 }
