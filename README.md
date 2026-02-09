@@ -84,13 +84,13 @@ The shell module (`@shell`) with built-in commands is temporarily disabled while
 | `@capability` | Capability-based permission system |
 | `@sh` | Shell parser and AST |
 
-WASI host bridge packages (`@wasi_posix`, `@p2/wasi_posix`, `@p3/wasi_posix`) moved to `mizchi/wasi_posix`.
+WASI host bridge contracts (`@p2`, `@p3`) moved to `mizchi/wasi_posix` (contract-only module).
 
 ## Related projects
 
 - [mizchi/bit](https://github.com/mizchi/bit) — Pure MoonBit git implementation (used by `@gitfs`)
 - [mizchi/wasi](https://github.com/mizchi/wasi.mbt) — WASIp2 bindings for MoonBit
-- [mizchi/wasi_posix](https://github.com/mizchi/wasi_posix) — WASI preview-aware POSIX adapters/providers extracted from moonix
+- [mizchi/wasi_posix](https://github.com/mizchi/wasi_posix) — WASI Preview2/Preview3 contract definitions for host injection boundaries
 
 ## License
 
