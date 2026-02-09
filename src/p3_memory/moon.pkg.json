@@ -1,0 +1,6 @@
+{
+  "import": [
+    "mizchi/moonix/fs",
+    "mizchi/wasi_interface/p3"
+  ]
+}
