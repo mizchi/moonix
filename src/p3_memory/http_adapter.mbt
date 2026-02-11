@@ -92,12 +92,12 @@ pub impl @p3.WasiHttpTypesAdapter for HttpAdapter with fields_get(self, name) {
   match self.kernel.http_fields.get(id) {
     None => Ok([])
     Some(fs) =>
-      match fs.entries.get(name.0) {
+      match fs.entries.get(p3_field_name_to_string(name)) {
         None => Ok([])
         Some(values) => {
           let result : Array[@p3.HttpTypesFieldValue] = []
           for v in values {
-            result.push(@p3.HttpTypesFieldValue(v))
+            result.push(p3_field_value_from_bytes(v))
           }
           Ok(result)
         }
@@ -110,7 +110,7 @@ pub impl @p3.WasiHttpTypesAdapter for HttpAdapter with fields_has(self, name) {
   let id = self.current_fields
   match self.kernel.http_fields.get(id) {
     None => Ok(false)
-    Some(fs) => Ok(fs.entries.contains(name.0))
+    Some(fs) => Ok(fs.entries.contains(p3_field_name_to_string(name)))
   }
 }
 
@@ -126,9 +126,9 @@ pub impl @p3.WasiHttpTypesAdapter for HttpAdapter with fields_set(
     Some(fs) => {
       let arr : Array[Bytes] = []
       for v in values {
-        arr.push(v.0)
+        arr.push(p3_field_value_to_bytes(v))
       }
-      fs.entries[name.0] = arr
+      fs.entries[p3_field_name_to_string(name)] = arr
       Ok(())
     }
   }
@@ -140,7 +140,7 @@ pub impl @p3.WasiHttpTypesAdapter for HttpAdapter with fields_delete(self, name)
   match self.kernel.http_fields.get(id) {
     None => Ok(())
     Some(fs) => {
-      fs.entries.remove(name.0)
+      fs.entries.remove(p3_field_name_to_string(name))
       Ok(())
     }
   }
@@ -155,14 +155,14 @@ pub impl @p3.WasiHttpTypesAdapter for HttpAdapter with fields_get_and_delete(
   match self.kernel.http_fields.get(id) {
     None => Ok([])
     Some(fs) =>
-      match fs.entries.get(name.0) {
+      match fs.entries.get(p3_field_name_to_string(name)) {
         None => Ok([])
         Some(values) => {
           let result : Array[@p3.HttpTypesFieldValue] = []
           for v in values {
-            result.push(@p3.HttpTypesFieldValue(v))
+            result.push(p3_field_value_from_bytes(v))
           }
-          fs.entries.remove(name.0)
+          fs.entries.remove(p3_field_name_to_string(name))
           Ok(result)
         }
       }
@@ -179,13 +179,15 @@ pub impl @p3.WasiHttpTypesAdapter for HttpAdapter with fields_append(
   match self.kernel.http_fields.get(id) {
     None => Ok(())
     Some(fs) =>
-      match fs.entries.get(name.0) {
+      match fs.entries.get(p3_field_name_to_string(name)) {
         Some(arr) => {
-          arr.push(value.0)
+          arr.push(p3_field_value_to_bytes(value))
           Ok(())
         }
         None => {
-          fs.entries[name.0] = [value.0]
+          fs.entries[p3_field_name_to_string(name)] = [
+            p3_field_value_to_bytes(value),
+          ]
           Ok(())
         }
       }
@@ -260,7 +262,7 @@ pub impl @p3.WasiHttpTypesAdapter for HttpAdapter with request_new(
     path: "/",
     scheme: Some("https"),
     authority: None,
-    headers_id: headers.0,
+    headers_id: p3_headers_to_int(headers),
     body: body_data,
   })
   self.current_request = req_id
@@ -394,7 +396,7 @@ pub impl @p3.WasiHttpTypesAdapter for HttpAdapter with request_get_options(
 pub impl @p3.WasiHttpTypesAdapter for HttpAdapter with request_get_headers(self) {
   match self.kernel.http_requests.get(self.current_request) {
     None => Err(@p3.WasiError::NotImplemented("HttpTypes.request_get_headers"))
-    Some(req) => Ok(@p3.HttpTypesHeaders(req.headers_id))
+    Some(req) => Ok(p3_headers_from_int(req.headers_id))
   }
 }
 
@@ -487,7 +489,7 @@ pub impl @p3.WasiHttpTypesAdapter for HttpAdapter with response_new(
   }
   let resp_id = self.kernel.alloc_response({
     status: 200,
-    headers_id: headers.0,
+    headers_id: p3_headers_to_int(headers),
     body: body_data,
   })
   self.current_response = resp_id
@@ -506,7 +508,7 @@ pub impl @p3.WasiHttpTypesAdapter for HttpAdapter with response_get_status_code(
   match self.kernel.http_responses.get(self.current_response) {
     None =>
       Err(@p3.WasiError::NotImplemented("HttpTypes.response_get_status_code"))
-    Some(resp) => Ok(@p3.HttpTypesStatusCode(resp.status))
+    Some(resp) => Ok(p3_status_code_from_int(resp.status))
   }
 }
 
@@ -519,7 +521,7 @@ pub impl @p3.WasiHttpTypesAdapter for HttpAdapter with response_set_status_code(
     None =>
       Err(@p3.WasiError::NotImplemented("HttpTypes.response_set_status_code"))
     Some(resp) => {
-      resp.status = status.0
+      resp.status = p3_status_code_to_int(status)
       Ok(())
     }
   }
@@ -531,7 +533,7 @@ pub impl @p3.WasiHttpTypesAdapter for HttpAdapter with response_get_headers(
 ) {
   match self.kernel.http_responses.get(self.current_response) {
     None => Err(@p3.WasiError::NotImplemented("HttpTypes.response_get_headers"))
-    Some(resp) => Ok(@p3.HttpTypesHeaders(resp.headers_id))
+    Some(resp) => Ok(p3_headers_from_int(resp.headers_id))
   }
 }
 

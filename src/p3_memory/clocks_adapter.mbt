@@ -20,19 +20,19 @@ pub impl @p3.WasiClocksSystemClockAdapter for ClocksAdapter with now(self) {
 pub impl @p3.WasiClocksSystemClockAdapter for ClocksAdapter with get_resolution(
   _self,
 ) {
-  Ok(@p3.ClocksTypesDuration(1UL))
+  Ok(p3_duration_from_u64(1UL))
 }
 
 ///|
 pub impl @p3.WasiClocksMonotonicClockAdapter for ClocksAdapter with now(self) {
-  Ok(@p3.ClocksMonotonicClockMark(self.kernel.monotonic_ns))
+  Ok(p3_mark_from_u64(self.kernel.monotonic_ns))
 }
 
 ///|
 pub impl @p3.WasiClocksMonotonicClockAdapter for ClocksAdapter with get_resolution(
   _self,
 ) {
-  Ok(@p3.ClocksTypesDuration(1UL))
+  Ok(p3_duration_from_u64(1UL))
 }
 
 ///|

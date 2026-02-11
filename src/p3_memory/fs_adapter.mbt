@@ -46,7 +46,7 @@ pub impl @p3.WasiFilesystemTypesAdapter for FsAdapter with descriptor_read_via_s
     Ok(path) =>
       try {
         let data = self.kernel.fs.read_file(path)
-        let start = offset.0.to_int()
+        let start = p3_filesize_to_u64(offset).to_int()
         if start >= data.length() {
           Ok(b"")
         } else {
@@ -78,7 +78,7 @@ pub impl @p3.WasiFilesystemTypesAdapter for FsAdapter with descriptor_write_via_
         } else {
           b""
         }
-        let start = offset.0.to_int()
+        let start = p3_filesize_to_u64(offset).to_int()
         let new_len = if start + data.length() > existing.length() {
           start + data.length()
         } else {
@@ -153,7 +153,7 @@ pub impl @p3.WasiFilesystemTypesAdapter for FsAdapter with descriptor_sync_data(
 pub impl @p3.WasiFilesystemTypesAdapter for FsAdapter with descriptor_get_flags(
   _self,
 ) {
-  Ok(@p3.FilesystemTypesDescriptorFlags(3))
+  Ok(p3_descriptor_flags_from_uint(3U))
 }
 
 ///|
@@ -186,7 +186,7 @@ pub impl @p3.WasiFilesystemTypesAdapter for FsAdapter with descriptor_set_size(
         } else {
           b""
         }
-        let new_len = size.0.to_int()
+        let new_len = p3_filesize_to_u64(size).to_int()
         if new_len <= existing.length() {
           let result : Array[Byte] = []
           for i = 0; i < new_len; i = i + 1 {
@@ -277,8 +277,8 @@ pub impl @p3.WasiFilesystemTypesAdapter for FsAdapter with descriptor_create_dir
 ///|
 fn make_stat(s : @fs.FileStat) -> @p3.FilesystemTypesDescriptorStat {
   {
-    link_count: @p3.FilesystemTypesLinkCount(1UL),
-    size: @p3.FilesystemTypesFilesize(s.size.to_uint64()),
+    link_count: p3_link_count_from_u64(1UL),
+    size: p3_filesize_from_u64(s.size.to_uint64()),
     data_access_timestamp: None,
     data_modification_timestamp: None,
     status_change_timestamp: None,

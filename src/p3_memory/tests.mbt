@@ -77,7 +77,7 @@ test "monotonic clock now returns initial value" {
   let ctx = P3MemoryContext::new(P3MemoryConfig::default())
   let result = (ctx.clocks as &@p3.WasiClocksMonotonicClockAdapter).now()
   match result {
-    Ok(mark) => assert_eq(mark.0, 0UL)
+    Ok(mark) => assert_eq(p3_mark_to_u64(mark), 0UL)
     Err(_) => fail("expected Ok")
   }
 }
@@ -100,11 +100,11 @@ test "fs: write then stat then read_via_stream" {
   ctx.fs.set_descriptor(0)
   // stat
   let stat_result = (ctx.fs as &@p3.WasiFilesystemTypesAdapter).descriptor_stat_at(
-    @p3.FilesystemTypesPathFlags(0),
+    p3_path_flags_from_uint(0U),
     "hello.txt",
   )
   match stat_result {
-    Ok(s) => assert_eq(s.size.0.to_int(), 2)
+    Ok(s) => assert_eq(p3_filesize_to_u64(s.size).to_int(), 2)
     Err(_) => fail("expected Ok stat")
   }
   // read_via_stream
@@ -114,7 +114,7 @@ test "fs: write then stat then read_via_stream" {
   })
   ctx.fs.set_descriptor(desc_id)
   let read_result = (ctx.fs as &@p3.WasiFilesystemTypesAdapter).descriptor_read_via_stream(
-    @p3.FilesystemTypesFilesize(0UL),
+    p3_filesize_from_u64(0UL),
   )
   match read_result {
     Ok(data) => assert_eq(data, b"\x48\x69")
@@ -168,34 +168,34 @@ test "http: fields CRUD" {
   // constructor
   let _ = http.fields_constructor()
   // set
-  let _ = http.fields_set(@p3.HttpTypesFieldName("content-type"), [
-    @p3.HttpTypesFieldValue(b"\x74\x65\x78\x74"),
+  let _ = http.fields_set(p3_field_name_from_string("content-type"), [
+    p3_field_value_from_bytes(b"\x74\x65\x78\x74"),
   ])
   // has
-  match http.fields_has(@p3.HttpTypesFieldName("content-type")) {
+  match http.fields_has(p3_field_name_from_string("content-type")) {
     Ok(v) => assert_true(v)
     Err(_) => fail("expected Ok")
   }
   // get
-  match http.fields_get(@p3.HttpTypesFieldName("content-type")) {
+  match http.fields_get(p3_field_name_from_string("content-type")) {
     Ok(values) => assert_eq(values.length(), 1)
     Err(_) => fail("expected Ok")
   }
   // append
   let _ = http.fields_append(
-    @p3.HttpTypesFieldName("accept"),
-    @p3.HttpTypesFieldValue(b"\x2a\x2f\x2a"),
+    p3_field_name_from_string("accept"),
+    p3_field_value_from_bytes(b"\x2a\x2f\x2a"),
   )
-  match http.fields_has(@p3.HttpTypesFieldName("accept")) {
+  match http.fields_has(p3_field_name_from_string("accept")) {
     Ok(v) => assert_true(v)
     Err(_) => fail("expected Ok")
   }
   // get_and_delete
-  match http.fields_get_and_delete(@p3.HttpTypesFieldName("accept")) {
+  match http.fields_get_and_delete(p3_field_name_from_string("accept")) {
     Ok(values) => assert_eq(values.length(), 1)
     Err(_) => fail("expected Ok")
   }
-  match http.fields_has(@p3.HttpTypesFieldName("accept")) {
+  match http.fields_has(p3_field_name_from_string("accept")) {
     Ok(v) => assert_eq(v, false)
     Err(_) => fail("expected Ok")
   }
@@ -211,7 +211,7 @@ test "http: mock round-trip" {
   let client = ctx.http as &@p3.WasiHttpClientAdapter
   // create fields + request
   let _ = http.fields_constructor()
-  let _ = http.request_new(@p3.HttpTypesHeaders(0), None, Ok(None), None)
+  let _ = http.request_new(p3_headers_from_int(0), None, Ok(None), None)
   // send request
   let send_result = client.send(@p3.HttpTypesRequest(0))
   match send_result {
@@ -219,7 +219,7 @@ test "http: mock round-trip" {
       ctx.http.current_response = resp.0
       // check status
       match http.response_get_status_code() {
-        Ok(status) => assert_eq(status.0, 200)
+        Ok(status) => assert_eq(p3_status_code_to_int(status), 200)
         Err(_) => fail("expected status")
       }
       // consume body
