@@ -3,7 +3,6 @@
   "version": "0.2.0",
   "deps": {
     "mizchi/bit": "0.10.0",
-    "mizchi/cst": "0.1.0",
     "mizchi/ripple": "0.1.0",
     "moonbitlang/x": "0.4.38",
     "mizchi/wasi_interface": "0.2.0"
