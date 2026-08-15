@@ -378,7 +378,6 @@ fn Agent::execute_action(
       let _ = self.runtime.read_string(path) catch {
         e => raise AgentRuntimeError(runtime_error_to_string(e))
       }
-
     }
     Mkdir(path) =>
       self.runtime.mkdir_p(path) catch {
@@ -427,7 +426,7 @@ fn Agent::create_branch(
         _ => ()
       }
     }
-    if not(abandoned) {
+    if !abandoned {
       raise BranchError("Cannot create more branches")
     }
   }
@@ -548,7 +547,7 @@ pub fn Agent::run_parallel(
         _ => ()
       }
     }
-    if not(any_running) || all_done {
+    if !any_running || all_done {
       break
     }
   }

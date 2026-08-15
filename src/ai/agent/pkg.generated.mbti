@@ -1,0 +1,124 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "mizchi/moonix/ai/agent"
+
+import {
+  "mizchi/moonix/ai/llm",
+  "mizchi/moonix/runtime",
+}
+
+// Values
+
+// Errors
+pub suberror AgentError {
+  AgentRuntimeError(String)
+  AgentLlmError(String)
+  GoalError(String)
+  BranchError(String)
+}
+
+// Types and methods
+pub struct Agent {
+  runtime : @runtime.AgentRuntime
+  llm : @llm.OpenRouterClient
+  llm_handler : @llm.LlmHttpHandler
+  goal : CompositeGoal
+  config : AgentConfig
+  mut state : AgentState
+  branches : Array[ExplorationBranch]
+  mut total_tokens : Int
+}
+pub fn Agent::new(@runtime.AgentRuntime, @llm.OpenRouterClient, @llm.LlmHttpHandler, CompositeGoal, config? : AgentConfig) -> Self
+pub fn Agent::run(Self) -> AgentResult raise AgentError
+pub fn Agent::run_parallel(Self, Array[String]) -> AgentResult raise AgentError
+
+pub enum AgentAction {
+  Exec(String)
+  WriteFile(path~ : String, content~ : String)
+  ReadFile(String)
+  Mkdir(String)
+  Remove(String)
+  ToolCall(name~ : String, args~ : String)
+  Checkpoint(String)
+  Fork(branch~ : String, approach~ : String)
+  Done(String)
+  Fail(String)
+}
+
+pub struct AgentConfig {
+  max_steps : Int
+  max_branches : Int
+  model : String
+  system_prompt : String
+  tools : Array[@llm.Tool]
+}
+pub fn AgentConfig::default() -> Self
+
+pub struct AgentResult {
+  status : GoalStatus
+  final_state : AgentState
+  branches : Array[ExplorationBranch]
+  total_steps : Int
+  total_tokens : Int
+}
+
+pub struct AgentState {
+  mut step : Int
+  history : Array[Thought]
+  mut branch : String?
+  mut checkpoint : @runtime.RuntimeSnapshot?
+}
+
+pub enum BranchStatus {
+  Running
+  Succeeded
+  Failed(String)
+  Abandoned
+}
+
+pub enum CompositeGoal {
+  Single(Goal)
+  All(Array[Goal])
+  Any(Array[Goal])
+  Sequence(Array[Goal])
+}
+pub fn CompositeGoal::description(Self) -> String
+pub fn CompositeGoal::is_achieved(Self, @runtime.AgentRuntime) -> Bool
+
+pub struct ExplorationBranch {
+  name : String
+  approach : String
+  state : AgentState
+  mut snapshot : @runtime.RuntimeSnapshot
+  mut status : BranchStatus
+}
+
+pub struct Goal {
+  name : String
+  description : String
+  check : (@runtime.AgentRuntime) -> Bool
+}
+pub fn Goal::custom(String, String, (@runtime.AgentRuntime) -> Bool) -> Self
+pub fn Goal::dir_exists(String) -> Self
+pub fn Goal::file_contains(String, String) -> Self
+pub fn Goal::file_exists(String) -> Self
+pub fn Goal::is_achieved(Self, @runtime.AgentRuntime) -> Bool
+pub fn Goal::new(String, String, (@runtime.AgentRuntime) -> Bool) -> Self
+
+pub enum GoalStatus {
+  Achieved
+  InProgress
+  Failed(String)
+  Timeout
+}
+
+pub struct Thought {
+  observation : String
+  reasoning : String
+  action : AgentAction
+  confidence : Double
+}
+
+// Type aliases
+
+// Traits
+

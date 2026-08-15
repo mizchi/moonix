@@ -2,7 +2,15 @@
 
 ///|
 /// Process ID
-pub struct Pid(Int) derive(Eq, Hash, Show)
+pub struct Pid(Int) derive(Eq, Hash)
+
+///|
+pub impl Show for Pid with output(self, logger) {
+  let Pid(n) = self
+  logger.write_string("Pid(")
+  logger.write_string(n.to_string())
+  logger.write_string(")")
+}
 
 ///|
 pub fn Pid::new(id : Int) -> Pid {
@@ -158,7 +166,15 @@ pub impl Show for ProcError with output(self, logger) {
 
 ///|
 /// File descriptor for process I/O
-pub struct Fd(Int) derive(Eq, Hash, Show)
+pub struct Fd(Int) derive(Eq, Hash)
+
+///|
+pub impl Show for Fd with output(self, logger) {
+  let Fd(n) = self
+  logger.write_string("Fd(")
+  logger.write_string(n.to_string())
+  logger.write_string(")")
+}
 
 ///|
 pub fn Fd::stdin() -> Fd {

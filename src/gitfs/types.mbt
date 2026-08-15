@@ -84,7 +84,7 @@ fn GitBackedFs::is_git_path(self : GitBackedFs, path : String) -> Bool {
 ///|
 /// Mark a path as dirty
 fn GitBackedFs::mark_dirty(self : GitBackedFs, path : String) -> Unit {
-  if not(self.is_git_path(path)) {
+  if !self.is_git_path(path) {
     let normalized = @fs.normalize_path(path)
     self.dirty[normalized] = true
   }

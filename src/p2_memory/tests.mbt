@@ -365,7 +365,6 @@ test "http: body streaming" {
     Ok(stream) => {
       ctx.io.set_output_stream(stream.0)
       let _ = io.output_stream_write(b"\x41\x42\x43\x44\x45")
-
     }
     Err(_) => fail("expected stream")
   }

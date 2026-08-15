@@ -1,0 +1,108 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "mizchi/moonix/ai/llm"
+
+// Values
+
+// Errors
+pub suberror LlmError {
+  HttpError(Int, String)
+  ParseError(String)
+  ApiError(String)
+  RateLimited
+  InvalidResponse(String)
+}
+
+// Types and methods
+pub struct ChatRequest {
+  model : String
+  messages : Array[Message]
+  tools : Array[Tool]?
+  tool_choice : String?
+  max_tokens : Int?
+  temperature : Double?
+}
+
+pub struct ChatResponse {
+  id : String
+  model : String
+  choices : Array[Choice]
+  usage : Usage?
+}
+
+pub struct Choice {
+  index : Int
+  message : Message
+  finish_reason : String
+}
+
+pub struct FunctionCall {
+  name : String
+  arguments : String
+}
+
+pub struct FunctionDef {
+  name : String
+  description : String
+  parameters : Json
+}
+
+pub struct LlmHttpHandler {
+  handler : (String, String, Bytes?) -> (Int, Bytes)
+}
+
+pub struct Message {
+  role : Role
+  content : String
+  tool_call_id : String?
+  tool_calls : Array[ToolCall]?
+}
+pub fn Message::assistant(String) -> Self
+pub fn Message::system(String) -> Self
+pub fn Message::tool_response(String, String) -> Self
+pub fn Message::user(String) -> Self
+
+pub struct OpenRouterClient {
+  config : OpenRouterConfig
+}
+pub fn OpenRouterClient::chat(Self, Array[Message], LlmHttpHandler, tools? : Array[Tool]?, model? : String?, max_tokens? : Int?, temperature? : Double?) -> ChatResponse raise LlmError
+pub fn OpenRouterClient::new(OpenRouterConfig) -> Self
+pub fn OpenRouterClient::simple_chat(Self, String, LlmHttpHandler, system? : String?, model? : String?) -> String raise LlmError
+
+pub struct OpenRouterConfig {
+  api_key : String
+  base_url : String
+  default_model : String
+}
+pub fn OpenRouterConfig::default(String) -> Self
+
+pub enum Role {
+  System
+  User
+  Assistant
+  Tool
+}
+pub fn Role::from_string(String) -> Self?
+pub fn Role::to_string(Self) -> String
+
+pub struct Tool {
+  tool_type : String
+  function : FunctionDef
+}
+pub fn Tool::function(String, String, Json) -> Self
+
+pub struct ToolCall {
+  id : String
+  tool_type : String
+  function : FunctionCall
+}
+
+pub struct Usage {
+  prompt_tokens : Int
+  completion_tokens : Int
+  total_tokens : Int
+}
+
+// Type aliases
+
+// Traits
+

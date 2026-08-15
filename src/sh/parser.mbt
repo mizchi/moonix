@@ -84,7 +84,6 @@ fn Parser::skip_newlines(self : Parser) -> Unit {
     match self.peek_kind() {
       Newline => {
         let _ = self.advance()
-
       }
       _ => break
     }
@@ -403,7 +402,6 @@ fn Parser::parse_for(self : Parser) -> Command raise ParseError {
     match self.peek_kind() {
       Semi | Newline => {
         let _ = self.advance()
-
       }
       _ => break
     }

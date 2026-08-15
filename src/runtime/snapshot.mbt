@@ -6,7 +6,7 @@ pub fn AgentRuntime::snapshot(
   self : AgentRuntime,
   message : String,
 ) -> RuntimeSnapshot raise RuntimeError {
-  if not(self.capabilities.can_snapshot()) {
+  if !self.capabilities.can_snapshot() {
     raise PermissionDenied("snapshot")
   }
 
@@ -35,7 +35,7 @@ pub fn AgentRuntime::rollback(
   self : AgentRuntime,
   snapshot : RuntimeSnapshot,
 ) -> RollbackResult raise RuntimeError {
-  if not(self.capabilities.can_rollback()) {
+  if !self.capabilities.can_rollback() {
     raise PermissionDenied("rollback")
   }
 
@@ -92,14 +92,12 @@ pub fn AgentRuntime::branch(
   self : AgentRuntime,
   name : String,
 ) -> Unit raise RuntimeError {
-  if not(
-      self.capabilities.has(fn(cap) {
-        match cap {
-          @capability.GitBranch => true
-          _ => false
-        }
-      }),
-    ) {
+  if !self.capabilities.has(fn(cap) {
+      match cap {
+        @capability.GitBranch => true
+        _ => false
+      }
+    }) {
     raise PermissionDenied("branch")
   }
   self.fs.branch(name) catch {
@@ -113,7 +111,7 @@ pub fn AgentRuntime::switch_branch(
   self : AgentRuntime,
   name : String,
 ) -> Unit raise RuntimeError {
-  if not(self.capabilities.can_rollback()) {
+  if !self.capabilities.can_rollback() {
     raise PermissionDenied("switch")
   }
   self.fs.switch(name) catch {
@@ -139,17 +137,15 @@ pub fn AgentRuntime::fork(
   snapshot : RuntimeSnapshot,
   branch_name : String,
 ) -> Unit raise RuntimeError {
-  if not(self.capabilities.can_rollback()) {
+  if !self.capabilities.can_rollback() {
     raise PermissionDenied("fork")
   }
-  if not(
-      self.capabilities.has(fn(cap) {
-        match cap {
-          @capability.GitBranch => true
-          _ => false
-        }
-      }),
-    ) {
+  if !self.capabilities.has(fn(cap) {
+      match cap {
+        @capability.GitBranch => true
+        _ => false
+      }
+    }) {
     raise PermissionDenied("branch")
   }
 
@@ -190,14 +186,12 @@ pub fn AgentRuntime::fork_here(
   branch_name : String,
   message? : String = "fork point",
 ) -> RuntimeSnapshot raise RuntimeError {
-  if not(
-      self.capabilities.has(fn(cap) {
-        match cap {
-          @capability.GitBranch => true
-          _ => false
-        }
-      }),
-    ) {
+  if !self.capabilities.has(fn(cap) {
+      match cap {
+        @capability.GitBranch => true
+        _ => false
+      }
+    }) {
     raise PermissionDenied("branch")
   }
 

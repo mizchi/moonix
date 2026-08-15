@@ -1,0 +1,160 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "mizchi/moonix/p3_memory"
+
+import {
+  "mizchi/moonix/fs",
+  "mizchi/wasi_interface/p3",
+}
+
+// Values
+pub fn fs_error_to_wasi(@fs.FsError) -> @p3.WasiError
+
+// Errors
+
+// Types and methods
+pub struct CliAdapter {
+  kernel : Kernel
+}
+pub fn CliAdapter::new(Kernel) -> Self
+pub impl @p3.WasiEnvironmentAdapter for CliAdapter
+pub impl @p3.WasiExitAdapter for CliAdapter
+pub impl @p3.WasiStderrAdapter for CliAdapter
+pub impl @p3.WasiStdinAdapter for CliAdapter
+pub impl @p3.WasiStdoutAdapter for CliAdapter
+pub impl @p3.WasiTerminalStderrAdapter for CliAdapter
+pub impl @p3.WasiTerminalStdinAdapter for CliAdapter
+pub impl @p3.WasiTerminalStdoutAdapter for CliAdapter
+
+pub struct ClocksAdapter {
+  kernel : Kernel
+}
+pub fn ClocksAdapter::new(Kernel) -> Self
+pub impl @p3.WasiClocksMonotonicClockAdapter for ClocksAdapter
+pub impl @p3.WasiClocksSystemClockAdapter for ClocksAdapter
+pub impl @p3.WasiClocksTimezoneAdapter for ClocksAdapter
+
+pub struct DescriptorState {
+  path : String
+  type_ : @p3.FilesystemTypesDescriptorType
+}
+
+pub struct FsAdapter {
+  kernel : Kernel
+  mut current_descriptor : Int
+}
+pub fn FsAdapter::new(Kernel) -> Self
+pub fn FsAdapter::set_descriptor(Self, Int) -> Unit
+pub impl @p3.WasiFilesystemPreopensAdapter for FsAdapter
+pub impl @p3.WasiFilesystemTypesAdapter for FsAdapter
+
+pub struct HttpAdapter {
+  kernel : Kernel
+  mut current_fields : Int
+  mut current_request : Int
+  mut current_response : Int
+}
+pub fn HttpAdapter::new(Kernel) -> Self
+pub impl @p3.WasiHttpClientAdapter for HttpAdapter
+pub impl @p3.WasiHttpHandlerAdapter for HttpAdapter
+pub impl @p3.WasiHttpTypesAdapter for HttpAdapter
+
+pub struct HttpFieldsState {
+  entries : Map[String, Array[Bytes]]
+}
+
+pub struct HttpRequestState {
+  mut method_ : String
+  mut path : String
+  mut scheme : String?
+  mut authority : String?
+  headers_id : Int
+  body : Bytes
+}
+
+pub struct HttpResponseState {
+  mut status : Int
+  headers_id : Int
+  body : Bytes
+}
+
+pub struct Kernel {
+  fs : @fs.MemFs
+  stdin_data : Bytes
+  mut stdin_pos : Int
+  stdout_buf : Array[Byte]
+  stderr_buf : Array[Byte]
+  env : Map[String, String]
+  args : Array[String]
+  cwd : String
+  wall_seconds : UInt64
+  wall_nanoseconds : UInt
+  monotonic_ns : UInt64
+  mut prng_state : UInt64
+  mut exit_code : Int?
+  preopens : Array[String]
+  descriptors : Map[Int, DescriptorState]
+  mut next_descriptor_id : Int
+  http_fields : Map[Int, HttpFieldsState]
+  mut next_fields_id : Int
+  http_requests : Map[Int, HttpRequestState]
+  mut next_request_id : Int
+  http_responses : Map[Int, HttpResponseState]
+  mut next_response_id : Int
+  mut http_mock_handler : ((String, String, Array[(String, Bytes)], Bytes) -> (Int, Array[(String, Bytes)], Bytes))?
+}
+pub fn Kernel::alloc_descriptor(Self, DescriptorState) -> Int
+pub fn Kernel::alloc_fields(Self, HttpFieldsState) -> Int
+pub fn Kernel::alloc_request(Self, HttpRequestState) -> Int
+pub fn Kernel::alloc_response(Self, HttpResponseState) -> Int
+pub fn Kernel::get_stderr_bytes(Self) -> Bytes
+pub fn Kernel::get_stdout_bytes(Self) -> Bytes
+pub fn Kernel::new(@fs.MemFs, stdin? : Bytes, env? : Map[String, String], args? : Array[String], cwd? : String, prng_seed? : UInt64, wall_seconds? : UInt64, wall_nanoseconds? : UInt, preopens? : Array[String]) -> Self
+pub fn Kernel::next_random_bytes(Self, Int) -> Bytes
+pub fn Kernel::next_random_u64(Self) -> UInt64
+
+pub struct NetworkAdapter {
+  _unused : Int
+}
+pub fn NetworkAdapter::new() -> Self
+pub impl @p3.WasiIpNameLookupAdapter for NetworkAdapter
+
+pub struct P3MemoryConfig {
+  stdin : Bytes
+  env : Map[String, String]
+  args : Array[String]
+  cwd : String
+  prng_seed : UInt64
+  wall_seconds : UInt64
+  wall_nanoseconds : UInt
+  preopens : Array[String]
+}
+pub fn P3MemoryConfig::default() -> Self
+
+pub struct P3MemoryContext {
+  kernel : Kernel
+  cli : CliAdapter
+  fs : FsAdapter
+  clocks : ClocksAdapter
+  random : RandomAdapter
+  network : NetworkAdapter
+  http : HttpAdapter
+}
+pub fn P3MemoryContext::get_exit_code(Self) -> Int?
+pub fn P3MemoryContext::get_fs(Self) -> @fs.MemFs
+pub fn P3MemoryContext::get_stderr(Self) -> Bytes
+pub fn P3MemoryContext::get_stdout(Self) -> Bytes
+pub fn P3MemoryContext::new(P3MemoryConfig, fs? : @fs.MemFs) -> Self
+pub fn P3MemoryContext::register_http_handler(Self, (String, String, Array[(String, Bytes)], Bytes) -> (Int, Array[(String, Bytes)], Bytes)) -> Unit
+
+pub struct RandomAdapter {
+  kernel : Kernel
+}
+pub fn RandomAdapter::new(Kernel) -> Self
+pub impl @p3.WasiRandomInsecureAdapter for RandomAdapter
+pub impl @p3.WasiRandomInsecureSeedAdapter for RandomAdapter
+pub impl @p3.WasiRandomRandomAdapter for RandomAdapter
+
+// Type aliases
+
+// Traits
+

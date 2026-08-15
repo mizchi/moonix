@@ -1,0 +1,124 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "mizchi/moonix/runtime"
+
+import {
+  "mizchi/moonix/capability",
+  "mizchi/moonix/effect",
+  "mizchi/moonix/fs",
+  "mizchi/moonix/gitfs",
+}
+
+// Values
+
+// Errors
+pub suberror RuntimeError {
+  PermissionDenied(String)
+  IoError(String)
+  GitError(String)
+  ValidationError(String)
+}
+
+// Types and methods
+pub(all) struct A2ATaskResult {
+  task_id : String
+  status : String
+  result : String?
+}
+
+pub struct AgentRuntime {
+  fs : @gitfs.GitBackedFs
+  effect_log : @effect.EffectLog
+  capabilities : @capability.CapabilitySet
+  mut cwd : String
+  env : Map[String, String]
+  mut timestamp_provider : () -> Int64
+}
+pub fn AgentRuntime::a2a_delegate(Self, String, String, String, (String, String, String) -> A2ATaskResult) -> A2ATaskResult raise RuntimeError
+pub fn AgentRuntime::branch(Self, String) -> Unit raise RuntimeError
+pub fn AgentRuntime::chdir(Self, String) -> Unit raise RuntimeError
+pub fn AgentRuntime::current_branch(Self) -> String? raise RuntimeError
+pub fn AgentRuntime::developer() -> Self
+pub fn AgentRuntime::exists(Self, String) -> Bool
+pub fn AgentRuntime::fork(Self, RuntimeSnapshot, String) -> Unit raise RuntimeError
+pub fn AgentRuntime::fork_here(Self, String, message? : String) -> RuntimeSnapshot raise RuntimeError
+pub fn AgentRuntime::get_all_env(Self) -> Array[(String, String)]
+pub fn AgentRuntime::get_dirty_paths(Self) -> Array[String]
+pub fn AgentRuntime::get_effect_log_head(Self) -> Int
+pub fn AgentRuntime::get_effects(Self) -> Array[@effect.EffectEntry]
+pub fn AgentRuntime::get_effects_after(Self, Int) -> Array[@effect.EffectEntry]
+pub fn AgentRuntime::get_http_effects(Self) -> Array[@effect.EffectEntry]
+pub fn AgentRuntime::get_mcp_effects(Self) -> Array[@effect.EffectEntry]
+pub fn AgentRuntime::getcwd(Self) -> String
+pub fn AgentRuntime::getenv(Self, String) -> String?
+pub fn AgentRuntime::has_changes(Self) -> Bool
+pub fn AgentRuntime::history(Self, max_count? : Int) -> Array[@gitfs.SnapshotId] raise RuntimeError
+pub fn AgentRuntime::http_request(Self, String, String, Bytes?, (String, String, Bytes?) -> HttpResponse) -> HttpResponse raise RuntimeError
+pub fn AgentRuntime::is_dir(Self, String) -> Bool
+pub fn AgentRuntime::is_file(Self, String) -> Bool
+pub fn AgentRuntime::list_branches(Self) -> Array[String] raise RuntimeError
+pub fn AgentRuntime::mcp_call(Self, String, String?, (String, String?) -> McpResult) -> McpResult raise RuntimeError
+pub fn AgentRuntime::mkdir(Self, String) -> Unit raise RuntimeError
+pub fn AgentRuntime::mkdir_p(Self, String) -> Unit raise RuntimeError
+pub fn AgentRuntime::new(RuntimeConfig) -> Self
+pub fn AgentRuntime::random_bytes(Self, Int) -> Bytes raise RuntimeError
+pub fn AgentRuntime::read_file(Self, String) -> Bytes raise RuntimeError
+pub fn AgentRuntime::read_string(Self, String) -> String raise RuntimeError
+pub fn AgentRuntime::readdir(Self, String) -> Array[@fs.DirEntry] raise RuntimeError
+pub fn AgentRuntime::remove(Self, String) -> Unit raise RuntimeError
+pub fn AgentRuntime::resolve_path(Self, String) -> String
+pub fn AgentRuntime::rm_rf(Self, String) -> Unit raise RuntimeError
+pub fn AgentRuntime::rollback(Self, RuntimeSnapshot) -> RollbackResult raise RuntimeError
+pub fn AgentRuntime::sandbox() -> Self
+pub fn AgentRuntime::set_timestamp_provider(Self, () -> Int64) -> Unit
+pub fn AgentRuntime::setenv(Self, String, String) -> Unit
+pub fn AgentRuntime::snapshot(Self, String) -> RuntimeSnapshot raise RuntimeError
+pub fn AgentRuntime::spawn_process(Self, String, Array[String], (String, Array[String]) -> ProcessResult) -> ProcessResult raise RuntimeError
+pub fn AgentRuntime::switch_branch(Self, String) -> Unit raise RuntimeError
+pub fn AgentRuntime::unrestricted() -> Self
+pub fn AgentRuntime::wall_clock(Self) -> Int64 raise RuntimeError
+pub fn AgentRuntime::write_file(Self, String, Bytes) -> Unit raise RuntimeError
+pub fn AgentRuntime::write_string(Self, String, String) -> Unit raise RuntimeError
+
+pub(all) struct HttpResponse {
+  status : Int
+  body : Bytes
+}
+
+pub(all) struct McpResult {
+  success : Bool
+  output : String?
+  error : String?
+}
+
+pub(all) struct ProcessResult {
+  exit_code : Int
+  stdout : Bytes
+  stderr : Bytes
+}
+
+pub struct RollbackResult {
+  restored_fs : Bool
+  irreversible_effects : Array[@effect.EffectEntry]
+  warning : String?
+}
+
+pub struct RuntimeConfig {
+  author : String
+  capabilities : @capability.CapabilitySet
+}
+pub fn RuntimeConfig::agent(String, Array[String], Array[String], Array[String]) -> Self
+pub fn RuntimeConfig::default() -> Self
+pub fn RuntimeConfig::developer() -> Self
+pub fn RuntimeConfig::unrestricted() -> Self
+
+pub struct RuntimeSnapshot {
+  git_snapshot : @gitfs.SnapshotId
+  effect_log_head : Int
+  env : Map[String, String]
+  cwd : String
+}
+
+// Type aliases
+
+// Traits
+

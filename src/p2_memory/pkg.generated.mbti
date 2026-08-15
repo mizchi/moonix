@@ -1,0 +1,267 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "mizchi/moonix/p2_memory"
+
+import {
+  "mizchi/moonix/fs",
+  "mizchi/wasi_interface/p2",
+}
+
+// Values
+pub fn fs_error_to_wasi(@fs.FsError) -> @p2.WasiError
+
+pub fn stream_closed_error() -> @p2.WasiError
+
+// Errors
+
+// Types and methods
+pub struct CliAdapter {
+  kernel : Kernel
+}
+pub fn CliAdapter::new(Kernel) -> Self
+pub impl @p2.WasiCliEnvironmentAdapter for CliAdapter
+pub impl @p2.WasiCliExitAdapter for CliAdapter
+pub impl @p2.WasiCliStderrAdapter for CliAdapter
+pub impl @p2.WasiCliStdinAdapter for CliAdapter
+pub impl @p2.WasiCliStdoutAdapter for CliAdapter
+pub impl @p2.WasiCliTerminalStderrAdapter for CliAdapter
+pub impl @p2.WasiCliTerminalStdinAdapter for CliAdapter
+pub impl @p2.WasiCliTerminalStdoutAdapter for CliAdapter
+
+pub struct ClocksAdapter {
+  kernel : Kernel
+}
+pub fn ClocksAdapter::new(Kernel) -> Self
+pub impl @p2.WasiClocksMonotonicClockAdapter for ClocksAdapter
+pub impl @p2.WasiClocksTimezoneAdapter for ClocksAdapter
+pub impl @p2.WasiClocksWallClockAdapter for ClocksAdapter
+
+pub struct DescriptorState {
+  path : String
+  type_ : @p2.FilesystemTypesDescriptorType
+}
+
+pub struct DirStreamState {
+  entries : Array[@p2.FilesystemTypesDirectoryEntry]
+  mut cursor : Int
+}
+
+pub struct FsAdapter {
+  kernel : Kernel
+  mut current_descriptor : Int
+  mut current_dir_stream : Int
+}
+pub fn FsAdapter::new(Kernel) -> Self
+pub fn FsAdapter::set_descriptor(Self, Int) -> Unit
+pub fn FsAdapter::set_dir_stream(Self, Int) -> Unit
+pub impl @p2.WasiFilesystemPreopensAdapter for FsAdapter
+pub impl @p2.WasiFilesystemTypesAdapter for FsAdapter
+
+pub struct HttpAdapter {
+  kernel : Kernel
+  mut current_fields : Int
+  mut current_outgoing_request : Int
+  mut current_incoming_response : Int
+  current_incoming_request : Int
+  mut current_outgoing_response : Int
+  mut current_outgoing_body : Int
+  mut current_incoming_body : Int
+  mut current_future : Int
+  current_response_outparam : Int
+}
+pub fn HttpAdapter::new(Kernel) -> Self
+pub impl @p2.WasiHttpIncomingHandlerAdapter for HttpAdapter
+pub impl @p2.WasiHttpOutgoingHandlerAdapter for HttpAdapter
+pub impl @p2.WasiHttpTypesAdapter for HttpAdapter
+
+pub struct HttpFieldsState {
+  entries : Map[String, Array[Bytes]]
+}
+
+pub struct HttpFutureIncomingResponseState {
+  response_id : Int?
+}
+
+pub struct HttpIncomingBodyState {
+  data : Bytes
+  mut offset : Int
+  stream_id : Int?
+}
+
+pub struct HttpIncomingRequestState {
+  method_ : String
+  path : String
+  scheme : String?
+  authority : String?
+  headers_id : Int
+  body_data : Bytes
+}
+
+pub struct HttpIncomingResponseState {
+  status : Int
+  headers_id : Int
+  body_data : Bytes
+}
+
+pub struct HttpOutgoingBodyState {
+  buffer : Array[Byte]
+  mut stream_id : Int?
+}
+
+pub struct HttpOutgoingRequestState {
+  headers_id : Int
+  method_ : String
+  path : String
+  scheme : String?
+  authority : String?
+  mut body_id : Int?
+}
+
+pub struct HttpOutgoingResponseState {
+  headers_id : Int
+  status : Int
+  mut body_id : Int?
+}
+
+pub struct IoAdapter {
+  kernel : Kernel
+  mut current_input_stream : Int
+  mut current_output_stream : Int
+  mut current_error : Int
+  mut current_pollable : Int
+}
+pub fn IoAdapter::new(Kernel) -> Self
+pub fn IoAdapter::set_error(Self, Int) -> Unit
+pub fn IoAdapter::set_input_stream(Self, Int) -> Unit
+pub fn IoAdapter::set_output_stream(Self, Int) -> Unit
+pub fn IoAdapter::set_pollable(Self, Int) -> Unit
+pub impl @p2.WasiIoErrorAdapter for IoAdapter
+pub impl @p2.WasiIoPollAdapter for IoAdapter
+pub impl @p2.WasiIoStreamsAdapter for IoAdapter
+
+pub struct Kernel {
+  fs : @fs.MemFs
+  streams : Map[Int, StreamState]
+  mut next_stream_id : Int
+  descriptors : Map[Int, DescriptorState]
+  mut next_descriptor_id : Int
+  dir_streams : Map[Int, DirStreamState]
+  mut next_dir_stream_id : Int
+  errors : Map[Int, String]
+  mut next_error_id : Int
+  pollables : Map[Int, Bool]
+  mut next_pollable_id : Int
+  stdin_data : Bytes
+  mut stdin_pos : Int
+  stdout_buf : Array[Byte]
+  stderr_buf : Array[Byte]
+  env : Map[String, String]
+  args : Array[String]
+  cwd : String
+  wall_seconds : UInt64
+  wall_nanoseconds : UInt
+  monotonic_ns : UInt64
+  mut prng_state : UInt64
+  mut exit_code : Int?
+  preopens : Array[String]
+  http_fields : Map[Int, HttpFieldsState]
+  mut next_fields_id : Int
+  http_outgoing_requests : Map[Int, HttpOutgoingRequestState]
+  mut next_outgoing_request_id : Int
+  http_incoming_responses : Map[Int, HttpIncomingResponseState]
+  mut next_incoming_response_id : Int
+  http_outgoing_bodies : Map[Int, HttpOutgoingBodyState]
+  mut next_outgoing_body_id : Int
+  http_incoming_bodies : Map[Int, HttpIncomingBodyState]
+  mut next_incoming_body_id : Int
+  http_futures : Map[Int, HttpFutureIncomingResponseState]
+  mut next_future_id : Int
+  http_outgoing_responses : Map[Int, HttpOutgoingResponseState]
+  mut next_outgoing_response_id : Int
+  http_incoming_requests : Map[Int, HttpIncomingRequestState]
+  mut next_incoming_request_id : Int
+  mut http_mock_handler : ((String, String, Array[(String, Bytes)], Bytes) -> (Int, Array[(String, Bytes)], Bytes))?
+}
+pub fn Kernel::alloc_descriptor(Self, DescriptorState) -> Int
+pub fn Kernel::alloc_dir_stream(Self, DirStreamState) -> Int
+pub fn Kernel::alloc_error(Self, String) -> Int
+pub fn Kernel::alloc_fields(Self, HttpFieldsState) -> Int
+pub fn Kernel::alloc_future(Self, HttpFutureIncomingResponseState) -> Int
+pub fn Kernel::alloc_incoming_body(Self, HttpIncomingBodyState) -> Int
+pub fn Kernel::alloc_incoming_request(Self, HttpIncomingRequestState) -> Int
+pub fn Kernel::alloc_incoming_response(Self, HttpIncomingResponseState) -> Int
+pub fn Kernel::alloc_outgoing_body(Self, HttpOutgoingBodyState) -> Int
+pub fn Kernel::alloc_outgoing_request(Self, HttpOutgoingRequestState) -> Int
+pub fn Kernel::alloc_outgoing_response(Self, HttpOutgoingResponseState) -> Int
+pub fn Kernel::alloc_pollable(Self) -> Int
+pub fn Kernel::alloc_stream(Self, StreamState) -> Int
+pub fn Kernel::get_stderr_bytes(Self) -> Bytes
+pub fn Kernel::get_stdout_bytes(Self) -> Bytes
+pub fn Kernel::new(@fs.MemFs, stdin? : Bytes, env? : Map[String, String], args? : Array[String], cwd? : String, prng_seed? : UInt64, wall_seconds? : UInt64, wall_nanoseconds? : UInt, preopens? : Array[String]) -> Self
+pub fn Kernel::next_random_bytes(Self, Int) -> Bytes
+pub fn Kernel::next_random_u64(Self) -> UInt64
+
+pub struct P2MemoryConfig {
+  stdin : Bytes
+  env : Map[String, String]
+  args : Array[String]
+  cwd : String
+  prng_seed : UInt64
+  wall_seconds : UInt64
+  wall_nanoseconds : UInt
+  preopens : Array[String]
+}
+pub fn P2MemoryConfig::default() -> Self
+
+pub struct P2MemoryContext {
+  kernel : Kernel
+  io : IoAdapter
+  cli : CliAdapter
+  fs : FsAdapter
+  clocks : ClocksAdapter
+  random : RandomAdapter
+  sockets : SocketsAdapter
+  http : HttpAdapter
+}
+pub fn P2MemoryContext::get_exit_code(Self) -> Int?
+pub fn P2MemoryContext::get_fs(Self) -> @fs.MemFs
+pub fn P2MemoryContext::get_stderr(Self) -> Bytes
+pub fn P2MemoryContext::get_stdout(Self) -> Bytes
+pub fn P2MemoryContext::new(P2MemoryConfig, fs? : @fs.MemFs) -> Self
+pub fn P2MemoryContext::register_http_handler(Self, (String, String, Array[(String, Bytes)], Bytes) -> (Int, Array[(String, Bytes)], Bytes)) -> Unit
+
+pub struct RandomAdapter {
+  kernel : Kernel
+}
+pub fn RandomAdapter::new(Kernel) -> Self
+pub impl @p2.WasiRandomInsecureAdapter for RandomAdapter
+pub impl @p2.WasiRandomInsecureSeedAdapter for RandomAdapter
+pub impl @p2.WasiRandomRandomAdapter for RandomAdapter
+
+pub struct SocketsAdapter {
+  _unused : Int
+}
+pub fn SocketsAdapter::new() -> Self
+pub impl @p2.WasiSocketsInstanceNetworkAdapter for SocketsAdapter
+pub impl @p2.WasiSocketsIpNameLookupAdapter for SocketsAdapter
+pub impl @p2.WasiSocketsNetworkAdapter for SocketsAdapter
+pub impl @p2.WasiSocketsTcpAdapter for SocketsAdapter
+pub impl @p2.WasiSocketsTcpCreateSocketAdapter for SocketsAdapter
+pub impl @p2.WasiSocketsUdpAdapter for SocketsAdapter
+pub impl @p2.WasiSocketsUdpCreateSocketAdapter for SocketsAdapter
+
+pub enum StreamState {
+  StdinStream
+  StdoutStream
+  StderrStream
+  FileRead(Int, UInt64)
+  FileWrite(Int, UInt64)
+  FileAppend(Int)
+  HttpBodyRead(Int)
+  HttpBodyWrite(Int)
+  Closed
+}
+
+// Type aliases
+
+// Traits
+

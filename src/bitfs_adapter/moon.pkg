@@ -1,7 +1,7 @@
 import {
-  "mizchi/moonix/fs" as @fs,
-  "mizchi/bit" as @bit,
-  "mizchi/bit/x/fs" as @bitfs,
+  "mizchi/moonix/fs" @fs,
+  "mizchi/bit" @bit,
+  "mizchi/bit/x/fs" @bitfs,
 }
 
 options(

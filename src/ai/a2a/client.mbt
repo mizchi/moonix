@@ -289,7 +289,7 @@ fn encode_task_send_request(req : TaskSendRequest) -> Bytes {
   }
   match req.skill_id {
     Some(id) => {
-      if not(first) {
+      if !first {
         buf.write_string(",")
       }
       buf.write_string("\"skillId\":")
@@ -300,7 +300,7 @@ fn encode_task_send_request(req : TaskSendRequest) -> Bytes {
   }
 
   // Encode message
-  if not(first) {
+  if !first {
     buf.write_string(",")
   }
   buf.write_string("\"message\":{")

@@ -71,7 +71,7 @@ fn BitFsAdapter::ensure_parent_dir(
   if self.is_file(parent) {
     raise @fs.FsError::NotADirectory(parent)
   }
-  if not(self.is_dir(parent)) {
+  if !self.is_dir(parent) {
     raise @fs.FsError::NotFound(parent)
   }
 }
@@ -111,7 +111,7 @@ pub impl @fs.FileSystemBackend for BitFsAdapter with read_file(self, path) {
   if self.is_dir(abs) {
     raise @fs.FsError::IsADirectory(path)
   }
-  if not(self.is_file(abs)) {
+  if !self.is_file(abs) {
     raise @fs.FsError::NotFound(path)
   }
   let rel = to_rel_path(abs)
@@ -159,7 +159,7 @@ pub impl @fs.FileSystemBackend for BitFsAdapter with stat(self, path) {
 ///|
 pub impl @fs.FileSystemBackend for BitFsAdapter with readdir(self, path) {
   let abs = @fs.normalize_path(path)
-  if not(self.is_dir(abs)) {
+  if !self.is_dir(abs) {
     if self.is_file(abs) {
       raise @fs.FsError::NotADirectory(path)
     }
@@ -243,7 +243,7 @@ pub impl @fs.FileSystemBackend for BitFsAdapter with remove(self, path) {
   if self.is_dir(abs) {
     raise @fs.FsError::IsADirectory(path)
   }
-  if not(self.is_file(abs)) {
+  if !self.is_file(abs) {
     raise @fs.FsError::NotFound(path)
   }
   let rel = to_rel_path(abs)
@@ -259,7 +259,7 @@ pub impl @fs.FileSystemBackend for BitFsAdapter with rmdir(self, path) {
   if self.is_file(abs) {
     raise @fs.FsError::NotADirectory(path)
   }
-  if not(self.is_dir(abs)) {
+  if !self.is_dir(abs) {
     raise @fs.FsError::NotFound(path)
   }
   let entries = self.readdir(abs)
@@ -296,7 +296,7 @@ pub impl @fs.FileSystemBackend for BitFsAdapter with rename(
 pub impl @fs.FileSystemBackend for BitFsAdapter with copy_file(self, src, dst) {
   let src_abs = @fs.normalize_path(src)
   let dst_abs = @fs.normalize_path(dst)
-  if not(self.is_file(src_abs)) {
+  if !self.is_file(src_abs) {
     if self.is_dir(src_abs) {
       raise @fs.FsError::IsADirectory(src)
     }
@@ -312,7 +312,7 @@ pub impl @fs.FileSystemBackend for BitFsAdapter with rm_rf(self, path) {
   if abs == "/" {
     raise @fs.FsError::PermissionDenied("cannot remove root")
   }
-  if not(self.exists(abs)) {
+  if !self.exists(abs) {
     raise @fs.FsError::NotFound(path)
   }
   if self.is_file(abs) {

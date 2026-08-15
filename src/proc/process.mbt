@@ -193,7 +193,6 @@ pub fn Process::read_stdin(self : Process, max_len : Int) -> Bytes {
   // Remove read bytes
   for _ in 0..<len {
     let _ = self.stdin_buf.remove(0)
-
   }
   result
 }

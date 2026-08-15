@@ -97,7 +97,6 @@ pub fn Scheduler::reap(self : Scheduler, pid : Pid) -> Int raise ProcError {
               match self.processes.get(pp) {
                 Some(parent_proc) => {
                   let _ = parent_proc.remove_child(pid)
-
                 }
                 None => ()
               }
@@ -304,7 +303,6 @@ fn Scheduler::cleanup_waiters(self : Scheduler, pid : Pid) -> Unit {
   // Remove from semaphore waiters
   for _, sem in self.semaphores {
     let _ = sem.remove_waiter(pid)
-
   }
   // Wake processes waiting for this one
   self.wake_waiters_for(pid)

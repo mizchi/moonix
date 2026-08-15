@@ -9,7 +9,7 @@
 pub fn AgentRuntime::wall_clock(
   self : AgentRuntime,
 ) -> Int64 raise RuntimeError {
-  if not(self.capabilities.can_read_clock()) {
+  if !self.capabilities.can_read_clock() {
     raise PermissionDenied("clock_read")
   }
   let time = self.get_timestamp()
@@ -29,7 +29,7 @@ pub fn AgentRuntime::random_bytes(
   self : AgentRuntime,
   len : Int,
 ) -> Bytes raise RuntimeError {
-  if not(self.capabilities.can_read_random()) {
+  if !self.capabilities.can_read_random() {
     raise PermissionDenied("random_read")
   }
 
@@ -70,7 +70,7 @@ pub fn AgentRuntime::http_request(
 ) -> HttpResponse raise RuntimeError {
   // Extract host from URL for capability check
   let host = extract_host(url)
-  if not(self.capabilities.can_connect(host, 443)) {
+  if !self.capabilities.can_connect(host, 443) {
     raise PermissionDenied("http_connect: " + host)
   }
   let start_time = self.get_timestamp()
@@ -148,7 +148,7 @@ pub fn AgentRuntime::mcp_call(
   input : String?,
   handler : (String, String?) -> McpResult,
 ) -> McpResult raise RuntimeError {
-  if not(self.capabilities.can_call_mcp(tool)) {
+  if !self.capabilities.can_call_mcp(tool) {
     raise PermissionDenied("mcp_call: " + tool)
   }
   let start_time = self.get_timestamp()
@@ -184,7 +184,7 @@ pub fn AgentRuntime::a2a_delegate(
   prompt : String,
   handler : (String, String, String) -> A2ATaskResult,
 ) -> A2ATaskResult raise RuntimeError {
-  if not(self.capabilities.can_delegate_a2a(agent)) {
+  if !self.capabilities.can_delegate_a2a(agent) {
     raise PermissionDenied("a2a_delegate: " + agent)
   }
   let start_time = self.get_timestamp()
@@ -225,7 +225,7 @@ pub fn AgentRuntime::spawn_process(
   args : Array[String],
   handler : (String, Array[String]) -> ProcessResult,
 ) -> ProcessResult raise RuntimeError {
-  if not(self.capabilities.can_spawn(cmd)) {
+  if !self.capabilities.can_spawn(cmd) {
     raise PermissionDenied("spawn: " + cmd)
   }
   let start_time = self.get_timestamp()

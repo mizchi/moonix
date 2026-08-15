@@ -119,7 +119,7 @@ pub fn GitBackedFs::rollback_to(
 
   // Remove untracked files (files that exist in working dir but not in target)
   for file in current_files {
-    if not(target_files.contains(file)) {
+    if !target_files.contains(file) {
       let abs_path = if self.root == "/" {
         "/" + file
       } else {

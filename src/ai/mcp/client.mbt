@@ -254,7 +254,7 @@ pub fn McpClient::list_tools(
   self : McpClient,
   handler : HttpHandler,
 ) -> Array[McpTool] raise McpClientError {
-  if not(self.initialized) {
+  if !self.initialized {
     raise NotInitialized
   }
   let result = self.send_request("tools/list", None, handler)
@@ -316,7 +316,7 @@ pub fn McpClient::call_tool(
   arguments : Json?,
   handler : HttpHandler,
 ) -> McpCallToolResult raise McpClientError {
-  if not(self.initialized) {
+  if !self.initialized {
     raise NotInitialized
   }
   let params_str = build_tool_call_params(name, arguments)
@@ -369,7 +369,7 @@ pub fn McpClient::list_resources(
   self : McpClient,
   handler : HttpHandler,
 ) -> Array[McpResource] raise McpClientError {
-  if not(self.initialized) {
+  if !self.initialized {
     raise NotInitialized
   }
   let result = self.send_request("resources/list", None, handler)
@@ -417,7 +417,7 @@ pub fn McpClient::read_resource(
   uri : String,
   handler : HttpHandler,
 ) -> McpReadResourceResult raise McpClientError {
-  if not(self.initialized) {
+  if !self.initialized {
     raise NotInitialized
   }
   let params_str = "{\"uri\":" + build_json_string(uri) + "}"

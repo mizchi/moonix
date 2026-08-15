@@ -1,0 +1,164 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "mizchi/moonix/ai/mcp"
+
+// Values
+pub fn make_error_response(Int, Int, String) -> JsonRpcResponse
+
+pub fn make_request(Int, String, Json?) -> JsonRpcRequest
+
+pub fn make_response(Int, Json) -> JsonRpcResponse
+
+// Errors
+pub suberror McpClientError {
+  NotInitialized
+  HttpError(Int, String)
+  ParseError(String)
+  RpcError(Int, String)
+  InvalidResponse(String)
+}
+
+// Types and methods
+pub struct HttpHandler {
+  handler : (String, String, Bytes?) -> (Int, Bytes)
+}
+
+pub(all) struct JsonRpcError {
+  code : Int
+  message : String
+  data : Json?
+}
+
+pub(all) struct JsonRpcRequest {
+  jsonrpc : String
+  id : Int
+  rpc_method : String
+  params : Json?
+}
+
+pub(all) struct JsonRpcResponse {
+  jsonrpc : String
+  id : Int
+  result : Json?
+  error : JsonRpcError?
+}
+
+pub(all) struct McpCallToolParams {
+  name : String
+  arguments : Json?
+}
+
+pub(all) struct McpCallToolResult {
+  content : Array[McpContent]
+  is_error : Bool
+}
+
+pub struct McpClient {
+  config : McpClientConfig
+  mut request_id : Int
+  mut initialized : Bool
+  mut server_capabilities : McpServerCapabilities?
+  mut server_info : McpServerInfo?
+}
+pub fn McpClient::call_tool(Self, String, Json?, HttpHandler) -> McpCallToolResult raise McpClientError
+pub fn McpClient::get_server_capabilities(Self) -> McpServerCapabilities?
+pub fn McpClient::get_server_info(Self) -> McpServerInfo?
+pub fn McpClient::initialize(Self, HttpHandler) -> McpInitializeResult raise McpClientError
+pub fn McpClient::is_initialized(Self) -> Bool
+pub fn McpClient::list_resources(Self, HttpHandler) -> Array[McpResource] raise McpClientError
+pub fn McpClient::list_tools(Self, HttpHandler) -> Array[McpTool] raise McpClientError
+pub fn McpClient::new(McpClientConfig) -> Self
+pub fn McpClient::read_resource(Self, String, HttpHandler) -> McpReadResourceResult raise McpClientError
+
+pub(all) struct McpClientCapabilities {
+  roots : Bool
+  sampling : Bool
+}
+
+pub(all) struct McpClientConfig {
+  endpoint : String
+  client_name : String
+  client_version : String
+}
+
+pub(all) struct McpClientInfo {
+  name : String
+  version : String
+}
+
+pub(all) enum McpContent {
+  Text(String)
+  Image(mime_type~ : String, data~ : String)
+  Resource(uri~ : String, mime_type~ : String?, text~ : String?)
+}
+
+pub(all) struct McpInitializeParams {
+  protocol_version : String
+  client_info : McpClientInfo
+  capabilities : McpClientCapabilities
+}
+
+pub(all) struct McpInitializeResult {
+  protocol_version : String
+  server_info : McpServerInfo
+  capabilities : McpServerCapabilities
+}
+
+pub(all) struct McpListResourcesResult {
+  resources : Array[McpResource]
+}
+
+pub(all) struct McpListToolsResult {
+  tools : Array[McpTool]
+}
+
+pub(all) struct McpPrompt {
+  name : String
+  description : String?
+  arguments : Array[McpPromptArgument]
+}
+
+pub(all) struct McpPromptArgument {
+  name : String
+  description : String?
+  required : Bool
+}
+
+pub(all) struct McpReadResourceResult {
+  contents : Array[McpResourceContent]
+}
+
+pub(all) struct McpResource {
+  uri : String
+  name : String
+  description : String?
+  mime_type : String?
+}
+
+pub(all) struct McpResourceContent {
+  uri : String
+  mime_type : String?
+  text : String?
+  blob : String?
+}
+
+pub(all) struct McpServerCapabilities {
+  tools : Bool
+  resources : Bool
+  prompts : Bool
+}
+
+pub(all) struct McpServerInfo {
+  name : String
+  version : String
+}
+
+pub(all) struct McpTool {
+  name : String
+  description : String
+  input_schema : Json
+}
+
+// Type aliases
+
+// Traits
+
