@@ -12,10 +12,10 @@ pub(all) suberror FsError {
   PermissionDenied(String)
   InvalidPath(String)
   IoError(String)
-} derive(Eq)
+} derive(Eq, Debug)
 
 ///|
-pub impl Show for FsError with output(self, logger) {
+pub impl Show for FsError with fn output(self, logger) {
   match self {
     NotFound(s) => {
       logger.write_string("NotFound(")
@@ -71,10 +71,10 @@ pub(all) enum FileType {
   File
   Directory
   Symlink
-} derive(Eq)
+} derive(Eq, Debug)
 
 ///|
-pub impl Show for FileType with output(self, logger) {
+pub impl Show for FileType with fn output(self, logger) {
   match self {
     File => logger.write_string("File")
     Directory => logger.write_string("Directory")
@@ -91,7 +91,7 @@ pub(all) struct FileStat {
 } derive(Eq)
 
 ///|
-pub impl Show for FileStat with output(self, logger) {
+pub impl Show for FileStat with fn output(self, logger) {
   logger.write_string("{file_type: ")
   Show::output(self.file_type, logger)
   logger.write_string(", size: ")
@@ -113,7 +113,7 @@ pub(all) struct DirEntry {
 } derive(Eq)
 
 ///|
-pub impl Show for DirEntry with output(self, logger) {
+pub impl Show for DirEntry with fn output(self, logger) {
   logger.write_string("{name: ")
   Show::output(self.name, logger)
   logger.write_string(", file_type: ")

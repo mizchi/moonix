@@ -92,7 +92,6 @@ pub(all) enum StdStream {
 
 // Traits
 pub(open) trait StdStreamHandler {
-  read(Self, StdStream, Int) -> Bytes
-  write(Self, StdStream, Bytes) -> Int
+  fn read(Self, StdStream, Int) -> Bytes
+  fn write(Self, StdStream, Bytes) -> Int
 }
-

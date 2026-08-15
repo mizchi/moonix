@@ -34,8 +34,6 @@ pub fn HttpClient::post(Self, NetAddr, String, String) -> HttpResponse raise Net
 pub fn HttpClient::request(Self, NetAddr, HttpRequest) -> HttpResponse raise NetError
 
 pub struct HttpHandler((HttpRequest) -> HttpResponse)
-#deprecated
-pub fn HttpHandler::inner(Self) -> (HttpRequest) -> HttpResponse
 pub fn HttpHandler::new((HttpRequest) -> HttpResponse) -> Self
 
 pub enum HttpMethod {
@@ -137,4 +135,3 @@ pub fn VirtualNetwork::transfer(Self) -> Unit
 // Type aliases
 
 // Traits
-

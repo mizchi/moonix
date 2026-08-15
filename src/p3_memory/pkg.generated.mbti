@@ -157,4 +157,3 @@ pub impl @p3.WasiRandomRandomAdapter for RandomAdapter
 // Type aliases
 
 // Traits
-

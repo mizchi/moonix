@@ -4,7 +4,7 @@
 /// Get working tree status (async because bit's status is async)
 pub async fn GitBackedFs::status(
   self : GitBackedFs,
-) -> @lib.Status raise @bit.GitError {
+) -> @lib.Status raise @types.GitError {
   @lib.status(self, self.root)
 }
 
@@ -13,7 +13,7 @@ pub async fn GitBackedFs::status(
 pub async fn GitBackedFs::stash(
   self : GitBackedFs,
   message? : String = "",
-) -> @bit.ObjectId? raise @bit.GitError {
+) -> @object.ObjectId? raise @types.GitError {
   let timestamp = self.get_timestamp()
   let result = @lib.stash_push(
     self,
@@ -33,11 +33,11 @@ pub async fn GitBackedFs::stash(
 pub fn GitBackedFs::merge(
   self : GitBackedFs,
   branch_name : String,
-) -> @lib.MergeResult raise @bit.GitError {
+) -> @lib.MergeResult raise @types.GitError {
   let ref_name = "refs/heads/" + branch_name
   let target = @lib.resolve_ref(self, self.git_dir, ref_name)
   guard target is Some(target_id) else {
-    raise @bit.GitError::IoError("branch not found: " + branch_name)
+    raise @types.GitError::IoError("branch not found: " + branch_name)
   }
   let timestamp = self.get_timestamp()
   let message = "Merge branch '" + branch_name + "'"
@@ -59,13 +59,15 @@ pub fn GitBackedFs::merge(
 /// Get diff of working tree vs index
 pub fn GitBackedFs::diff(
   self : GitBackedFs,
-) -> Array[@lib.DiffFile] raise @bit.GitError {
+) -> Array[@lib.DiffFile] raise @types.GitError {
   @lib.diff_index(self, self.root)
 }
 
 ///|
 /// Get diff as text
-pub fn GitBackedFs::diff_text(self : GitBackedFs) -> String raise @bit.GitError {
+pub fn GitBackedFs::diff_text(
+  self : GitBackedFs,
+) -> String raise @types.GitError {
   let diffs = @lib.diff_index(self, self.root)
   let lines = @lib.diff_text(diffs)
   lines.join("\n")
@@ -75,8 +77,8 @@ pub fn GitBackedFs::diff_text(self : GitBackedFs) -> String raise @bit.GitError 
 /// Cherry-pick a commit onto current branch
 pub fn GitBackedFs::cherry_pick(
   self : GitBackedFs,
-  commit_id : @bit.ObjectId,
-) -> @lib.CherryPickResult raise @bit.GitError {
+  commit_id : @object.ObjectId,
+) -> @lib.CherryPickResult raise @types.GitError {
   let timestamp = self.get_timestamp()
   let result = @lib.cherry_pick(
     self,
@@ -95,9 +97,9 @@ pub fn GitBackedFs::cherry_pick(
 /// Reset current branch to a commit
 pub fn GitBackedFs::reset(
   self : GitBackedFs,
-  commit_id : @bit.ObjectId,
+  commit_id : @object.ObjectId,
   mode? : @lib.ResetMode = Mixed,
-) -> @bit.ObjectId raise @bit.GitError {
+) -> @object.ObjectId raise @types.GitError {
   let result = @lib.reset(self, self, self.root, commit_id.to_hex(), mode)
   self.head = @lib.resolve_head_commit(self, self.git_dir)
   self.clear_dirty()
@@ -109,11 +111,11 @@ pub fn GitBackedFs::reset(
 pub fn GitBackedFs::tag(
   self : GitBackedFs,
   name : String,
-) -> Unit raise @bit.GitError {
+) -> Unit raise @types.GitError {
   guard self.head is Some(head_id) else {
-    raise @bit.GitError::IoError("HEAD is not set")
+    raise @types.GitError::IoError("HEAD is not set")
   }
-  @lib.create_lightweight_tag(self, self.git_dir, name, head_id)
+  @lib.create_lightweight_tag(self, self, self.git_dir, name, head_id)
 }
 
 ///|
@@ -121,9 +123,9 @@ pub fn GitBackedFs::tag(
 pub fn GitBackedFs::tag_at(
   self : GitBackedFs,
   name : String,
-  commit_id : @bit.ObjectId,
-) -> Unit raise @bit.GitError {
-  @lib.create_lightweight_tag(self, self.git_dir, name, commit_id)
+  commit_id : @object.ObjectId,
+) -> Unit raise @types.GitError {
+  @lib.create_lightweight_tag(self, self, self.git_dir, name, commit_id)
 }
 
 ///|
@@ -131,8 +133,8 @@ pub fn GitBackedFs::tag_at(
 pub fn GitBackedFs::delete_tag(
   self : GitBackedFs,
   name : String,
-) -> Unit raise @bit.GitError {
-  @lib.delete_tag(self, self.git_dir, name)
+) -> Unit raise @types.GitError {
+  @lib.delete_tag(self, self, self.git_dir, name)
 }
 
 ///|
@@ -146,7 +148,7 @@ pub fn GitBackedFs::list_tags(self : GitBackedFs) -> Array[String] {
 pub fn GitBackedFs::stash_apply(
   self : GitBackedFs,
   index? : Int = 0,
-) -> Unit raise @bit.GitError {
+) -> Unit raise @types.GitError {
   @lib.stash_apply(self, self, self.root, index, false)
   self.clear_dirty()
 }
@@ -156,7 +158,7 @@ pub fn GitBackedFs::stash_apply(
 pub fn GitBackedFs::stash_pop(
   self : GitBackedFs,
   index? : Int = 0,
-) -> Unit raise @bit.GitError {
+) -> Unit raise @types.GitError {
   @lib.stash_apply(self, self, self.root, index, true)
   self.clear_dirty()
 }
@@ -166,7 +168,7 @@ pub fn GitBackedFs::stash_pop(
 pub fn GitBackedFs::stash_drop(
   self : GitBackedFs,
   index? : Int = 0,
-) -> Unit raise @bit.GitError {
+) -> Unit raise @types.GitError {
   @lib.stash_drop(self, self, self.root, index)
 }
 
@@ -174,6 +176,6 @@ pub fn GitBackedFs::stash_drop(
 /// List all stash entries
 pub fn GitBackedFs::stash_list(
   self : GitBackedFs,
-) -> Array[@lib.StashEntry] raise @bit.GitError {
+) -> Array[@lib.StashEntry] raise @types.GitError {
   @lib.stash_list(self, self.root)
 }

@@ -1,9 +1,8 @@
 ///|
 /// Tests for BitFsAdapter
 test "BitFsAdapter basic operations" {
-  let repo = @bit.TestFs::new()
-  let fs = @bitfs.Fs::empty("/.git", config=@bitfs.FsConfig::local_only())
-  let adapter = BitFsAdapter::new(fs, repo)
+  let fs = @io.TestFs::new()
+  let adapter = BitFsAdapter::new(fs)
   adapter.mkdir_p("/home/user")
   adapter.write_string("/home/user/file.txt", "hello")
   assert_true(adapter.exists("/home/user/file.txt"))
@@ -25,9 +24,8 @@ test "BitFsAdapter basic operations" {
 
 ///|
 test "BitFsAdapter rename and rm_rf" {
-  let repo = @bit.TestFs::new()
-  let fs = @bitfs.Fs::empty("/.git", config=@bitfs.FsConfig::local_only())
-  let adapter = BitFsAdapter::new(fs, repo)
+  let fs = @io.TestFs::new()
+  let adapter = BitFsAdapter::new(fs)
   adapter.mkdir_p("/a/b/c")
   adapter.write_string("/a/b/c/file.txt", "data")
   adapter.rename("/a/b/c/file.txt", "/a/b/c/renamed.txt")

@@ -3,3 +3,5 @@ import {
   "mizchi/moonix/ai/llm",
   "moonbitlang/core/json",
 }
+
+warnings = "-6"

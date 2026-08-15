@@ -15,7 +15,7 @@ pub(all) suberror PosixError {
 } derive(Eq)
 
 ///|
-pub impl Show for PosixError with output(self, logger) {
+pub impl Show for PosixError with fn output(self, logger) {
   match self {
     ENOENT(s) => {
       logger.write_string("ENOENT(")
@@ -92,7 +92,7 @@ pub(all) struct OpenFlags {
 } derive(Eq)
 
 ///|
-pub impl Show for OpenFlags with output(self, logger) {
+pub impl Show for OpenFlags with fn output(self, logger) {
   logger.write_string("{read: ")
   Show::output(self.read, logger)
   logger.write_string(", write: ")

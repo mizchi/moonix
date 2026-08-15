@@ -105,7 +105,7 @@ pub fn Agent::run(self : Agent) -> AgentResult raise AgentError {
 
     // Execute action
     match thought.action {
-      Done(result) =>
+      Done(_) =>
         // Agent claims goal is achieved
         if self.goal.is_achieved(self.runtime) {
           return {
@@ -342,7 +342,7 @@ fn Agent::execute_action(
   action : AgentAction,
 ) -> Unit raise AgentError {
   match action {
-    Exec(cmd) =>
+    Exec(_) =>
       // Note: In WASM environment, exec is not directly available
       // This would need to be handled by the host
       ()
@@ -352,7 +352,7 @@ fn Agent::execute_action(
       if parts.length() > 1 {
         let dir_parts : Array[String] = []
         for i = 0; i < parts.length() - 1; i = i + 1 {
-          dir_parts.push(parts[i].to_string())
+          dir_parts.push(parts[i].to_owned())
         }
         let dir = dir_parts
           .iter()
@@ -519,8 +519,8 @@ pub fn Agent::run_parallel(
           }
 
           // Run one step
-          let step_result = self.run_one_step(i)
-          match step_result {
+          let stepresult = self.run_one_step(i)
+          match stepresult {
             Achieved => {
               self.branches[i].status = Succeeded
               return {

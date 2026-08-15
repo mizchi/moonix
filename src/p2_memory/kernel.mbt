@@ -142,11 +142,11 @@ pub fn Kernel::new(
   wall_nanoseconds? : UInt = 0,
   preopens? : Array[String] = ["/"],
 ) -> Kernel {
-  let streams : Map[Int, StreamState] = {}
+  let streams : Map[Int, StreamState] = Map([])
   streams[0] = StdinStream
   streams[1] = StdoutStream
   streams[2] = StderrStream
-  let descriptors : Map[Int, DescriptorState] = {}
+  let descriptors : Map[Int, DescriptorState] = Map([])
   for i, path in preopens {
     descriptors[i] = { path, type_: Directory }
   }

@@ -161,4 +161,3 @@ pub(all) struct McpTool {
 // Type aliases
 
 // Traits
-

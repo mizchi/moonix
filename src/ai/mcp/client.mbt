@@ -88,12 +88,6 @@ fn build_json_string(s : String) -> String {
 }
 
 ///|
-/// Build JSON number
-fn build_json_number(n : Int) -> String {
-  n.to_string()
-}
-
-///|
 /// Encode JSON-RPC request to bytes
 fn encode_request(req : JsonRpcRequest) -> Bytes {
   let buf = StringBuilder::new()
@@ -109,7 +103,7 @@ fn encode_request(req : JsonRpcRequest) -> Bytes {
     None => ()
   }
   buf.write_string("}")
-  buf.to_string().to_bytes()
+  @utf8.encode(buf.to_string())
 }
 
 ///|
@@ -120,14 +114,14 @@ fn decode_response(data : Bytes) -> JsonRpcResponse raise McpClientError {
   match json {
     Object(obj) => {
       let id = match obj.get("id") {
-        Some(Number(n)) => n.to_int()
+        Some(Number(n, ..)) => n.to_int()
         _ => raise InvalidResponse("missing id")
       }
       let result = obj.get("result")
       let error : JsonRpcError? = match obj.get("error") {
         Some(Object(err_obj)) => {
           let code = match err_obj.get("code") {
-            Some(Number(n)) => n.to_int()
+            Some(Number(n, ..)) => n.to_int()
             _ => 0
           }
           let message = match err_obj.get("message") {

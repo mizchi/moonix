@@ -412,13 +412,13 @@ pub suberror LexError {
 }
 
 ///|
-pub impl Show for LexError with output(self, logger) {
+pub impl Show for LexError with fn output(self, logger) {
   match self {
     UnterminatedString(line, col) =>
       logger.write_string("Unterminated string at \{line}:\{col}")
     UnexpectedChar(c, line, col) =>
       logger.write_string("Unexpected character '\{c}' at \{line}:\{col}")
-    InvalidEscape(c, line, col) =>
+    InvalidEscape(_c, line, col) =>
       logger.write_string("Invalid escape '\\{c}' at \{line}:\{col}")
   }
 }

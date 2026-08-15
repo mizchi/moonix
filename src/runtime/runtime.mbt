@@ -22,7 +22,7 @@ pub struct AgentRuntime {
 pub fn AgentRuntime::new(config : RuntimeConfig) -> AgentRuntime {
   let fs = @gitfs.GitBackedFs::new(author=config.author)
   let effect_log = @effect.EffectLog::new()
-  let env : Map[String, String] = {}
+  let env : Map[String, String] = Map([])
   env.set("HOME", "/home")
   env.set("PATH", "/bin:/usr/bin")
   env.set("PWD", "/")

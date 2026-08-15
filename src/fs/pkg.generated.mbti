@@ -1,6 +1,10 @@
 // Generated using `moon info`, DON'T EDIT IT
 package "mizchi/moonix/fs"
 
+import {
+  "moonbitlang/core/debug",
+}
+
 // Values
 pub fn basename(String) -> String
 
@@ -19,7 +23,7 @@ pub(all) suberror FsError {
   PermissionDenied(String)
   InvalidPath(String)
   IoError(String)
-} derive(Eq)
+} derive(Eq, @debug.Debug)
 pub impl Show for FsError
 
 // Types and methods
@@ -40,7 +44,7 @@ pub(all) enum FileType {
   File
   Directory
   Symlink
-} derive(Eq)
+} derive(Eq, @debug.Debug)
 pub impl Show for FileType
 
 type Inode
@@ -56,21 +60,20 @@ pub impl FileSystemBackend for MemFs
 
 // Traits
 pub(open) trait FileSystemBackend {
-  read_file(Self, String) -> Bytes raise FsError
-  read_string(Self, String) -> String raise FsError
-  exists(Self, String) -> Bool
-  is_file(Self, String) -> Bool
-  is_dir(Self, String) -> Bool
-  stat(Self, String) -> FileStat raise FsError
-  readdir(Self, String) -> Array[DirEntry] raise FsError
-  write_file(Self, String, Bytes) -> Unit raise FsError
-  write_string(Self, String, String) -> Unit raise FsError
-  mkdir(Self, String) -> Unit raise FsError
-  mkdir_p(Self, String) -> Unit raise FsError
-  remove(Self, String) -> Unit raise FsError
-  rmdir(Self, String) -> Unit raise FsError
-  rename(Self, String, String) -> Unit raise FsError
-  copy_file(Self, String, String) -> Unit raise FsError
-  rm_rf(Self, String) -> Unit raise FsError
+  fn read_file(Self, String) -> Bytes raise FsError
+  fn read_string(Self, String) -> String raise FsError
+  fn exists(Self, String) -> Bool
+  fn is_file(Self, String) -> Bool
+  fn is_dir(Self, String) -> Bool
+  fn stat(Self, String) -> FileStat raise FsError
+  fn readdir(Self, String) -> Array[DirEntry] raise FsError
+  fn write_file(Self, String, Bytes) -> Unit raise FsError
+  fn write_string(Self, String, String) -> Unit raise FsError
+  fn mkdir(Self, String) -> Unit raise FsError
+  fn mkdir_p(Self, String) -> Unit raise FsError
+  fn remove(Self, String) -> Unit raise FsError
+  fn rmdir(Self, String) -> Unit raise FsError
+  fn rename(Self, String, String) -> Unit raise FsError
+  fn copy_file(Self, String, String) -> Unit raise FsError
+  fn rm_rf(Self, String) -> Unit raise FsError
 }
-

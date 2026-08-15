@@ -29,7 +29,7 @@ fn fields_to_pairs(kernel : Kernel, fields_id : Int) -> Array[(String, Bytes)] {
 
 ///|
 fn pairs_to_fields(kernel : Kernel, pairs : Array[(String, Bytes)]) -> Int {
-  let entries : Map[String, Array[Bytes]] = {}
+  let entries : Map[String, Array[Bytes]] = Map([])
   for pair in pairs {
     let (name, value) = pair
     match entries.get(name) {
@@ -43,18 +43,20 @@ fn pairs_to_fields(kernel : Kernel, pairs : Array[(String, Bytes)]) -> Int {
 // ===== Fields =====
 
 ///|
-pub impl @p3.WasiHttpTypesAdapter for HttpAdapter with fields_constructor(self) {
+pub impl @p3.WasiHttpTypesAdapter for HttpAdapter with fn fields_constructor(
+  self,
+) {
   let id = self.kernel.alloc_fields({ entries: {} })
   self.current_fields = id
   Ok(())
 }
 
 ///|
-pub impl @p3.WasiHttpTypesAdapter for HttpAdapter with fields_from_list(
+pub impl @p3.WasiHttpTypesAdapter for HttpAdapter with fn fields_from_list(
   self,
   list,
 ) {
-  let entries : Map[String, Array[Bytes]] = {}
+  let entries : Map[String, Array[Bytes]] = Map([])
   for item in list {
     // Each item is encoded as name_bytes + ":" + value_bytes
     let mut colon_pos = -1
@@ -87,7 +89,7 @@ pub impl @p3.WasiHttpTypesAdapter for HttpAdapter with fields_from_list(
 }
 
 ///|
-pub impl @p3.WasiHttpTypesAdapter for HttpAdapter with fields_get(self, name) {
+pub impl @p3.WasiHttpTypesAdapter for HttpAdapter with fn fields_get(self, name) {
   let id = self.current_fields
   match self.kernel.http_fields.get(id) {
     None => Ok([])
@@ -106,7 +108,7 @@ pub impl @p3.WasiHttpTypesAdapter for HttpAdapter with fields_get(self, name) {
 }
 
 ///|
-pub impl @p3.WasiHttpTypesAdapter for HttpAdapter with fields_has(self, name) {
+pub impl @p3.WasiHttpTypesAdapter for HttpAdapter with fn fields_has(self, name) {
   let id = self.current_fields
   match self.kernel.http_fields.get(id) {
     None => Ok(false)
@@ -115,7 +117,7 @@ pub impl @p3.WasiHttpTypesAdapter for HttpAdapter with fields_has(self, name) {
 }
 
 ///|
-pub impl @p3.WasiHttpTypesAdapter for HttpAdapter with fields_set(
+pub impl @p3.WasiHttpTypesAdapter for HttpAdapter with fn fields_set(
   self,
   name,
   values,
@@ -135,7 +137,10 @@ pub impl @p3.WasiHttpTypesAdapter for HttpAdapter with fields_set(
 }
 
 ///|
-pub impl @p3.WasiHttpTypesAdapter for HttpAdapter with fields_delete(self, name) {
+pub impl @p3.WasiHttpTypesAdapter for HttpAdapter with fn fields_delete(
+  self,
+  name,
+) {
   let id = self.current_fields
   match self.kernel.http_fields.get(id) {
     None => Ok(())
@@ -147,7 +152,7 @@ pub impl @p3.WasiHttpTypesAdapter for HttpAdapter with fields_delete(self, name)
 }
 
 ///|
-pub impl @p3.WasiHttpTypesAdapter for HttpAdapter with fields_get_and_delete(
+pub impl @p3.WasiHttpTypesAdapter for HttpAdapter with fn fields_get_and_delete(
   self,
   name,
 ) {
@@ -170,7 +175,7 @@ pub impl @p3.WasiHttpTypesAdapter for HttpAdapter with fields_get_and_delete(
 }
 
 ///|
-pub impl @p3.WasiHttpTypesAdapter for HttpAdapter with fields_append(
+pub impl @p3.WasiHttpTypesAdapter for HttpAdapter with fn fields_append(
   self,
   name,
   value,
@@ -195,7 +200,7 @@ pub impl @p3.WasiHttpTypesAdapter for HttpAdapter with fields_append(
 }
 
 ///|
-pub impl @p3.WasiHttpTypesAdapter for HttpAdapter with fields_copy_all(self) {
+pub impl @p3.WasiHttpTypesAdapter for HttpAdapter with fn fields_copy_all(self) {
   let id = self.current_fields
   match self.kernel.http_fields.get(id) {
     None => Ok([])
@@ -221,7 +226,7 @@ pub impl @p3.WasiHttpTypesAdapter for HttpAdapter with fields_copy_all(self) {
 }
 
 ///|
-pub impl @p3.WasiHttpTypesAdapter for HttpAdapter with fields_clone(self) {
+pub impl @p3.WasiHttpTypesAdapter for HttpAdapter with fn fields_clone(self) {
   let id = self.current_fields
   match self.kernel.http_fields.get(id) {
     None => {
@@ -229,7 +234,7 @@ pub impl @p3.WasiHttpTypesAdapter for HttpAdapter with fields_clone(self) {
       Ok(@p3.HttpTypesFields(new_id))
     }
     Some(fs) => {
-      let new_entries : Map[String, Array[Bytes]] = {}
+      let new_entries : Map[String, Array[Bytes]] = Map([])
       fs.entries.each(fn(name, values) {
         let cloned : Array[Bytes] = []
         for v in values {
@@ -246,7 +251,7 @@ pub impl @p3.WasiHttpTypesAdapter for HttpAdapter with fields_clone(self) {
 // ===== Request =====
 
 ///|
-pub impl @p3.WasiHttpTypesAdapter for HttpAdapter with request_new(
+pub impl @p3.WasiHttpTypesAdapter for HttpAdapter with fn request_new(
   self,
   headers,
   body,
@@ -276,7 +281,9 @@ pub impl @p3.WasiHttpTypesAdapter for HttpAdapter with request_new(
 }
 
 ///|
-pub impl @p3.WasiHttpTypesAdapter for HttpAdapter with request_get_method(self) {
+pub impl @p3.WasiHttpTypesAdapter for HttpAdapter with fn request_get_method(
+  self,
+) {
   match self.kernel.http_requests.get(self.current_request) {
     None => Err(@p3.WasiError::NotImplemented("HttpTypes.request_get_method"))
     Some(req) => Ok(string_to_method(req.method_))
@@ -284,7 +291,7 @@ pub impl @p3.WasiHttpTypesAdapter for HttpAdapter with request_get_method(self) 
 }
 
 ///|
-pub impl @p3.WasiHttpTypesAdapter for HttpAdapter with request_set_method(
+pub impl @p3.WasiHttpTypesAdapter for HttpAdapter with fn request_set_method(
   self,
   http_method,
 ) {
@@ -298,7 +305,7 @@ pub impl @p3.WasiHttpTypesAdapter for HttpAdapter with request_set_method(
 }
 
 ///|
-pub impl @p3.WasiHttpTypesAdapter for HttpAdapter with request_get_path_with_query(
+pub impl @p3.WasiHttpTypesAdapter for HttpAdapter with fn request_get_path_with_query(
   self,
 ) {
   match self.kernel.http_requests.get(self.current_request) {
@@ -311,7 +318,7 @@ pub impl @p3.WasiHttpTypesAdapter for HttpAdapter with request_get_path_with_que
 }
 
 ///|
-pub impl @p3.WasiHttpTypesAdapter for HttpAdapter with request_set_path_with_query(
+pub impl @p3.WasiHttpTypesAdapter for HttpAdapter with fn request_set_path_with_query(
   self,
   path,
 ) {
@@ -331,7 +338,9 @@ pub impl @p3.WasiHttpTypesAdapter for HttpAdapter with request_set_path_with_que
 }
 
 ///|
-pub impl @p3.WasiHttpTypesAdapter for HttpAdapter with request_get_scheme(self) {
+pub impl @p3.WasiHttpTypesAdapter for HttpAdapter with fn request_get_scheme(
+  self,
+) {
   match self.kernel.http_requests.get(self.current_request) {
     None => Err(@p3.WasiError::NotImplemented("HttpTypes.request_get_scheme"))
     Some(req) =>
@@ -343,7 +352,7 @@ pub impl @p3.WasiHttpTypesAdapter for HttpAdapter with request_get_scheme(self) 
 }
 
 ///|
-pub impl @p3.WasiHttpTypesAdapter for HttpAdapter with request_set_scheme(
+pub impl @p3.WasiHttpTypesAdapter for HttpAdapter with fn request_set_scheme(
   self,
   scheme,
 ) {
@@ -360,7 +369,7 @@ pub impl @p3.WasiHttpTypesAdapter for HttpAdapter with request_set_scheme(
 }
 
 ///|
-pub impl @p3.WasiHttpTypesAdapter for HttpAdapter with request_get_authority(
+pub impl @p3.WasiHttpTypesAdapter for HttpAdapter with fn request_get_authority(
   self,
 ) {
   match self.kernel.http_requests.get(self.current_request) {
@@ -371,7 +380,7 @@ pub impl @p3.WasiHttpTypesAdapter for HttpAdapter with request_get_authority(
 }
 
 ///|
-pub impl @p3.WasiHttpTypesAdapter for HttpAdapter with request_set_authority(
+pub impl @p3.WasiHttpTypesAdapter for HttpAdapter with fn request_set_authority(
   self,
   authority,
 ) {
@@ -386,14 +395,16 @@ pub impl @p3.WasiHttpTypesAdapter for HttpAdapter with request_set_authority(
 }
 
 ///|
-pub impl @p3.WasiHttpTypesAdapter for HttpAdapter with request_get_options(
+pub impl @p3.WasiHttpTypesAdapter for HttpAdapter with fn request_get_options(
   _self,
 ) {
   Ok(None)
 }
 
 ///|
-pub impl @p3.WasiHttpTypesAdapter for HttpAdapter with request_get_headers(self) {
+pub impl @p3.WasiHttpTypesAdapter for HttpAdapter with fn request_get_headers(
+  self,
+) {
   match self.kernel.http_requests.get(self.current_request) {
     None => Err(@p3.WasiError::NotImplemented("HttpTypes.request_get_headers"))
     Some(req) => Ok(p3_headers_from_int(req.headers_id))
@@ -401,7 +412,7 @@ pub impl @p3.WasiHttpTypesAdapter for HttpAdapter with request_get_headers(self)
 }
 
 ///|
-pub impl @p3.WasiHttpTypesAdapter for HttpAdapter with request_consume_body(
+pub impl @p3.WasiHttpTypesAdapter for HttpAdapter with fn request_consume_body(
   self,
   request,
   _trailers,
@@ -416,21 +427,21 @@ pub impl @p3.WasiHttpTypesAdapter for HttpAdapter with request_consume_body(
 // ===== Request Options =====
 
 ///|
-pub impl @p3.WasiHttpTypesAdapter for HttpAdapter with request_options_constructor(
+pub impl @p3.WasiHttpTypesAdapter for HttpAdapter with fn request_options_constructor(
   _self,
 ) {
   Ok(())
 }
 
 ///|
-pub impl @p3.WasiHttpTypesAdapter for HttpAdapter with request_options_get_connect_timeout(
+pub impl @p3.WasiHttpTypesAdapter for HttpAdapter with fn request_options_get_connect_timeout(
   _self,
 ) {
   Ok(None)
 }
 
 ///|
-pub impl @p3.WasiHttpTypesAdapter for HttpAdapter with request_options_set_connect_timeout(
+pub impl @p3.WasiHttpTypesAdapter for HttpAdapter with fn request_options_set_connect_timeout(
   _self,
   _timeout,
 ) {
@@ -438,14 +449,14 @@ pub impl @p3.WasiHttpTypesAdapter for HttpAdapter with request_options_set_conne
 }
 
 ///|
-pub impl @p3.WasiHttpTypesAdapter for HttpAdapter with request_options_get_first_byte_timeout(
+pub impl @p3.WasiHttpTypesAdapter for HttpAdapter with fn request_options_get_first_byte_timeout(
   _self,
 ) {
   Ok(None)
 }
 
 ///|
-pub impl @p3.WasiHttpTypesAdapter for HttpAdapter with request_options_set_first_byte_timeout(
+pub impl @p3.WasiHttpTypesAdapter for HttpAdapter with fn request_options_set_first_byte_timeout(
   _self,
   _timeout,
 ) {
@@ -453,14 +464,14 @@ pub impl @p3.WasiHttpTypesAdapter for HttpAdapter with request_options_set_first
 }
 
 ///|
-pub impl @p3.WasiHttpTypesAdapter for HttpAdapter with request_options_get_between_bytes_timeout(
+pub impl @p3.WasiHttpTypesAdapter for HttpAdapter with fn request_options_get_between_bytes_timeout(
   _self,
 ) {
   Ok(None)
 }
 
 ///|
-pub impl @p3.WasiHttpTypesAdapter for HttpAdapter with request_options_set_between_bytes_timeout(
+pub impl @p3.WasiHttpTypesAdapter for HttpAdapter with fn request_options_set_between_bytes_timeout(
   _self,
   _timeout,
 ) {
@@ -468,7 +479,7 @@ pub impl @p3.WasiHttpTypesAdapter for HttpAdapter with request_options_set_betwe
 }
 
 ///|
-pub impl @p3.WasiHttpTypesAdapter for HttpAdapter with request_options_clone(
+pub impl @p3.WasiHttpTypesAdapter for HttpAdapter with fn request_options_clone(
   _self,
 ) {
   Ok(@p3.HttpTypesRequestOptions(0))
@@ -477,7 +488,7 @@ pub impl @p3.WasiHttpTypesAdapter for HttpAdapter with request_options_clone(
 // ===== Response =====
 
 ///|
-pub impl @p3.WasiHttpTypesAdapter for HttpAdapter with response_new(
+pub impl @p3.WasiHttpTypesAdapter for HttpAdapter with fn response_new(
   self,
   headers,
   body,
@@ -502,7 +513,7 @@ pub impl @p3.WasiHttpTypesAdapter for HttpAdapter with response_new(
 }
 
 ///|
-pub impl @p3.WasiHttpTypesAdapter for HttpAdapter with response_get_status_code(
+pub impl @p3.WasiHttpTypesAdapter for HttpAdapter with fn response_get_status_code(
   self,
 ) {
   match self.kernel.http_responses.get(self.current_response) {
@@ -513,7 +524,7 @@ pub impl @p3.WasiHttpTypesAdapter for HttpAdapter with response_get_status_code(
 }
 
 ///|
-pub impl @p3.WasiHttpTypesAdapter for HttpAdapter with response_set_status_code(
+pub impl @p3.WasiHttpTypesAdapter for HttpAdapter with fn response_set_status_code(
   self,
   status,
 ) {
@@ -528,7 +539,7 @@ pub impl @p3.WasiHttpTypesAdapter for HttpAdapter with response_set_status_code(
 }
 
 ///|
-pub impl @p3.WasiHttpTypesAdapter for HttpAdapter with response_get_headers(
+pub impl @p3.WasiHttpTypesAdapter for HttpAdapter with fn response_get_headers(
   self,
 ) {
   match self.kernel.http_responses.get(self.current_response) {
@@ -538,7 +549,7 @@ pub impl @p3.WasiHttpTypesAdapter for HttpAdapter with response_get_headers(
 }
 
 ///|
-pub impl @p3.WasiHttpTypesAdapter for HttpAdapter with response_consume_body(
+pub impl @p3.WasiHttpTypesAdapter for HttpAdapter with fn response_consume_body(
   self,
   response,
   _trailers,
@@ -554,7 +565,7 @@ pub impl @p3.WasiHttpTypesAdapter for HttpAdapter with response_consume_body(
 // ===== Client =====
 
 ///|
-pub impl @p3.WasiHttpClientAdapter for HttpAdapter with send(self, request) {
+pub impl @p3.WasiHttpClientAdapter for HttpAdapter with fn send(self, request) {
   let req_id = request.0
   match self.kernel.http_requests.get(req_id) {
     None => Err(@p3.WasiError::NotImplemented("HttpClient.send"))
@@ -580,7 +591,10 @@ pub impl @p3.WasiHttpClientAdapter for HttpAdapter with send(self, request) {
 // ===== Handler =====
 
 ///|
-pub impl @p3.WasiHttpHandlerAdapter for HttpAdapter with handle(_self, _request) {
+pub impl @p3.WasiHttpHandlerAdapter for HttpAdapter with fn handle(
+  _self,
+  _request,
+) {
   Ok(
     // Server-side handler - return a default 200 response
     @p3.HttpTypesResponse(0),

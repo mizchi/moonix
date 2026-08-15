@@ -79,4 +79,3 @@ pub(all) struct PathGlob {
 // Type aliases
 
 // Traits
-

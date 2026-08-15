@@ -18,7 +18,7 @@ pub fn NetAddr::localhost(port : Int) -> NetAddr {
 }
 
 ///|
-pub impl Show for NetAddr with output(self, logger) {
+pub impl Show for NetAddr with fn output(self, logger) {
   logger.write_string(self.host)
   logger.write_string(":")
   logger.write_string(self.port.to_string())
@@ -47,7 +47,7 @@ pub suberror NetError {
 }
 
 ///|
-pub impl Show for NetError with output(self, logger) {
+pub impl Show for NetError with fn output(self, logger) {
   match self {
     AddressInUse(msg) => logger.write_string("AddressInUse(\{msg})")
     ConnectionRefused(msg) => logger.write_string("ConnectionRefused(\{msg})")
@@ -86,7 +86,7 @@ pub fn HttpMethod::from_string(s : String) -> HttpMethod? {
 }
 
 ///|
-pub impl Show for HttpMethod with output(self, logger) {
+pub impl Show for HttpMethod with fn output(self, logger) {
   let s = match self {
     GET => "GET"
     POST => "POST"

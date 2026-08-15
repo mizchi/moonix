@@ -534,7 +534,7 @@ pub suberror ParseError {
 }
 
 ///|
-pub impl Show for ParseError with output(self, logger) {
+pub impl Show for ParseError with fn output(self, logger) {
   match self {
     LexError(msg) => logger.write_string("Lex error: \{msg}")
     UnexpectedToken(got, expected, line, col) =>

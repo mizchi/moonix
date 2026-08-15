@@ -134,7 +134,7 @@ test "GitBackedFs tag operations" {
 
   // Create tag at specific commit
   let head = fs.get_head()
-  guard head is Some(commit_id)
+  guard! head is Some(commit_id)
   fs.tag_at("v1.0-alias", commit_id)
   assert_eq(fs.list_tags().length(), 2)
 
@@ -171,7 +171,7 @@ test "GitBackedFs merge" {
 
   // Merge feature into main
   let result = fs.merge("feature")
-  guard result.status is (FastForward | Merged)
+  guard! result.status is (FastForward | Merged)
   assert_true(@fs.FileSystemBackend::exists(fs, "/feature.txt"))
   assert_eq(
     @fs.FileSystemBackend::read_string(fs, "/feature.txt"),
@@ -239,7 +239,7 @@ test "GitBackedFs cherry_pick" {
 
   // Cherry-pick the feature commit
   let result = fs.cherry_pick(feature_snap.commit_id)
-  guard result.status is Success
+  guard! result.status is Success
   // Cherry-pick updates the tree and creates a new commit,
   // verify commit was created
   assert_true(result.commit_id is Some(_))

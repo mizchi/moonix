@@ -14,7 +14,7 @@ fn deny_socket() -> @p2.WasiError {
 }
 
 ///|
-pub impl @p2.WasiSocketsTcpAdapter for SocketsAdapter with tcp_socket_start_bind(
+pub impl @p2.WasiSocketsTcpAdapter for SocketsAdapter with fn tcp_socket_start_bind(
   _self,
   _network,
   _addr,
@@ -23,14 +23,14 @@ pub impl @p2.WasiSocketsTcpAdapter for SocketsAdapter with tcp_socket_start_bind
 }
 
 ///|
-pub impl @p2.WasiSocketsTcpAdapter for SocketsAdapter with tcp_socket_finish_bind(
+pub impl @p2.WasiSocketsTcpAdapter for SocketsAdapter with fn tcp_socket_finish_bind(
   _self,
 ) {
   Err(deny_socket())
 }
 
 ///|
-pub impl @p2.WasiSocketsTcpAdapter for SocketsAdapter with tcp_socket_start_connect(
+pub impl @p2.WasiSocketsTcpAdapter for SocketsAdapter with fn tcp_socket_start_connect(
   _self,
   _network,
   _addr,
@@ -39,63 +39,63 @@ pub impl @p2.WasiSocketsTcpAdapter for SocketsAdapter with tcp_socket_start_conn
 }
 
 ///|
-pub impl @p2.WasiSocketsTcpAdapter for SocketsAdapter with tcp_socket_finish_connect(
+pub impl @p2.WasiSocketsTcpAdapter for SocketsAdapter with fn tcp_socket_finish_connect(
   _self,
 ) {
   Err(deny_socket())
 }
 
 ///|
-pub impl @p2.WasiSocketsTcpAdapter for SocketsAdapter with tcp_socket_start_listen(
+pub impl @p2.WasiSocketsTcpAdapter for SocketsAdapter with fn tcp_socket_start_listen(
   _self,
 ) {
   Err(deny_socket())
 }
 
 ///|
-pub impl @p2.WasiSocketsTcpAdapter for SocketsAdapter with tcp_socket_finish_listen(
+pub impl @p2.WasiSocketsTcpAdapter for SocketsAdapter with fn tcp_socket_finish_listen(
   _self,
 ) {
   Err(deny_socket())
 }
 
 ///|
-pub impl @p2.WasiSocketsTcpAdapter for SocketsAdapter with tcp_socket_accept(
+pub impl @p2.WasiSocketsTcpAdapter for SocketsAdapter with fn tcp_socket_accept(
   _self,
 ) {
   Err(deny_socket())
 }
 
 ///|
-pub impl @p2.WasiSocketsTcpAdapter for SocketsAdapter with tcp_socket_local_address(
+pub impl @p2.WasiSocketsTcpAdapter for SocketsAdapter with fn tcp_socket_local_address(
   _self,
 ) {
   Err(deny_socket())
 }
 
 ///|
-pub impl @p2.WasiSocketsTcpAdapter for SocketsAdapter with tcp_socket_remote_address(
+pub impl @p2.WasiSocketsTcpAdapter for SocketsAdapter with fn tcp_socket_remote_address(
   _self,
 ) {
   Err(deny_socket())
 }
 
 ///|
-pub impl @p2.WasiSocketsTcpAdapter for SocketsAdapter with tcp_socket_is_listening(
+pub impl @p2.WasiSocketsTcpAdapter for SocketsAdapter with fn tcp_socket_is_listening(
   _self,
 ) {
   Err(deny_socket())
 }
 
 ///|
-pub impl @p2.WasiSocketsTcpAdapter for SocketsAdapter with tcp_socket_address_family(
+pub impl @p2.WasiSocketsTcpAdapter for SocketsAdapter with fn tcp_socket_address_family(
   _self,
 ) {
   Err(deny_socket())
 }
 
 ///|
-pub impl @p2.WasiSocketsTcpAdapter for SocketsAdapter with tcp_socket_set_listen_backlog_size(
+pub impl @p2.WasiSocketsTcpAdapter for SocketsAdapter with fn tcp_socket_set_listen_backlog_size(
   _self,
   _size,
 ) {
@@ -103,14 +103,14 @@ pub impl @p2.WasiSocketsTcpAdapter for SocketsAdapter with tcp_socket_set_listen
 }
 
 ///|
-pub impl @p2.WasiSocketsTcpAdapter for SocketsAdapter with tcp_socket_keep_alive_enabled(
+pub impl @p2.WasiSocketsTcpAdapter for SocketsAdapter with fn tcp_socket_keep_alive_enabled(
   _self,
 ) {
   Err(deny_socket())
 }
 
 ///|
-pub impl @p2.WasiSocketsTcpAdapter for SocketsAdapter with tcp_socket_set_keep_alive_enabled(
+pub impl @p2.WasiSocketsTcpAdapter for SocketsAdapter with fn tcp_socket_set_keep_alive_enabled(
   _self,
   _enabled,
 ) {
@@ -118,29 +118,14 @@ pub impl @p2.WasiSocketsTcpAdapter for SocketsAdapter with tcp_socket_set_keep_a
 }
 
 ///|
-pub impl @p2.WasiSocketsTcpAdapter for SocketsAdapter with tcp_socket_keep_alive_idle_time(
+pub impl @p2.WasiSocketsTcpAdapter for SocketsAdapter with fn tcp_socket_keep_alive_idle_time(
   _self,
 ) {
   Err(deny_socket())
 }
 
 ///|
-pub impl @p2.WasiSocketsTcpAdapter for SocketsAdapter with tcp_socket_set_keep_alive_idle_time(
-  _self,
-  _duration,
-) {
-  Err(deny_socket())
-}
-
-///|
-pub impl @p2.WasiSocketsTcpAdapter for SocketsAdapter with tcp_socket_keep_alive_interval(
-  _self,
-) {
-  Err(deny_socket())
-}
-
-///|
-pub impl @p2.WasiSocketsTcpAdapter for SocketsAdapter with tcp_socket_set_keep_alive_interval(
+pub impl @p2.WasiSocketsTcpAdapter for SocketsAdapter with fn tcp_socket_set_keep_alive_idle_time(
   _self,
   _duration,
 ) {
@@ -148,14 +133,29 @@ pub impl @p2.WasiSocketsTcpAdapter for SocketsAdapter with tcp_socket_set_keep_a
 }
 
 ///|
-pub impl @p2.WasiSocketsTcpAdapter for SocketsAdapter with tcp_socket_keep_alive_count(
+pub impl @p2.WasiSocketsTcpAdapter for SocketsAdapter with fn tcp_socket_keep_alive_interval(
   _self,
 ) {
   Err(deny_socket())
 }
 
 ///|
-pub impl @p2.WasiSocketsTcpAdapter for SocketsAdapter with tcp_socket_set_keep_alive_count(
+pub impl @p2.WasiSocketsTcpAdapter for SocketsAdapter with fn tcp_socket_set_keep_alive_interval(
+  _self,
+  _duration,
+) {
+  Err(deny_socket())
+}
+
+///|
+pub impl @p2.WasiSocketsTcpAdapter for SocketsAdapter with fn tcp_socket_keep_alive_count(
+  _self,
+) {
+  Err(deny_socket())
+}
+
+///|
+pub impl @p2.WasiSocketsTcpAdapter for SocketsAdapter with fn tcp_socket_set_keep_alive_count(
   _self,
   _count,
 ) {
@@ -163,14 +163,14 @@ pub impl @p2.WasiSocketsTcpAdapter for SocketsAdapter with tcp_socket_set_keep_a
 }
 
 ///|
-pub impl @p2.WasiSocketsTcpAdapter for SocketsAdapter with tcp_socket_hop_limit(
+pub impl @p2.WasiSocketsTcpAdapter for SocketsAdapter with fn tcp_socket_hop_limit(
   _self,
 ) {
   Err(deny_socket())
 }
 
 ///|
-pub impl @p2.WasiSocketsTcpAdapter for SocketsAdapter with tcp_socket_set_hop_limit(
+pub impl @p2.WasiSocketsTcpAdapter for SocketsAdapter with fn tcp_socket_set_hop_limit(
   _self,
   _limit,
 ) {
@@ -178,29 +178,14 @@ pub impl @p2.WasiSocketsTcpAdapter for SocketsAdapter with tcp_socket_set_hop_li
 }
 
 ///|
-pub impl @p2.WasiSocketsTcpAdapter for SocketsAdapter with tcp_socket_receive_buffer_size(
+pub impl @p2.WasiSocketsTcpAdapter for SocketsAdapter with fn tcp_socket_receive_buffer_size(
   _self,
 ) {
   Err(deny_socket())
 }
 
 ///|
-pub impl @p2.WasiSocketsTcpAdapter for SocketsAdapter with tcp_socket_set_receive_buffer_size(
-  _self,
-  _size,
-) {
-  Err(deny_socket())
-}
-
-///|
-pub impl @p2.WasiSocketsTcpAdapter for SocketsAdapter with tcp_socket_send_buffer_size(
-  _self,
-) {
-  Err(deny_socket())
-}
-
-///|
-pub impl @p2.WasiSocketsTcpAdapter for SocketsAdapter with tcp_socket_set_send_buffer_size(
+pub impl @p2.WasiSocketsTcpAdapter for SocketsAdapter with fn tcp_socket_set_receive_buffer_size(
   _self,
   _size,
 ) {
@@ -208,14 +193,29 @@ pub impl @p2.WasiSocketsTcpAdapter for SocketsAdapter with tcp_socket_set_send_b
 }
 
 ///|
-pub impl @p2.WasiSocketsTcpAdapter for SocketsAdapter with tcp_socket_subscribe(
+pub impl @p2.WasiSocketsTcpAdapter for SocketsAdapter with fn tcp_socket_send_buffer_size(
   _self,
 ) {
   Err(deny_socket())
 }
 
 ///|
-pub impl @p2.WasiSocketsTcpAdapter for SocketsAdapter with tcp_socket_shutdown(
+pub impl @p2.WasiSocketsTcpAdapter for SocketsAdapter with fn tcp_socket_set_send_buffer_size(
+  _self,
+  _size,
+) {
+  Err(deny_socket())
+}
+
+///|
+pub impl @p2.WasiSocketsTcpAdapter for SocketsAdapter with fn tcp_socket_subscribe(
+  _self,
+) {
+  Err(deny_socket())
+}
+
+///|
+pub impl @p2.WasiSocketsTcpAdapter for SocketsAdapter with fn tcp_socket_shutdown(
   _self,
   _type,
 ) {
@@ -223,7 +223,7 @@ pub impl @p2.WasiSocketsTcpAdapter for SocketsAdapter with tcp_socket_shutdown(
 }
 
 ///|
-pub impl @p2.WasiSocketsTcpCreateSocketAdapter for SocketsAdapter with create_tcp_socket(
+pub impl @p2.WasiSocketsTcpCreateSocketAdapter for SocketsAdapter with fn create_tcp_socket(
   _self,
   _family,
 ) {
@@ -231,7 +231,7 @@ pub impl @p2.WasiSocketsTcpCreateSocketAdapter for SocketsAdapter with create_tc
 }
 
 ///|
-pub impl @p2.WasiSocketsUdpAdapter for SocketsAdapter with udp_socket_start_bind(
+pub impl @p2.WasiSocketsUdpAdapter for SocketsAdapter with fn udp_socket_start_bind(
   _self,
   _network,
   _addr,
@@ -240,42 +240,42 @@ pub impl @p2.WasiSocketsUdpAdapter for SocketsAdapter with udp_socket_start_bind
 }
 
 ///|
-pub impl @p2.WasiSocketsUdpAdapter for SocketsAdapter with udp_socket_finish_bind(
+pub impl @p2.WasiSocketsUdpAdapter for SocketsAdapter with fn udp_socket_finish_bind(
   _self,
 ) {
   Err(deny_socket())
 }
 
 ///|
-pub impl @p2.WasiSocketsUdpAdapter for SocketsAdapter with udp_socket_local_address(
+pub impl @p2.WasiSocketsUdpAdapter for SocketsAdapter with fn udp_socket_local_address(
   _self,
 ) {
   Err(deny_socket())
 }
 
 ///|
-pub impl @p2.WasiSocketsUdpAdapter for SocketsAdapter with udp_socket_remote_address(
+pub impl @p2.WasiSocketsUdpAdapter for SocketsAdapter with fn udp_socket_remote_address(
   _self,
 ) {
   Err(deny_socket())
 }
 
 ///|
-pub impl @p2.WasiSocketsUdpAdapter for SocketsAdapter with udp_socket_address_family(
+pub impl @p2.WasiSocketsUdpAdapter for SocketsAdapter with fn udp_socket_address_family(
   _self,
 ) {
   Err(deny_socket())
 }
 
 ///|
-pub impl @p2.WasiSocketsUdpAdapter for SocketsAdapter with udp_socket_unicast_hop_limit(
+pub impl @p2.WasiSocketsUdpAdapter for SocketsAdapter with fn udp_socket_unicast_hop_limit(
   _self,
 ) {
   Err(deny_socket())
 }
 
 ///|
-pub impl @p2.WasiSocketsUdpAdapter for SocketsAdapter with udp_socket_set_unicast_hop_limit(
+pub impl @p2.WasiSocketsUdpAdapter for SocketsAdapter with fn udp_socket_set_unicast_hop_limit(
   _self,
   _limit,
 ) {
@@ -283,29 +283,14 @@ pub impl @p2.WasiSocketsUdpAdapter for SocketsAdapter with udp_socket_set_unicas
 }
 
 ///|
-pub impl @p2.WasiSocketsUdpAdapter for SocketsAdapter with udp_socket_receive_buffer_size(
+pub impl @p2.WasiSocketsUdpAdapter for SocketsAdapter with fn udp_socket_receive_buffer_size(
   _self,
 ) {
   Err(deny_socket())
 }
 
 ///|
-pub impl @p2.WasiSocketsUdpAdapter for SocketsAdapter with udp_socket_set_receive_buffer_size(
-  _self,
-  _size,
-) {
-  Err(deny_socket())
-}
-
-///|
-pub impl @p2.WasiSocketsUdpAdapter for SocketsAdapter with udp_socket_send_buffer_size(
-  _self,
-) {
-  Err(deny_socket())
-}
-
-///|
-pub impl @p2.WasiSocketsUdpAdapter for SocketsAdapter with udp_socket_set_send_buffer_size(
+pub impl @p2.WasiSocketsUdpAdapter for SocketsAdapter with fn udp_socket_set_receive_buffer_size(
   _self,
   _size,
 ) {
@@ -313,14 +298,29 @@ pub impl @p2.WasiSocketsUdpAdapter for SocketsAdapter with udp_socket_set_send_b
 }
 
 ///|
-pub impl @p2.WasiSocketsUdpAdapter for SocketsAdapter with udp_socket_subscribe(
+pub impl @p2.WasiSocketsUdpAdapter for SocketsAdapter with fn udp_socket_send_buffer_size(
   _self,
 ) {
   Err(deny_socket())
 }
 
 ///|
-pub impl @p2.WasiSocketsUdpAdapter for SocketsAdapter with incoming_datagram_stream_receive(
+pub impl @p2.WasiSocketsUdpAdapter for SocketsAdapter with fn udp_socket_set_send_buffer_size(
+  _self,
+  _size,
+) {
+  Err(deny_socket())
+}
+
+///|
+pub impl @p2.WasiSocketsUdpAdapter for SocketsAdapter with fn udp_socket_subscribe(
+  _self,
+) {
+  Err(deny_socket())
+}
+
+///|
+pub impl @p2.WasiSocketsUdpAdapter for SocketsAdapter with fn incoming_datagram_stream_receive(
   _self,
   _max,
 ) {
@@ -328,21 +328,21 @@ pub impl @p2.WasiSocketsUdpAdapter for SocketsAdapter with incoming_datagram_str
 }
 
 ///|
-pub impl @p2.WasiSocketsUdpAdapter for SocketsAdapter with incoming_datagram_stream_subscribe(
+pub impl @p2.WasiSocketsUdpAdapter for SocketsAdapter with fn incoming_datagram_stream_subscribe(
   _self,
 ) {
   Err(deny_socket())
 }
 
 ///|
-pub impl @p2.WasiSocketsUdpAdapter for SocketsAdapter with outgoing_datagram_stream_check_send(
+pub impl @p2.WasiSocketsUdpAdapter for SocketsAdapter with fn outgoing_datagram_stream_check_send(
   _self,
 ) {
   Err(deny_socket())
 }
 
 ///|
-pub impl @p2.WasiSocketsUdpAdapter for SocketsAdapter with outgoing_datagram_stream_send(
+pub impl @p2.WasiSocketsUdpAdapter for SocketsAdapter with fn outgoing_datagram_stream_send(
   _self,
   _datagrams,
 ) {
@@ -350,14 +350,14 @@ pub impl @p2.WasiSocketsUdpAdapter for SocketsAdapter with outgoing_datagram_str
 }
 
 ///|
-pub impl @p2.WasiSocketsUdpAdapter for SocketsAdapter with outgoing_datagram_stream_subscribe(
+pub impl @p2.WasiSocketsUdpAdapter for SocketsAdapter with fn outgoing_datagram_stream_subscribe(
   _self,
 ) {
   Err(deny_socket())
 }
 
 ///|
-pub impl @p2.WasiSocketsUdpCreateSocketAdapter for SocketsAdapter with create_udp_socket(
+pub impl @p2.WasiSocketsUdpCreateSocketAdapter for SocketsAdapter with fn create_udp_socket(
   _self,
   _family,
 ) {
@@ -365,7 +365,7 @@ pub impl @p2.WasiSocketsUdpCreateSocketAdapter for SocketsAdapter with create_ud
 }
 
 ///|
-pub impl @p2.WasiSocketsNetworkAdapter for SocketsAdapter with network_error_code(
+pub impl @p2.WasiSocketsNetworkAdapter for SocketsAdapter with fn network_error_code(
   _self,
   _err,
 ) {
@@ -373,21 +373,21 @@ pub impl @p2.WasiSocketsNetworkAdapter for SocketsAdapter with network_error_cod
 }
 
 ///|
-pub impl @p2.WasiSocketsIpNameLookupAdapter for SocketsAdapter with resolve_address_stream_resolve_next_address(
+pub impl @p2.WasiSocketsIpNameLookupAdapter for SocketsAdapter with fn resolve_address_stream_resolve_next_address(
   _self,
 ) {
   Err(deny_socket())
 }
 
 ///|
-pub impl @p2.WasiSocketsIpNameLookupAdapter for SocketsAdapter with resolve_address_stream_subscribe(
+pub impl @p2.WasiSocketsIpNameLookupAdapter for SocketsAdapter with fn resolve_address_stream_subscribe(
   _self,
 ) {
   Err(deny_socket())
 }
 
 ///|
-pub impl @p2.WasiSocketsIpNameLookupAdapter for SocketsAdapter with resolve_addresses(
+pub impl @p2.WasiSocketsIpNameLookupAdapter for SocketsAdapter with fn resolve_addresses(
   _self,
   _network,
   _name,
@@ -396,7 +396,7 @@ pub impl @p2.WasiSocketsIpNameLookupAdapter for SocketsAdapter with resolve_addr
 }
 
 ///|
-pub impl @p2.WasiSocketsInstanceNetworkAdapter for SocketsAdapter with instance_network(
+pub impl @p2.WasiSocketsInstanceNetworkAdapter for SocketsAdapter with fn instance_network(
   _self,
 ) {
   Err(deny_socket())

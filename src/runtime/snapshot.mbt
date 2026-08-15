@@ -22,7 +22,7 @@ pub fn AgentRuntime::snapshot(
   self.effect_log.set_current_snapshot(Some(git_snapshot.commit_id.to_hex()))
 
   // Copy environment
-  let env : Map[String, String] = {}
+  let env : Map[String, String] = Map([])
   for k, v in self.env {
     env.set(k, v)
   }

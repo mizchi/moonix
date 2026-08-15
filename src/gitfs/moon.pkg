@@ -1,5 +1,6 @@
 import {
   "mizchi/moonix/fs",
-  "mizchi/bit",
-  "mizchi/bit/lib",
+  "mizchi/bit_lib" @lib,
+  "mizchi/bit_object" @object,
+  "mizchi/bit_types" @types,
 }

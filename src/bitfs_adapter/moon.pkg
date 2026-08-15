@@ -1,12 +1,6 @@
 import {
-  "mizchi/moonix/fs" @fs,
-  "mizchi/bit" @bit,
-  "mizchi/bit/x/fs" @bitfs,
+  "mizchi/moonix/fs",
+  "mizchi/bit_io" @io,
+  "mizchi/bit_object",
+  "mizchi/bit_types" @types,
 }
-
-options(
-  targets: {
-    "bitfs_adapter.mbt": [ "native" ],
-    "bitfs_adapter_test.mbt": [ "native" ],
-  },
-)

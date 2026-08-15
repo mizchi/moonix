@@ -57,7 +57,7 @@ test "cli: get_stdin/stdout/stderr return correct stream IDs" {
 
 ///|
 test "cli: environment/arguments/cwd" {
-  let env : Map[String, String] = {}
+  let env : Map[String, String] = Map([])
   env["HOME"] = "/home/test"
   let config = P2MemoryConfig::{
     ..P2MemoryConfig::default(),

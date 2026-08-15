@@ -9,7 +9,7 @@ pub fn RandomAdapter::new(kernel : Kernel) -> RandomAdapter {
 }
 
 ///|
-pub impl @p2.WasiRandomRandomAdapter for RandomAdapter with get_random_bytes(
+pub impl @p2.WasiRandomRandomAdapter for RandomAdapter with fn get_random_bytes(
   self,
   len,
 ) {
@@ -17,12 +17,14 @@ pub impl @p2.WasiRandomRandomAdapter for RandomAdapter with get_random_bytes(
 }
 
 ///|
-pub impl @p2.WasiRandomRandomAdapter for RandomAdapter with get_random_u64(self) {
+pub impl @p2.WasiRandomRandomAdapter for RandomAdapter with fn get_random_u64(
+  self,
+) {
   Ok(self.kernel.next_random_u64())
 }
 
 ///|
-pub impl @p2.WasiRandomInsecureAdapter for RandomAdapter with get_insecure_random_bytes(
+pub impl @p2.WasiRandomInsecureAdapter for RandomAdapter with fn get_insecure_random_bytes(
   self,
   len,
 ) {
@@ -30,14 +32,14 @@ pub impl @p2.WasiRandomInsecureAdapter for RandomAdapter with get_insecure_rando
 }
 
 ///|
-pub impl @p2.WasiRandomInsecureAdapter for RandomAdapter with get_insecure_random_u64(
+pub impl @p2.WasiRandomInsecureAdapter for RandomAdapter with fn get_insecure_random_u64(
   self,
 ) {
   Ok(self.kernel.next_random_u64())
 }
 
 ///|
-pub impl @p2.WasiRandomInsecureSeedAdapter for RandomAdapter with insecure_seed(
+pub impl @p2.WasiRandomInsecureSeedAdapter for RandomAdapter with fn insecure_seed(
   self,
 ) {
   Ok(self.kernel.next_random_bytes(16))

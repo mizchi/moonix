@@ -35,8 +35,8 @@ pub(all) enum StdStream {
 ///|
 /// Standard stream handler
 pub(open) trait StdStreamHandler {
-  read(Self, StdStream, Int) -> Bytes
-  write(Self, StdStream, Bytes) -> Int
+  fn read(Self, StdStream, Int) -> Bytes
+  fn write(Self, StdStream, Bytes) -> Int
 }
 
 ///|
@@ -49,12 +49,20 @@ pub fn NullStreamHandler::new() -> NullStreamHandler {
 }
 
 ///|
-pub impl StdStreamHandler for NullStreamHandler with read(_self, _stream, _len) {
+pub impl StdStreamHandler for NullStreamHandler with fn read(
+  _self,
+  _stream,
+  _len,
+) {
   b""
 }
 
 ///|
-pub impl StdStreamHandler for NullStreamHandler with write(_self, _stream, data) {
+pub impl StdStreamHandler for NullStreamHandler with fn write(
+  _self,
+  _stream,
+  data,
+) {
   data.length()
 }
 
@@ -90,7 +98,11 @@ pub fn BufferedStreamHandler::get_stderr(self : BufferedStreamHandler) -> Bytes 
 }
 
 ///|
-pub impl StdStreamHandler for BufferedStreamHandler with read(self, stream, len) {
+pub impl StdStreamHandler for BufferedStreamHandler with fn read(
+  self,
+  stream,
+  len,
+) {
   match stream {
     Stdin => {
       let available = self.stdin.length() - self.stdin_pos
@@ -111,7 +123,7 @@ pub impl StdStreamHandler for BufferedStreamHandler with read(self, stream, len)
 }
 
 ///|
-pub impl StdStreamHandler for BufferedStreamHandler with write(
+pub impl StdStreamHandler for BufferedStreamHandler with fn write(
   self,
   stream,
   data,
@@ -146,7 +158,7 @@ pub fn PosixContext::new(
   fs : &@fs.FileSystemBackend,
   streams : &StdStreamHandler,
 ) -> PosixContext {
-  let env : Map[String, String] = {}
+  let env : Map[String, String] = Map([])
   env.set("HOME", "/home")
   env.set("PATH", "/bin:/usr/bin")
   env.set("PWD", "/")

@@ -121,4 +121,3 @@ pub struct RuntimeSnapshot {
 // Type aliases
 
 // Traits
-

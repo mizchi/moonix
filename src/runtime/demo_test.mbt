@@ -463,9 +463,9 @@ test "Fork: branch from any snapshot" {
   rt.write_string("/app/version.txt", "v1.0")
   let snap_v1 = rt.snapshot("version 1.0")
 
-  // Create explicit "main" branch at this point
-  rt.branch("main")
-  println("=== Created v1.0, main branch ===")
+  // The repository initializes its first snapshot on the "main" branch.
+  assert_eq(rt.current_branch(), Some("main"))
+  println("=== Created v1.0 on main branch ===")
 
   // Continue on main: v1.0 -> v2.0
   rt.write_string("/app/version.txt", "v2.0")

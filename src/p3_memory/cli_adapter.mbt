@@ -9,7 +9,7 @@ pub fn CliAdapter::new(kernel : Kernel) -> CliAdapter {
 }
 
 ///|
-pub impl @p3.WasiStdinAdapter for CliAdapter with read_via_stream(self) {
+pub impl @p3.WasiStdinAdapter for CliAdapter with fn read_via_stream(self) {
   let remaining = self.kernel.stdin_data.length() - self.kernel.stdin_pos
   if remaining <= 0 {
     Ok(b"")
@@ -26,7 +26,10 @@ pub impl @p3.WasiStdinAdapter for CliAdapter with read_via_stream(self) {
 }
 
 ///|
-pub impl @p3.WasiStdoutAdapter for CliAdapter with write_via_stream(self, data) {
+pub impl @p3.WasiStdoutAdapter for CliAdapter with fn write_via_stream(
+  self,
+  data,
+) {
   for b in data {
     self.kernel.stdout_buf.push(b)
   }
@@ -34,7 +37,10 @@ pub impl @p3.WasiStdoutAdapter for CliAdapter with write_via_stream(self, data) 
 }
 
 ///|
-pub impl @p3.WasiStderrAdapter for CliAdapter with write_via_stream(self, data) {
+pub impl @p3.WasiStderrAdapter for CliAdapter with fn write_via_stream(
+  self,
+  data,
+) {
   for b in data {
     self.kernel.stderr_buf.push(b)
   }
@@ -42,7 +48,7 @@ pub impl @p3.WasiStderrAdapter for CliAdapter with write_via_stream(self, data) 
 }
 
 ///|
-pub impl @p3.WasiExitAdapter for CliAdapter with exit(self, status) {
+pub impl @p3.WasiExitAdapter for CliAdapter with fn exit(self, status) {
   match status {
     Ok(_) => self.kernel.exit_code = Some(0)
     Err(_) => self.kernel.exit_code = Some(1)
@@ -51,13 +57,13 @@ pub impl @p3.WasiExitAdapter for CliAdapter with exit(self, status) {
 }
 
 ///|
-pub impl @p3.WasiExitAdapter for CliAdapter with exit_with_code(self, code) {
+pub impl @p3.WasiExitAdapter for CliAdapter with fn exit_with_code(self, code) {
   self.kernel.exit_code = Some(code.to_int())
   Ok(())
 }
 
 ///|
-pub impl @p3.WasiEnvironmentAdapter for CliAdapter with get_environment(self) {
+pub impl @p3.WasiEnvironmentAdapter for CliAdapter with fn get_environment(self) {
   let result : Array[Bytes] = []
   for k, v in self.kernel.env {
     let entry = k + "=" + v
@@ -71,31 +77,31 @@ pub impl @p3.WasiEnvironmentAdapter for CliAdapter with get_environment(self) {
 }
 
 ///|
-pub impl @p3.WasiEnvironmentAdapter for CliAdapter with get_arguments(self) {
+pub impl @p3.WasiEnvironmentAdapter for CliAdapter with fn get_arguments(self) {
   Ok(self.kernel.args)
 }
 
 ///|
-pub impl @p3.WasiEnvironmentAdapter for CliAdapter with get_initial_cwd(self) {
+pub impl @p3.WasiEnvironmentAdapter for CliAdapter with fn get_initial_cwd(self) {
   Ok(Some(self.kernel.cwd))
 }
 
 ///|
-pub impl @p3.WasiTerminalStdinAdapter for CliAdapter with get_terminal_stdin(
+pub impl @p3.WasiTerminalStdinAdapter for CliAdapter with fn get_terminal_stdin(
   _self,
 ) {
   Ok(None)
 }
 
 ///|
-pub impl @p3.WasiTerminalStdoutAdapter for CliAdapter with get_terminal_stdout(
+pub impl @p3.WasiTerminalStdoutAdapter for CliAdapter with fn get_terminal_stdout(
   _self,
 ) {
   Ok(None)
 }
 
 ///|
-pub impl @p3.WasiTerminalStderrAdapter for CliAdapter with get_terminal_stderr(
+pub impl @p3.WasiTerminalStderrAdapter for CliAdapter with fn get_terminal_stderr(
   _self,
 ) {
   Ok(None)

@@ -3,5 +3,7 @@ import {
   "mizchi/moonix/gitfs",
   "mizchi/moonix/effect",
   "mizchi/moonix/capability",
-  "mizchi/bit",
+  "mizchi/bit_object",
 }
+
+warnings = "-6"

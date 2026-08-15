@@ -43,6 +43,5 @@ pub fn WasmExecResult::ok(Bytes) -> Self
 
 // Traits
 pub(open) trait WasmRunner {
-  run(Self, Bytes, WasmExecContext) -> WasmExecResult raise WasmError
+  fn run(Self, Bytes, WasmExecContext) -> WasmExecResult raise WasmError
 }
-
