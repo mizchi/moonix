@@ -214,7 +214,7 @@ fn IoAdapter::write_to_stream(
 }
 
 ///|
-pub impl @p2.WasiIoStreamsAdapter for IoAdapter with input_stream_read(
+pub impl @p2.WasiIoStreamsAdapter for IoAdapter with fn input_stream_read(
   self,
   len,
 ) {
@@ -222,7 +222,7 @@ pub impl @p2.WasiIoStreamsAdapter for IoAdapter with input_stream_read(
 }
 
 ///|
-pub impl @p2.WasiIoStreamsAdapter for IoAdapter with input_stream_blocking_read(
+pub impl @p2.WasiIoStreamsAdapter for IoAdapter with fn input_stream_blocking_read(
   self,
   len,
 ) {
@@ -230,7 +230,7 @@ pub impl @p2.WasiIoStreamsAdapter for IoAdapter with input_stream_blocking_read(
 }
 
 ///|
-pub impl @p2.WasiIoStreamsAdapter for IoAdapter with input_stream_skip(
+pub impl @p2.WasiIoStreamsAdapter for IoAdapter with fn input_stream_skip(
   self,
   len,
 ) {
@@ -241,7 +241,7 @@ pub impl @p2.WasiIoStreamsAdapter for IoAdapter with input_stream_skip(
 }
 
 ///|
-pub impl @p2.WasiIoStreamsAdapter for IoAdapter with input_stream_blocking_skip(
+pub impl @p2.WasiIoStreamsAdapter for IoAdapter with fn input_stream_blocking_skip(
   self,
   len,
 ) {
@@ -252,7 +252,7 @@ pub impl @p2.WasiIoStreamsAdapter for IoAdapter with input_stream_blocking_skip(
 }
 
 ///|
-pub impl @p2.WasiIoStreamsAdapter for IoAdapter with input_stream_subscribe(
+pub impl @p2.WasiIoStreamsAdapter for IoAdapter with fn input_stream_subscribe(
   self,
 ) {
   let id = self.kernel.alloc_pollable()
@@ -260,14 +260,14 @@ pub impl @p2.WasiIoStreamsAdapter for IoAdapter with input_stream_subscribe(
 }
 
 ///|
-pub impl @p2.WasiIoStreamsAdapter for IoAdapter with output_stream_check_write(
+pub impl @p2.WasiIoStreamsAdapter for IoAdapter with fn output_stream_check_write(
   _self,
 ) {
   Ok(65536UL)
 }
 
 ///|
-pub impl @p2.WasiIoStreamsAdapter for IoAdapter with output_stream_write(
+pub impl @p2.WasiIoStreamsAdapter for IoAdapter with fn output_stream_write(
   self,
   data,
 ) {
@@ -275,7 +275,7 @@ pub impl @p2.WasiIoStreamsAdapter for IoAdapter with output_stream_write(
 }
 
 ///|
-pub impl @p2.WasiIoStreamsAdapter for IoAdapter with output_stream_blocking_write_and_flush(
+pub impl @p2.WasiIoStreamsAdapter for IoAdapter with fn output_stream_blocking_write_and_flush(
   self,
   data,
 ) {
@@ -283,19 +283,21 @@ pub impl @p2.WasiIoStreamsAdapter for IoAdapter with output_stream_blocking_writ
 }
 
 ///|
-pub impl @p2.WasiIoStreamsAdapter for IoAdapter with output_stream_flush(_self) {
-  Ok(())
-}
-
-///|
-pub impl @p2.WasiIoStreamsAdapter for IoAdapter with output_stream_blocking_flush(
+pub impl @p2.WasiIoStreamsAdapter for IoAdapter with fn output_stream_flush(
   _self,
 ) {
   Ok(())
 }
 
 ///|
-pub impl @p2.WasiIoStreamsAdapter for IoAdapter with output_stream_subscribe(
+pub impl @p2.WasiIoStreamsAdapter for IoAdapter with fn output_stream_blocking_flush(
+  _self,
+) {
+  Ok(())
+}
+
+///|
+pub impl @p2.WasiIoStreamsAdapter for IoAdapter with fn output_stream_subscribe(
   self,
 ) {
   let id = self.kernel.alloc_pollable()
@@ -303,7 +305,7 @@ pub impl @p2.WasiIoStreamsAdapter for IoAdapter with output_stream_subscribe(
 }
 
 ///|
-pub impl @p2.WasiIoStreamsAdapter for IoAdapter with output_stream_write_zeroes(
+pub impl @p2.WasiIoStreamsAdapter for IoAdapter with fn output_stream_write_zeroes(
   self,
   len,
 ) {
@@ -312,7 +314,7 @@ pub impl @p2.WasiIoStreamsAdapter for IoAdapter with output_stream_write_zeroes(
 }
 
 ///|
-pub impl @p2.WasiIoStreamsAdapter for IoAdapter with output_stream_blocking_write_zeroes_and_flush(
+pub impl @p2.WasiIoStreamsAdapter for IoAdapter with fn output_stream_blocking_write_zeroes_and_flush(
   self,
   len,
 ) {
@@ -321,7 +323,7 @@ pub impl @p2.WasiIoStreamsAdapter for IoAdapter with output_stream_blocking_writ
 }
 
 ///|
-pub impl @p2.WasiIoStreamsAdapter for IoAdapter with output_stream_splice(
+pub impl @p2.WasiIoStreamsAdapter for IoAdapter with fn output_stream_splice(
   self,
   _src,
   len,
@@ -338,7 +340,7 @@ pub impl @p2.WasiIoStreamsAdapter for IoAdapter with output_stream_splice(
 }
 
 ///|
-pub impl @p2.WasiIoStreamsAdapter for IoAdapter with output_stream_blocking_splice(
+pub impl @p2.WasiIoStreamsAdapter for IoAdapter with fn output_stream_blocking_splice(
   self,
   src,
   len,
@@ -347,7 +349,9 @@ pub impl @p2.WasiIoStreamsAdapter for IoAdapter with output_stream_blocking_spli
 }
 
 ///|
-pub impl @p2.WasiIoErrorAdapter for IoAdapter with error_to_debug_string(self) {
+pub impl @p2.WasiIoErrorAdapter for IoAdapter with fn error_to_debug_string(
+  self,
+) {
   let id = self.current_error
   match self.kernel.errors.get(id) {
     Some(msg) => Ok(msg)
@@ -356,17 +360,17 @@ pub impl @p2.WasiIoErrorAdapter for IoAdapter with error_to_debug_string(self) {
 }
 
 ///|
-pub impl @p2.WasiIoPollAdapter for IoAdapter with pollable_ready(_self) {
+pub impl @p2.WasiIoPollAdapter for IoAdapter with fn pollable_ready(_self) {
   Ok(true)
 }
 
 ///|
-pub impl @p2.WasiIoPollAdapter for IoAdapter with pollable_block(_self) {
+pub impl @p2.WasiIoPollAdapter for IoAdapter with fn pollable_block(_self) {
   Ok(())
 }
 
 ///|
-pub impl @p2.WasiIoPollAdapter for IoAdapter with poll(_self, pollables) {
+pub impl @p2.WasiIoPollAdapter for IoAdapter with fn poll(_self, pollables) {
   let result : Array[UInt] = []
   for i = 0; i < pollables.length(); i = i + 1 {
     result.push(i.reinterpret_as_uint())

@@ -12,7 +12,58 @@ pub(all) suberror PosixError {
   EIO(String) // I/O error
   EACCES(String) // Permission denied
   ENOTEMPTY(String) // Directory not empty
-} derive(Show, Eq)
+} derive(Eq)
+
+///|
+pub impl Show for PosixError with fn output(self, logger) {
+  match self {
+    ENOENT(s) => {
+      logger.write_string("ENOENT(")
+      Show::output(s, logger)
+      logger.write_string(")")
+    }
+    EEXIST(s) => {
+      logger.write_string("EEXIST(")
+      Show::output(s, logger)
+      logger.write_string(")")
+    }
+    ENOTDIR(s) => {
+      logger.write_string("ENOTDIR(")
+      Show::output(s, logger)
+      logger.write_string(")")
+    }
+    EISDIR(s) => {
+      logger.write_string("EISDIR(")
+      Show::output(s, logger)
+      logger.write_string(")")
+    }
+    EBADF(s) => {
+      logger.write_string("EBADF(")
+      Show::output(s, logger)
+      logger.write_string(")")
+    }
+    EINVAL(s) => {
+      logger.write_string("EINVAL(")
+      Show::output(s, logger)
+      logger.write_string(")")
+    }
+    EIO(s) => {
+      logger.write_string("EIO(")
+      Show::output(s, logger)
+      logger.write_string(")")
+    }
+    EACCES(s) => {
+      logger.write_string("EACCES(")
+      Show::output(s, logger)
+      logger.write_string(")")
+    }
+    ENOTEMPTY(s) => {
+      logger.write_string("ENOTEMPTY(")
+      Show::output(s, logger)
+      logger.write_string(")")
+    }
+  }
+}
 
 ///|
 /// Convert FsError to PosixError
@@ -38,7 +89,22 @@ pub(all) struct OpenFlags {
   create : Bool
   truncate : Bool
   append : Bool
-} derive(Show, Eq)
+} derive(Eq)
+
+///|
+pub impl Show for OpenFlags with fn output(self, logger) {
+  logger.write_string("{read: ")
+  Show::output(self.read, logger)
+  logger.write_string(", write: ")
+  Show::output(self.write, logger)
+  logger.write_string(", create: ")
+  Show::output(self.create, logger)
+  logger.write_string(", truncate: ")
+  Show::output(self.truncate, logger)
+  logger.write_string(", append: ")
+  Show::output(self.append, logger)
+  logger.write_string("}")
+}
 
 ///|
 /// Default: read only

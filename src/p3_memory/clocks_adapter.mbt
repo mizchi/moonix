@@ -9,7 +9,7 @@ pub fn ClocksAdapter::new(kernel : Kernel) -> ClocksAdapter {
 }
 
 ///|
-pub impl @p3.WasiClocksSystemClockAdapter for ClocksAdapter with now(self) {
+pub impl @p3.WasiClocksSystemClockAdapter for ClocksAdapter with fn now(self) {
   Ok(@p3.ClocksSystemClockInstant::{
     seconds: self.kernel.wall_seconds.reinterpret_as_int64(),
     nanoseconds: self.kernel.wall_nanoseconds,
@@ -17,26 +17,26 @@ pub impl @p3.WasiClocksSystemClockAdapter for ClocksAdapter with now(self) {
 }
 
 ///|
-pub impl @p3.WasiClocksSystemClockAdapter for ClocksAdapter with get_resolution(
+pub impl @p3.WasiClocksSystemClockAdapter for ClocksAdapter with fn get_resolution(
   _self,
 ) {
   Ok(p3_duration_from_u64(1UL))
 }
 
 ///|
-pub impl @p3.WasiClocksMonotonicClockAdapter for ClocksAdapter with now(self) {
+pub impl @p3.WasiClocksMonotonicClockAdapter for ClocksAdapter with fn now(self) {
   Ok(p3_mark_from_u64(self.kernel.monotonic_ns))
 }
 
 ///|
-pub impl @p3.WasiClocksMonotonicClockAdapter for ClocksAdapter with get_resolution(
+pub impl @p3.WasiClocksMonotonicClockAdapter for ClocksAdapter with fn get_resolution(
   _self,
 ) {
   Ok(p3_duration_from_u64(1UL))
 }
 
 ///|
-pub impl @p3.WasiClocksMonotonicClockAdapter for ClocksAdapter with wait_until(
+pub impl @p3.WasiClocksMonotonicClockAdapter for ClocksAdapter with fn wait_until(
   _self,
   _when,
 ) {
@@ -44,7 +44,7 @@ pub impl @p3.WasiClocksMonotonicClockAdapter for ClocksAdapter with wait_until(
 }
 
 ///|
-pub impl @p3.WasiClocksMonotonicClockAdapter for ClocksAdapter with wait_for(
+pub impl @p3.WasiClocksMonotonicClockAdapter for ClocksAdapter with fn wait_for(
   _self,
   _duration,
 ) {
@@ -52,12 +52,12 @@ pub impl @p3.WasiClocksMonotonicClockAdapter for ClocksAdapter with wait_for(
 }
 
 ///|
-pub impl @p3.WasiClocksTimezoneAdapter for ClocksAdapter with iana_id(_self) {
+pub impl @p3.WasiClocksTimezoneAdapter for ClocksAdapter with fn iana_id(_self) {
   Ok(Some("UTC"))
 }
 
 ///|
-pub impl @p3.WasiClocksTimezoneAdapter for ClocksAdapter with utc_offset(
+pub impl @p3.WasiClocksTimezoneAdapter for ClocksAdapter with fn utc_offset(
   _self,
   _instant,
 ) {
@@ -65,7 +65,7 @@ pub impl @p3.WasiClocksTimezoneAdapter for ClocksAdapter with utc_offset(
 }
 
 ///|
-pub impl @p3.WasiClocksTimezoneAdapter for ClocksAdapter with to_debug_string(
+pub impl @p3.WasiClocksTimezoneAdapter for ClocksAdapter with fn to_debug_string(
   _self,
 ) {
   Ok("UTC+0")

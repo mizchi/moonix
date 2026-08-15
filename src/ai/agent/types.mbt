@@ -229,7 +229,7 @@ pub fn Goal::file_contains(path : String, content : String) -> Goal {
     "file_contains:" + path,
     "File " + path + " must contain: " + content,
     fn(rt) {
-      if not(rt.exists(path)) {
+      if !rt.exists(path) {
         return false
       }
       let file_content = rt.read_string(path) catch { _ => return false }
@@ -272,7 +272,7 @@ pub fn CompositeGoal::is_achieved(
     Single(g) => g.is_achieved(rt)
     All(goals) => {
       for g in goals {
-        if not(g.is_achieved(rt)) {
+        if !g.is_achieved(rt) {
           return false
         }
       }
@@ -289,7 +289,7 @@ pub fn CompositeGoal::is_achieved(
     Sequence(goals) => {
       // For sequence, all must be achieved (order is checked during execution)
       for g in goals {
-        if not(g.is_achieved(rt)) {
+        if !g.is_achieved(rt) {
           return false
         }
       }

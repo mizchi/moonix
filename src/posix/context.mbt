@@ -35,8 +35,8 @@ pub(all) enum StdStream {
 ///|
 /// Standard stream handler
 pub(open) trait StdStreamHandler {
-  read(Self, StdStream, Int) -> Bytes
-  write(Self, StdStream, Bytes) -> Int
+  fn read(Self, StdStream, Int) -> Bytes
+  fn write(Self, StdStream, Bytes) -> Int
 }
 
 ///|
@@ -49,12 +49,20 @@ pub fn NullStreamHandler::new() -> NullStreamHandler {
 }
 
 ///|
-pub impl StdStreamHandler for NullStreamHandler with read(_self, _stream, _len) {
+pub impl StdStreamHandler for NullStreamHandler with fn read(
+  _self,
+  _stream,
+  _len,
+) {
   b""
 }
 
 ///|
-pub impl StdStreamHandler for NullStreamHandler with write(_self, _stream, data) {
+pub impl StdStreamHandler for NullStreamHandler with fn write(
+  _self,
+  _stream,
+  data,
+) {
   data.length()
 }
 
@@ -90,7 +98,11 @@ pub fn BufferedStreamHandler::get_stderr(self : BufferedStreamHandler) -> Bytes 
 }
 
 ///|
-pub impl StdStreamHandler for BufferedStreamHandler with read(self, stream, len) {
+pub impl StdStreamHandler for BufferedStreamHandler with fn read(
+  self,
+  stream,
+  len,
+) {
   match stream {
     Stdin => {
       let available = self.stdin.length() - self.stdin_pos
@@ -111,7 +123,7 @@ pub impl StdStreamHandler for BufferedStreamHandler with read(self, stream, len)
 }
 
 ///|
-pub impl StdStreamHandler for BufferedStreamHandler with write(
+pub impl StdStreamHandler for BufferedStreamHandler with fn write(
   self,
   stream,
   data,
@@ -146,7 +158,7 @@ pub fn PosixContext::new(
   fs : &@fs.FileSystemBackend,
   streams : &StdStreamHandler,
 ) -> PosixContext {
-  let env : Map[String, String] = {}
+  let env : Map[String, String] = Map([])
   env.set("HOME", "/home")
   env.set("PATH", "/bin:/usr/bin")
   env.set("PWD", "/")
@@ -166,7 +178,7 @@ pub fn PosixContext::chdir(
   path : String,
 ) -> Unit raise PosixError {
   let abs_path = self.resolve_path(path)
-  if not(self.fs.is_dir(abs_path)) {
+  if !self.fs.is_dir(abs_path) {
     raise PosixError::ENOTDIR(path)
   }
   self.cwd = abs_path
@@ -227,7 +239,7 @@ pub fn PosixContext::open(
   let abs_path = self.resolve_path(path)
 
   // Check if file exists
-  if not(self.fs.exists(abs_path)) {
+  if !self.fs.exists(abs_path) {
     if flags.create {
       // Create empty file
       self.fs.write_file(abs_path, b"") catch {
@@ -274,7 +286,7 @@ pub fn PosixContext::close(
     // Cannot close standard streams
     return
   }
-  if not(self.fds.contains(fd)) {
+  if !self.fds.contains(fd) {
     raise PosixError::EBADF("invalid fd: " + fd.to_string())
   }
   self.fds.remove(fd)
@@ -298,7 +310,7 @@ pub fn PosixContext::read(
     None => raise PosixError::EBADF("invalid fd: " + fd.to_string())
     Some(h) => h
   }
-  if not(handle.flags.read) {
+  if !handle.flags.read {
     raise PosixError::EBADF("fd not open for reading")
   }
   let data = self.fs.read_file(handle.path) catch {
@@ -335,7 +347,7 @@ pub fn PosixContext::write(
     None => raise PosixError::EBADF("invalid fd: " + fd.to_string())
     Some(h) => h
   }
-  if not(handle.flags.write) {
+  if !handle.flags.write {
     raise PosixError::EBADF("fd not open for writing")
   }
   let current = self.fs.read_file(handle.path) catch { _ => b"" }

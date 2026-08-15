@@ -43,7 +43,7 @@ fn resolve_child_path(base : String, child : String) -> String {
 }
 
 ///|
-pub impl @p2.WasiFilesystemTypesAdapter for FsAdapter with descriptor_read_via_stream(
+pub impl @p2.WasiFilesystemTypesAdapter for FsAdapter with fn descriptor_read_via_stream(
   self,
   offset,
 ) {
@@ -59,7 +59,7 @@ pub impl @p2.WasiFilesystemTypesAdapter for FsAdapter with descriptor_read_via_s
 }
 
 ///|
-pub impl @p2.WasiFilesystemTypesAdapter for FsAdapter with descriptor_write_via_stream(
+pub impl @p2.WasiFilesystemTypesAdapter for FsAdapter with fn descriptor_write_via_stream(
   self,
   offset,
 ) {
@@ -75,7 +75,7 @@ pub impl @p2.WasiFilesystemTypesAdapter for FsAdapter with descriptor_write_via_
 }
 
 ///|
-pub impl @p2.WasiFilesystemTypesAdapter for FsAdapter with descriptor_append_via_stream(
+pub impl @p2.WasiFilesystemTypesAdapter for FsAdapter with fn descriptor_append_via_stream(
   self,
 ) {
   match self.get_desc_path() {
@@ -90,7 +90,7 @@ pub impl @p2.WasiFilesystemTypesAdapter for FsAdapter with descriptor_append_via
 }
 
 ///|
-pub impl @p2.WasiFilesystemTypesAdapter for FsAdapter with descriptor_advise(
+pub impl @p2.WasiFilesystemTypesAdapter for FsAdapter with fn descriptor_advise(
   _self,
   _offset,
   _len,
@@ -100,14 +100,14 @@ pub impl @p2.WasiFilesystemTypesAdapter for FsAdapter with descriptor_advise(
 }
 
 ///|
-pub impl @p2.WasiFilesystemTypesAdapter for FsAdapter with descriptor_sync_data(
+pub impl @p2.WasiFilesystemTypesAdapter for FsAdapter with fn descriptor_sync_data(
   _self,
 ) {
   Ok(())
 }
 
 ///|
-pub impl @p2.WasiFilesystemTypesAdapter for FsAdapter with descriptor_get_flags(
+pub impl @p2.WasiFilesystemTypesAdapter for FsAdapter with fn descriptor_get_flags(
   _self,
 ) {
   // Read+Write flags
@@ -115,7 +115,7 @@ pub impl @p2.WasiFilesystemTypesAdapter for FsAdapter with descriptor_get_flags(
 }
 
 ///|
-pub impl @p2.WasiFilesystemTypesAdapter for FsAdapter with descriptor_get_type(
+pub impl @p2.WasiFilesystemTypesAdapter for FsAdapter with fn descriptor_get_type(
   self,
 ) {
   match self.kernel.descriptors.get(self.current_descriptor) {
@@ -130,7 +130,7 @@ pub impl @p2.WasiFilesystemTypesAdapter for FsAdapter with descriptor_get_type(
 }
 
 ///|
-pub impl @p2.WasiFilesystemTypesAdapter for FsAdapter with descriptor_set_size(
+pub impl @p2.WasiFilesystemTypesAdapter for FsAdapter with fn descriptor_set_size(
   self,
   size,
 ) {
@@ -171,7 +171,7 @@ pub impl @p2.WasiFilesystemTypesAdapter for FsAdapter with descriptor_set_size(
 }
 
 ///|
-pub impl @p2.WasiFilesystemTypesAdapter for FsAdapter with descriptor_set_times(
+pub impl @p2.WasiFilesystemTypesAdapter for FsAdapter with fn descriptor_set_times(
   _self,
   _atime,
   _mtime,
@@ -180,7 +180,7 @@ pub impl @p2.WasiFilesystemTypesAdapter for FsAdapter with descriptor_set_times(
 }
 
 ///|
-pub impl @p2.WasiFilesystemTypesAdapter for FsAdapter with descriptor_read(
+pub impl @p2.WasiFilesystemTypesAdapter for FsAdapter with fn descriptor_read(
   self,
   len,
   offset,
@@ -212,7 +212,7 @@ pub impl @p2.WasiFilesystemTypesAdapter for FsAdapter with descriptor_read(
 }
 
 ///|
-pub impl @p2.WasiFilesystemTypesAdapter for FsAdapter with descriptor_write(
+pub impl @p2.WasiFilesystemTypesAdapter for FsAdapter with fn descriptor_write(
   self,
   data,
   offset,
@@ -252,7 +252,7 @@ pub impl @p2.WasiFilesystemTypesAdapter for FsAdapter with descriptor_write(
 }
 
 ///|
-pub impl @p2.WasiFilesystemTypesAdapter for FsAdapter with descriptor_read_directory(
+pub impl @p2.WasiFilesystemTypesAdapter for FsAdapter with fn descriptor_read_directory(
   self,
 ) {
   match self.get_desc_path() {
@@ -276,14 +276,14 @@ pub impl @p2.WasiFilesystemTypesAdapter for FsAdapter with descriptor_read_direc
 }
 
 ///|
-pub impl @p2.WasiFilesystemTypesAdapter for FsAdapter with descriptor_sync(
+pub impl @p2.WasiFilesystemTypesAdapter for FsAdapter with fn descriptor_sync(
   _self,
 ) {
   Ok(())
 }
 
 ///|
-pub impl @p2.WasiFilesystemTypesAdapter for FsAdapter with descriptor_create_directory_at(
+pub impl @p2.WasiFilesystemTypesAdapter for FsAdapter with fn descriptor_create_directory_at(
   self,
   name,
 ) {
@@ -313,7 +313,9 @@ fn make_stat(s : @fs.FileStat) -> @p2.FilesystemTypesDescriptorStat {
 }
 
 ///|
-pub impl @p2.WasiFilesystemTypesAdapter for FsAdapter with descriptor_stat(self) {
+pub impl @p2.WasiFilesystemTypesAdapter for FsAdapter with fn descriptor_stat(
+  self,
+) {
   match self.get_desc_path() {
     Err(e) => Err(e)
     Ok(path) =>
@@ -327,7 +329,7 @@ pub impl @p2.WasiFilesystemTypesAdapter for FsAdapter with descriptor_stat(self)
 }
 
 ///|
-pub impl @p2.WasiFilesystemTypesAdapter for FsAdapter with descriptor_stat_at(
+pub impl @p2.WasiFilesystemTypesAdapter for FsAdapter with fn descriptor_stat_at(
   self,
   _flags,
   child_path,
@@ -347,7 +349,7 @@ pub impl @p2.WasiFilesystemTypesAdapter for FsAdapter with descriptor_stat_at(
 }
 
 ///|
-pub impl @p2.WasiFilesystemTypesAdapter for FsAdapter with descriptor_set_times_at(
+pub impl @p2.WasiFilesystemTypesAdapter for FsAdapter with fn descriptor_set_times_at(
   _self,
   _flags,
   _path,
@@ -358,7 +360,7 @@ pub impl @p2.WasiFilesystemTypesAdapter for FsAdapter with descriptor_set_times_
 }
 
 ///|
-pub impl @p2.WasiFilesystemTypesAdapter for FsAdapter with descriptor_link_at(
+pub impl @p2.WasiFilesystemTypesAdapter for FsAdapter with fn descriptor_link_at(
   _self,
   _flags,
   _old_path,
@@ -373,7 +375,7 @@ pub impl @p2.WasiFilesystemTypesAdapter for FsAdapter with descriptor_link_at(
 }
 
 ///|
-pub impl @p2.WasiFilesystemTypesAdapter for FsAdapter with descriptor_readlink_at(
+pub impl @p2.WasiFilesystemTypesAdapter for FsAdapter with fn descriptor_readlink_at(
   _self,
   _path,
 ) {
@@ -385,7 +387,7 @@ pub impl @p2.WasiFilesystemTypesAdapter for FsAdapter with descriptor_readlink_a
 }
 
 ///|
-pub impl @p2.WasiFilesystemTypesAdapter for FsAdapter with descriptor_remove_directory_at(
+pub impl @p2.WasiFilesystemTypesAdapter for FsAdapter with fn descriptor_remove_directory_at(
   self,
   name,
 ) {
@@ -404,7 +406,7 @@ pub impl @p2.WasiFilesystemTypesAdapter for FsAdapter with descriptor_remove_dir
 }
 
 ///|
-pub impl @p2.WasiFilesystemTypesAdapter for FsAdapter with descriptor_rename_at(
+pub impl @p2.WasiFilesystemTypesAdapter for FsAdapter with fn descriptor_rename_at(
   self,
   old_name,
   _new_descriptor,
@@ -426,7 +428,7 @@ pub impl @p2.WasiFilesystemTypesAdapter for FsAdapter with descriptor_rename_at(
 }
 
 ///|
-pub impl @p2.WasiFilesystemTypesAdapter for FsAdapter with descriptor_symlink_at(
+pub impl @p2.WasiFilesystemTypesAdapter for FsAdapter with fn descriptor_symlink_at(
   _self,
   _old_path,
   _new_path,
@@ -439,7 +441,7 @@ pub impl @p2.WasiFilesystemTypesAdapter for FsAdapter with descriptor_symlink_at
 }
 
 ///|
-pub impl @p2.WasiFilesystemTypesAdapter for FsAdapter with descriptor_unlink_file_at(
+pub impl @p2.WasiFilesystemTypesAdapter for FsAdapter with fn descriptor_unlink_file_at(
   self,
   name,
 ) {
@@ -458,7 +460,7 @@ pub impl @p2.WasiFilesystemTypesAdapter for FsAdapter with descriptor_unlink_fil
 }
 
 ///|
-pub impl @p2.WasiFilesystemTypesAdapter for FsAdapter with descriptor_is_same_object(
+pub impl @p2.WasiFilesystemTypesAdapter for FsAdapter with fn descriptor_is_same_object(
   self,
   other,
 ) {
@@ -466,7 +468,7 @@ pub impl @p2.WasiFilesystemTypesAdapter for FsAdapter with descriptor_is_same_ob
 }
 
 ///|
-pub impl @p2.WasiFilesystemTypesAdapter for FsAdapter with descriptor_metadata_hash(
+pub impl @p2.WasiFilesystemTypesAdapter for FsAdapter with fn descriptor_metadata_hash(
   self,
 ) {
   Ok(@p2.FilesystemTypesMetadataHashValue::{
@@ -476,7 +478,7 @@ pub impl @p2.WasiFilesystemTypesAdapter for FsAdapter with descriptor_metadata_h
 }
 
 ///|
-pub impl @p2.WasiFilesystemTypesAdapter for FsAdapter with descriptor_metadata_hash_at(
+pub impl @p2.WasiFilesystemTypesAdapter for FsAdapter with fn descriptor_metadata_hash_at(
   self,
   _flags,
   child_path,
@@ -496,7 +498,7 @@ pub impl @p2.WasiFilesystemTypesAdapter for FsAdapter with descriptor_metadata_h
 }
 
 ///|
-pub impl @p2.WasiFilesystemTypesAdapter for FsAdapter with directory_entry_stream_read_directory_entry(
+pub impl @p2.WasiFilesystemTypesAdapter for FsAdapter with fn directory_entry_stream_read_directory_entry(
   self,
 ) {
   let ds_id = self.current_dir_stream
@@ -519,7 +521,7 @@ pub impl @p2.WasiFilesystemTypesAdapter for FsAdapter with directory_entry_strea
 }
 
 ///|
-pub impl @p2.WasiFilesystemTypesAdapter for FsAdapter with filesystem_error_code(
+pub impl @p2.WasiFilesystemTypesAdapter for FsAdapter with fn filesystem_error_code(
   _self,
   _err,
 ) {
@@ -527,7 +529,7 @@ pub impl @p2.WasiFilesystemTypesAdapter for FsAdapter with filesystem_error_code
 }
 
 ///|
-pub impl @p2.WasiFilesystemPreopensAdapter for FsAdapter with get_directories(
+pub impl @p2.WasiFilesystemPreopensAdapter for FsAdapter with fn get_directories(
   self,
 ) {
   let result : Array[Bytes] = []

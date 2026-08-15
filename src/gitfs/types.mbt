@@ -3,7 +3,7 @@
 ///|
 /// Snapshot identifier
 pub struct SnapshotId {
-  commit_id : @bit.ObjectId
+  commit_id : @object.ObjectId
   message : String
   timestamp : Int64
 }
@@ -20,7 +20,7 @@ pub struct GitBackedFs {
   /// Dirty file tracking (path -> true if modified since last snapshot)
   mut dirty : Map[String, Bool]
   /// Current HEAD commit (None if no commits yet)
-  mut head : @bit.ObjectId?
+  mut head : @object.ObjectId?
   /// Author name for commits
   author : String
   /// Timestamp provider (for testing)
@@ -84,7 +84,7 @@ fn GitBackedFs::is_git_path(self : GitBackedFs, path : String) -> Bool {
 ///|
 /// Mark a path as dirty
 fn GitBackedFs::mark_dirty(self : GitBackedFs, path : String) -> Unit {
-  if not(self.is_git_path(path)) {
+  if !self.is_git_path(path) {
     let normalized = @fs.normalize_path(path)
     self.dirty[normalized] = true
   }

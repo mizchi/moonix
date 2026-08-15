@@ -1,0 +1,137 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "mizchi/moonix/net"
+
+// Values
+pub fn generate_http_request(HttpRequest) -> Bytes
+
+pub fn generate_http_response(HttpResponse) -> Bytes
+
+pub fn parse_http_request(Bytes) -> HttpRequest?
+
+pub fn parse_http_response(Bytes) -> HttpResponse?
+
+// Errors
+pub suberror NetError {
+  AddressInUse(String)
+  ConnectionRefused(String)
+  NotConnected
+  NotBound
+  InvalidState(String)
+  Timeout
+  Closed
+}
+pub impl Show for NetError
+
+// Types and methods
+type Connection
+
+pub struct HttpClient {
+  network : VirtualNetwork
+}
+pub fn HttpClient::get(Self, NetAddr, String) -> HttpResponse raise NetError
+pub fn HttpClient::new(VirtualNetwork) -> Self
+pub fn HttpClient::post(Self, NetAddr, String, String) -> HttpResponse raise NetError
+pub fn HttpClient::request(Self, NetAddr, HttpRequest) -> HttpResponse raise NetError
+
+pub struct HttpHandler((HttpRequest) -> HttpResponse)
+pub fn HttpHandler::new((HttpRequest) -> HttpResponse) -> Self
+
+pub enum HttpMethod {
+  GET
+  POST
+  PUT
+  DELETE
+  HEAD
+  OPTIONS
+  PATCH
+}
+pub fn HttpMethod::from_string(String) -> Self?
+pub impl Show for HttpMethod
+
+pub struct HttpRequest {
+  http_method : HttpMethod
+  path : String
+  headers : Array[(String, String)]
+  body : Bytes
+}
+pub fn HttpRequest::get_method(Self) -> HttpMethod
+pub fn HttpRequest::new(HttpMethod, String, Array[(String, String)], Bytes) -> Self
+
+pub struct HttpResponse {
+  status : Int
+  status_text : String
+  headers : Array[(String, String)]
+  body : Bytes
+}
+pub fn HttpResponse::add_header(Self, String, String) -> Self
+pub fn HttpResponse::new(Int, String) -> Self
+pub fn HttpResponse::not_found() -> Self
+pub fn HttpResponse::ok() -> Self
+pub fn HttpResponse::set_body(Self, Bytes) -> Self
+pub fn HttpResponse::set_body_string(Self, String) -> Self
+
+pub struct HttpServer {
+  network : VirtualNetwork
+  socket : VSocket
+  port : Int
+  handlers : Map[String, HttpHandler]
+}
+pub fn HttpServer::get_port(Self) -> Int
+pub fn HttpServer::handle(Self, String, HttpHandler) -> Unit
+pub fn HttpServer::new(VirtualNetwork, Int) -> Self raise NetError
+pub fn HttpServer::process_one(Self) -> Bool
+
+pub struct NetAddr {
+  host : String
+  port : Int
+}
+pub fn NetAddr::localhost(Int) -> Self
+pub fn NetAddr::new(String, Int) -> Self
+pub impl Show for NetAddr
+
+pub enum SocketState {
+  Created
+  Bound
+  Listening
+  Connected
+  Closed
+}
+
+pub struct VSocket {
+  id : Int
+  mut state : SocketState
+  mut local_addr : NetAddr?
+  mut remote_addr : NetAddr?
+  mut recv_buffer : Array[Byte]
+  send_buffer : Array[Byte]
+}
+pub fn VSocket::bind(Self, NetAddr) -> Unit raise NetError
+pub fn VSocket::close(Self) -> Unit
+pub fn VSocket::get_id(Self) -> Int
+pub fn VSocket::get_local_addr(Self) -> NetAddr?
+pub fn VSocket::get_state(Self) -> SocketState
+pub fn VSocket::has_data(Self) -> Bool
+pub fn VSocket::listen(Self) -> Unit raise NetError
+pub fn VSocket::new() -> Self
+pub fn VSocket::pop_send_data(Self) -> Bytes
+pub fn VSocket::push_recv_data(Self, Bytes) -> Unit
+pub fn VSocket::read(Self, Int) -> Bytes raise NetError
+pub fn VSocket::set_connected(Self, NetAddr) -> Unit
+pub fn VSocket::write(Self, Bytes) -> Int raise NetError
+
+pub struct VirtualNetwork {
+  listeners : Map[Int, VSocket]
+  mut connections : Array[Connection]
+  pending : Map[Int, Array[VSocket]]
+}
+pub fn VirtualNetwork::accept(Self, VSocket) -> VSocket?
+pub fn VirtualNetwork::cleanup(Self) -> Unit
+pub fn VirtualNetwork::connect(Self, VSocket, NetAddr) -> Unit raise NetError
+pub fn VirtualNetwork::has_pending(Self, Int) -> Bool
+pub fn VirtualNetwork::new() -> Self
+pub fn VirtualNetwork::register_listener(Self, VSocket) -> Unit raise NetError
+pub fn VirtualNetwork::transfer(Self) -> Unit
+
+// Type aliases
+
+// Traits

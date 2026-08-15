@@ -32,7 +32,7 @@ pub(open) trait WasmRunner {
   /// - wasm_bytes: The compiled WASM binary
   /// - ctx: Execution context (stdin, args, env)
   /// Returns execution result or error
-  run(Self, wasm_bytes : Bytes, ctx : WasmExecContext) -> WasmExecResult raise WasmError
+  fn run(Self, wasm_bytes : Bytes, ctx : WasmExecContext) -> WasmExecResult raise WasmError
 }
 
 ///|
@@ -48,6 +48,6 @@ pub fn StubWasmRunner::new() -> StubWasmRunner {
 }
 
 ///|
-pub impl WasmRunner for StubWasmRunner with run(_self, _wasm_bytes, _ctx) {
+pub impl WasmRunner for StubWasmRunner with fn run(_self, _wasm_bytes, _ctx) {
   raise WasmError::Unsupported("No WASM runtime available")
 }

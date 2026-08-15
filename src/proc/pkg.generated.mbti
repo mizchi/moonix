@@ -1,0 +1,170 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "mizchi/moonix/proc"
+
+// Values
+
+// Errors
+pub suberror ProcError {
+  NotFound(String)
+  AlreadyExists(String)
+  InvalidState(String)
+  PermissionDenied(String)
+  ResourceBusy(String)
+}
+pub impl Show for ProcError
+
+// Types and methods
+pub struct CondVar {
+  id : Int
+  waiters : Array[Pid]
+}
+pub fn CondVar::broadcast(Self) -> Array[Pid]
+pub fn CondVar::get_id(Self) -> Int
+pub fn CondVar::new() -> Self
+pub fn CondVar::signal(Self) -> Pid?
+pub fn CondVar::wait(Self, Pid) -> Bool
+
+pub struct Fd(Int) derive(Eq, Hash)
+pub fn Fd::stderr() -> Self
+pub fn Fd::stdin() -> Self
+pub fn Fd::stdout() -> Self
+pub impl Show for Fd
+
+pub struct Mutex {
+  sem : Semaphore
+  mut owner : Pid?
+}
+pub fn Mutex::get_owner(Self) -> Pid?
+pub fn Mutex::is_locked(Self) -> Bool
+pub fn Mutex::new() -> Self
+pub fn Mutex::try_lock(Self, Pid) -> Bool
+pub fn Mutex::unlock(Self, Pid) -> Pid? raise ProcError
+
+pub struct Pid(Int) derive(Eq, Hash)
+pub fn Pid::new(Int) -> Self
+pub impl Show for Pid
+
+pub struct Process {
+  pid : Pid
+  name : String
+  mut state : ProcessState
+  mut exit_code : Int?
+  parent : Pid?
+  children : Array[Pid]
+  stdin_buf : Array[Byte]
+  stdout_buf : Array[Byte]
+  stderr_buf : Array[Byte]
+  step_fn : ProcessFn
+  mut tick_count : Int
+  mut sleep_ticks : Int
+  mut waiting_sem : Int?
+  mut waiting_pid : Pid?
+  pending_signals : Array[Signal]
+  signal_handlers : Map[Int, (Signal) -> StepResult]
+}
+pub fn Process::add_child(Self, Pid) -> Unit
+pub fn Process::get_children(Self) -> Array[Pid]
+pub fn Process::get_exit_code(Self) -> Int?
+pub fn Process::get_name(Self) -> String
+pub fn Process::get_parent(Self) -> Pid?
+pub fn Process::get_pid(Self) -> Pid
+pub fn Process::get_state(Self) -> ProcessState
+pub fn Process::new(String, ProcessFn, Pid?) -> Self
+pub fn Process::read_stderr(Self) -> Bytes
+pub fn Process::read_stdin(Self, Int) -> Bytes
+pub fn Process::read_stdout(Self) -> Bytes
+pub fn Process::remove_child(Self, Pid) -> Bool
+pub fn Process::send_signal(Self, Signal) -> Unit
+pub fn Process::set_signal_handler(Self, Signal, (Signal) -> StepResult) -> Unit
+pub fn Process::step(Self) -> StepResult
+pub fn Process::write_stderr(Self, Bytes) -> Unit
+pub fn Process::write_stdin(Self, Bytes) -> Unit
+pub fn Process::write_stdout(Self, Bytes) -> Unit
+
+pub struct ProcessFn((Process) -> StepResult)
+pub fn ProcessFn::new((Process) -> StepResult) -> Self
+
+pub enum ProcessState {
+  Ready
+  Running
+  Sleeping
+  Blocked
+  Zombie
+}
+pub impl Show for ProcessState
+
+pub struct Scheduler {
+  processes : Map[Int, Process]
+  mut current : Pid?
+  ready_queue : Array[Pid]
+  semaphores : Map[Int, Semaphore]
+  mut tick : Int
+}
+pub fn Scheduler::current_pid(Self) -> Pid?
+pub fn Scheduler::get_process(Self, Pid) -> Process?
+pub fn Scheduler::get_semaphore(Self, Int) -> Semaphore?
+pub fn Scheduler::get_tick(Self) -> Int
+pub fn Scheduler::kill(Self, Pid, Signal) -> Unit raise ProcError
+pub fn Scheduler::list_pids(Self) -> Array[Pid]
+pub fn Scheduler::new() -> Self
+pub fn Scheduler::process_count(Self) -> Int
+pub fn Scheduler::ready_count(Self) -> Int
+pub fn Scheduler::reap(Self, Pid) -> Int raise ProcError
+pub fn Scheduler::register_semaphore(Self, Semaphore) -> Unit
+pub fn Scheduler::release_semaphore(Self, Int) -> Unit
+pub fn Scheduler::run(Self) -> Unit
+pub fn Scheduler::run_n(Self, Int) -> Int
+pub fn Scheduler::spawn(Self, String, ProcessFn, Pid?) -> Pid
+pub fn Scheduler::tick(Self) -> Bool
+pub fn Scheduler::waitpid(Self, Pid) -> Int?
+
+pub struct Semaphore {
+  id : Int
+  mut count : Int
+  waiters : Array[Pid]
+}
+pub fn Semaphore::get_count(Self) -> Int
+pub fn Semaphore::get_id(Self) -> Int
+pub fn Semaphore::has_waiters(Self) -> Bool
+pub fn Semaphore::new(Int) -> Self
+pub fn Semaphore::release(Self) -> Pid?
+pub fn Semaphore::remove_waiter(Self, Pid) -> Bool
+pub fn Semaphore::try_acquire(Self, Pid) -> Bool
+pub fn Semaphore::waiter_count(Self) -> Int
+
+pub enum Signal {
+  SIGTERM
+  SIGKILL
+  SIGINT
+  SIGSTOP
+  SIGCONT
+  SIGUSR1
+  SIGUSR2
+}
+pub fn Signal::sigcont() -> Self
+pub fn Signal::sigint() -> Self
+pub fn Signal::sigkill() -> Self
+pub fn Signal::sigstop() -> Self
+pub fn Signal::sigterm() -> Self
+pub fn Signal::sigusr1() -> Self
+pub fn Signal::sigusr2() -> Self
+pub impl Show for Signal
+
+pub enum StepResult {
+  Continue
+  Yield
+  Sleep(Int)
+  WaitSem(Int)
+  WaitPid(Pid)
+  Exit(Int)
+}
+pub fn StepResult::continue_() -> Self
+pub fn StepResult::exit(Int) -> Self
+pub fn StepResult::sleep(Int) -> Self
+pub fn StepResult::wait_pid(Pid) -> Self
+pub fn StepResult::wait_sem(Int) -> Self
+pub fn StepResult::yield_() -> Self
+
+// Type aliases
+
+// Traits

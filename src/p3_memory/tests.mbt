@@ -21,7 +21,7 @@ test "stdout write accumulates data" {
 
 ///|
 test "environment / arguments / cwd" {
-  let env : Map[String, String] = {}
+  let env : Map[String, String] = Map([])
   env["HOME"] = "/home/test"
   let config = P3MemoryConfig::{
     ..P3MemoryConfig::default(),

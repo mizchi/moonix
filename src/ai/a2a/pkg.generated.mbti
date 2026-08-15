@@ -1,0 +1,153 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "mizchi/moonix/ai/a2a"
+
+// Values
+
+// Errors
+pub suberror A2AClientError {
+  HttpError(Int, String)
+  ParseError(String)
+  TaskNotFound(String)
+  InvalidResponse(String)
+  AgentUnavailable(String)
+}
+
+// Types and methods
+pub struct A2AClient {
+  mut agent_card : AgentCard?
+  endpoint : String
+}
+pub fn A2AClient::cancel_task(Self, String, A2AHttpHandler) -> TaskCancelResponse raise A2AClientError
+pub fn A2AClient::discover(Self, A2AHttpHandler) -> AgentCard raise A2AClientError
+pub fn A2AClient::get_agent_card(Self) -> AgentCard?
+pub fn A2AClient::get_task(Self, String, A2AHttpHandler) -> TaskState raise A2AClientError
+pub fn A2AClient::is_discovered(Self) -> Bool
+pub fn A2AClient::new(String) -> Self
+pub fn A2AClient::send_task(Self, TaskSendRequest, A2AHttpHandler) -> TaskSendResponse raise A2AClientError
+
+pub struct A2AHttpHandler {
+  handler : (String, String, Bytes?) -> (Int, Bytes)
+}
+
+pub(all) struct AgentAuth {
+  auth_type : String
+  credentials_url : String?
+}
+
+pub(all) struct AgentCapabilities {
+  streaming : Bool
+  push_notifications : Bool
+  state_transition_history : Bool
+}
+pub fn AgentCapabilities::default() -> Self
+
+pub(all) struct AgentCard {
+  name : String
+  description : String
+  url : String
+  version : String?
+  capabilities : AgentCapabilities
+  skills : Array[AgentSkill]
+  default_input_modes : Array[String]
+  default_output_modes : Array[String]
+  authentication : AgentAuth?
+}
+pub fn AgentCard::minimal(String, String, String) -> Self
+
+pub(all) struct AgentSkill {
+  id : String
+  name : String
+  description : String
+  input_modes : Array[String]
+  output_modes : Array[String]
+  tags : Array[String]
+}
+
+pub(all) struct Artifact {
+  artifact_type : String
+  mime_type : String
+  name : String?
+  content : ArtifactContent
+}
+
+pub(all) enum ArtifactContent {
+  Text(String)
+  Binary(String)
+  Uri(String)
+}
+
+pub(all) struct Message {
+  role : String
+  parts : Array[MessagePart]
+}
+pub fn Message::agent_text(String) -> Self
+pub fn Message::text(String, String) -> Self
+pub fn Message::user_text(String) -> Self
+
+pub(all) enum MessagePart {
+  Text(String)
+  File(mime_type~ : String, data~ : String, name~ : String?)
+  Data(mime_type~ : String, data~ : Json)
+}
+
+pub(all) struct PushConfig {
+  url : String
+  authentication : AgentAuth?
+}
+
+pub(all) struct TaskCancelRequest {
+  task_id : String
+}
+
+pub(all) struct TaskCancelResponse {
+  task_id : String
+  cancelled : Bool
+  message : String?
+}
+
+pub(all) struct TaskGetRequest {
+  task_id : String
+  history_length : Int?
+}
+
+pub(all) struct TaskHistoryEntry {
+  timestamp : Int64
+  status : TaskStatus
+  message : String?
+}
+
+pub(all) struct TaskSendRequest {
+  task_id : String?
+  skill_id : String?
+  message : Message
+  push_notification_config : PushConfig?
+}
+
+pub(all) struct TaskSendResponse {
+  task_id : String
+  state : TaskState
+}
+
+pub(all) struct TaskState {
+  task_id : String
+  status : TaskStatus
+  message : String?
+  artifacts : Array[Artifact]
+  history : Array[TaskHistoryEntry]
+}
+pub fn TaskState::initial(String) -> Self
+
+pub(all) enum TaskStatus {
+  Submitted
+  Working
+  InputRequired
+  Completed
+  Failed
+  Cancelled
+}
+pub fn TaskStatus::from_string(String) -> Self?
+pub fn TaskStatus::to_string(Self) -> String
+
+// Type aliases
+
+// Traits

@@ -55,7 +55,6 @@ test "HTTP server and client" {
   })
   try {
     let _ = socket.write(req_bytes)
-
   } catch {
     _ => return
   }
@@ -88,7 +87,6 @@ test "HTTP 404" {
   })
   try {
     let _ = socket.write(req_bytes)
-
   } catch {
     _ => return
   }
@@ -124,7 +122,6 @@ test "HTTP POST with body" {
   })
   try {
     let _ = socket.write(req_bytes)
-
   } catch {
     _ => return
   }

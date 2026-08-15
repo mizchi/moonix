@@ -164,7 +164,7 @@ fn encode_request(req : ChatRequest, api_key : String) -> (Bytes, String) {
   }
   buf.write_string("}")
   let auth = "Bearer " + api_key
-  (buf.to_string().to_bytes(), auth)
+  (@utf8.encode(buf.to_string()), auth)
 }
 
 ///|
@@ -200,7 +200,7 @@ fn decode_response(data : Bytes) -> ChatResponse raise LlmError {
             match item {
               Object(c) => {
                 let index = match c.get("index") {
-                  Some(Number(n)) => n.to_int()
+                  Some(Number(n, ..)) => n.to_int()
                   _ => 0
                 }
                 let finish_reason = match c.get("finish_reason") {
@@ -221,11 +221,11 @@ fn decode_response(data : Bytes) -> ChatResponse raise LlmError {
       let usage : Usage? = match obj.get("usage") {
         Some(Object(u)) => {
           let prompt = match u.get("prompt_tokens") {
-            Some(Number(n)) => n.to_int()
+            Some(Number(n, ..)) => n.to_int()
             _ => 0
           }
           let completion = match u.get("completion_tokens") {
-            Some(Number(n)) => n.to_int()
+            Some(Number(n, ..)) => n.to_int()
             _ => 0
           }
           Some({
@@ -246,7 +246,7 @@ fn decode_response(data : Bytes) -> ChatResponse raise LlmError {
 /// Parse message from JSON object
 fn parse_message(obj : Map[String, Json]) -> Message {
   let role = match obj.get("role") {
-    Some(String(s)) => Role::from_string(s).or(Assistant)
+    Some(String(s)) => Role::from_string(s).unwrap_or(Assistant)
     _ => Assistant
   }
   let content = match obj.get("content") {
@@ -314,7 +314,7 @@ pub fn OpenRouterClient::chat(
   temperature? : Double? = None,
 ) -> ChatResponse raise LlmError {
   let req : ChatRequest = {
-    model: model.or(self.config.default_model),
+    model: model.unwrap_or(self.config.default_model),
     messages,
     tools,
     tool_choice: if tools is Some(_) {

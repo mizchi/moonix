@@ -52,7 +52,6 @@ fn Lexer::skip_whitespace(self : Lexer) -> Unit {
     match self.peek() {
       Some(' ') | Some('\t') => {
         let _ = self.advance()
-
       }
       _ => break
     }
@@ -67,7 +66,6 @@ fn Lexer::skip_comment(self : Lexer) -> Unit {
       Some('\n') | None => break
       _ => {
         let _ = self.advance()
-
       }
     }
   }
@@ -76,7 +74,7 @@ fn Lexer::skip_comment(self : Lexer) -> Unit {
 ///|
 /// Check if character is a word character
 fn is_word_char(c : Char) -> Bool {
-  not(is_meta_char(c)) && c != '\'' && c != '"' && c != '`'
+  !is_meta_char(c) && c != '\'' && c != '"' && c != '`'
 }
 
 ///|
@@ -144,7 +142,6 @@ fn Lexer::read_double_quoted(self : Lexer) -> String raise LexError {
       Some(c) => {
         buf.write_char(c)
         let _ = self.advance()
-
       }
       None => raise LexError::UnterminatedString(self.line, self.col)
     }
@@ -161,7 +158,6 @@ fn Lexer::read_digits(self : Lexer) -> String {
       Some(c) if is_digit(c) => {
         buf.write_char(c)
         let _ = self.advance()
-
       }
       _ => break
     }
@@ -186,7 +182,6 @@ fn Lexer::read_word(self : Lexer) -> String {
       Some(c) if is_word_char(c) => {
         buf.write_char(c)
         let _ = self.advance()
-
       }
       _ => break
     }
@@ -417,13 +412,13 @@ pub suberror LexError {
 }
 
 ///|
-pub impl Show for LexError with output(self, logger) {
+pub impl Show for LexError with fn output(self, logger) {
   match self {
     UnterminatedString(line, col) =>
       logger.write_string("Unterminated string at \{line}:\{col}")
     UnexpectedChar(c, line, col) =>
       logger.write_string("Unexpected character '\{c}' at \{line}:\{col}")
-    InvalidEscape(c, line, col) =>
+    InvalidEscape(_c, line, col) =>
       logger.write_string("Invalid escape '\\{c}' at \{line}:\{col}")
   }
 }
@@ -455,13 +450,13 @@ fn is_valid_name(s : String) -> Bool {
   }
   // First char must be letter or underscore
   let first = chars[0]
-  if not(is_alpha(first)) && first != '_' {
+  if !is_alpha(first) && first != '_' {
     return false
   }
   // Rest must be alphanumeric or underscore
   for i in 1..<chars.length() {
     let c = chars[i]
-    if not(is_alnum(c)) && c != '_' {
+    if !is_alnum(c) && c != '_' {
       return false
     }
   }

@@ -1,0 +1,85 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "mizchi/moonix/effect"
+
+// Values
+
+// Errors
+
+// Types and methods
+pub struct A2AEffectData {
+  agent : String
+  task_id : String
+  message_type : String
+  payload : String?
+}
+
+pub struct EffectEntry {
+  id : String
+  timestamp : Int64
+  kind : EffectKind
+  duration_ns : Int64
+  parent_snapshot : String?
+  seq : Int
+}
+pub fn EffectEntry::new(EffectKind, Int64, Int64, String?, Int) -> Self
+
+pub enum EffectKind {
+  HttpRequest(HttpEffectData)
+  McpToolCall(McpEffectData)
+  A2AMessage(A2AEffectData)
+  SocketOp(SocketEffectData)
+  WallClockRead(Int64)
+  RandomGenerate(Bytes)
+  ProcessSpawn(String, Array[String], Int?)
+}
+
+pub struct EffectLog {
+  mut entries : Array[EffectEntry]
+  mut seq : Int
+  mut timestamp_provider : () -> Int64
+  mut current_snapshot : String?
+}
+pub fn EffectLog::clear(Self) -> Unit
+pub fn EffectLog::entries_after(Self, Int) -> Array[EffectEntry]
+pub fn EffectLog::entries_after_snapshot(Self, String) -> Array[EffectEntry]
+pub fn EffectLog::filter_by_kind(Self, (EffectKind) -> Bool) -> Array[EffectEntry]
+pub fn EffectLog::get_entries(Self) -> Array[EffectEntry]
+pub fn EffectLog::head(Self) -> Int
+pub fn EffectLog::http_effects(Self) -> Array[EffectEntry]
+pub fn EffectLog::length(Self) -> Int
+pub fn EffectLog::mcp_effects(Self) -> Array[EffectEntry]
+pub fn EffectLog::new() -> Self
+pub fn EffectLog::record(Self, EffectKind, duration_ns? : Int64) -> EffectEntry
+pub fn EffectLog::record_a2a(Self, String, String, String, String?, duration_ns? : Int64) -> EffectEntry
+pub fn EffectLog::record_clock(Self, Int64) -> EffectEntry
+pub fn EffectLog::record_http(Self, String, String, Int?, Bytes?, Bytes?, duration_ns? : Int64) -> EffectEntry
+pub fn EffectLog::record_mcp(Self, String, String?, String?, duration_ns? : Int64) -> EffectEntry
+pub fn EffectLog::record_process(Self, String, Array[String], Int?, duration_ns? : Int64) -> EffectEntry
+pub fn EffectLog::record_random(Self, Bytes) -> EffectEntry
+pub fn EffectLog::set_current_snapshot(Self, String?) -> Unit
+pub fn EffectLog::set_timestamp_provider(Self, () -> Int64) -> Unit
+
+pub struct HttpEffectData {
+  http_method : String
+  url : String
+  status : Int?
+  request_body : Bytes?
+  response_body : Bytes?
+}
+
+pub struct McpEffectData {
+  tool : String
+  input : String?
+  output : String?
+}
+
+pub struct SocketEffectData {
+  host : String
+  port : Int
+  direction : String
+  data : Bytes?
+}
+
+// Type aliases
+
+// Traits

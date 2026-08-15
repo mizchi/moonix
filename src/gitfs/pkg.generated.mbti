@@ -1,0 +1,67 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "mizchi/moonix/gitfs"
+
+import {
+  "mizchi/bit_lib",
+  "mizchi/bit_object",
+  "mizchi/bit_types",
+  "mizchi/moonix/fs",
+}
+
+// Values
+
+// Errors
+
+// Types and methods
+pub struct GitBackedFs {
+  memfs : @fs.MemFs
+  git_dir : String
+  root : String
+  mut dirty : Map[String, Bool]
+  mut head : @bit_object.ObjectId?
+  author : String
+  mut timestamp_provider : () -> Int64
+}
+pub fn GitBackedFs::branch(Self, String) -> Unit raise @bit_object.GitError
+pub fn GitBackedFs::branch_at(Self, String, @bit_object.ObjectId) -> Unit raise @bit_object.GitError
+pub fn GitBackedFs::cherry_pick(Self, @bit_object.ObjectId) -> @bit_lib.CherryPickResult raise @bit_object.GitError
+pub fn GitBackedFs::current_branch(Self) -> String? raise @bit_object.GitError
+pub fn GitBackedFs::delete_tag(Self, String) -> Unit raise @bit_object.GitError
+pub fn GitBackedFs::diff(Self) -> Array[@bit_lib.DiffFile] raise @bit_object.GitError
+pub fn GitBackedFs::diff_text(Self) -> String raise @bit_object.GitError
+pub fn GitBackedFs::get_dirty_paths(Self) -> Array[String]
+pub fn GitBackedFs::get_head(Self) -> @bit_object.ObjectId?
+pub fn GitBackedFs::get_memfs(Self) -> @fs.MemFs
+pub fn GitBackedFs::has_changes(Self) -> Bool
+pub fn GitBackedFs::history(Self, max_count? : Int) -> Array[SnapshotId] raise @bit_object.GitError
+pub fn GitBackedFs::list_branches(Self) -> Array[String] raise @bit_object.GitError
+pub fn GitBackedFs::list_tags(Self) -> Array[String]
+pub fn GitBackedFs::merge(Self, String) -> @bit_lib.MergeResult raise @bit_object.GitError
+pub fn GitBackedFs::new(author? : String) -> Self
+pub fn GitBackedFs::reset(Self, @bit_object.ObjectId, mode? : @bit_lib.ResetMode) -> @bit_object.ObjectId raise @bit_object.GitError
+pub fn GitBackedFs::rollback(Self, SnapshotId) -> Unit raise @bit_object.GitError
+pub fn GitBackedFs::rollback_to(Self, @bit_object.ObjectId) -> Unit raise @bit_object.GitError
+pub fn GitBackedFs::set_timestamp_provider(Self, () -> Int64) -> Unit
+pub fn GitBackedFs::snapshot(Self, String) -> SnapshotId raise @bit_object.GitError
+pub async fn GitBackedFs::stash(Self, message? : String) -> @bit_object.ObjectId? raise @bit_object.GitError
+pub fn GitBackedFs::stash_apply(Self, index? : Int) -> Unit raise @bit_object.GitError
+pub fn GitBackedFs::stash_drop(Self, index? : Int) -> Unit raise @bit_object.GitError
+pub fn GitBackedFs::stash_list(Self) -> Array[@bit_lib.StashEntry] raise @bit_object.GitError
+pub fn GitBackedFs::stash_pop(Self, index? : Int) -> Unit raise @bit_object.GitError
+pub async fn GitBackedFs::status(Self) -> @bit_lib.Status raise @bit_object.GitError
+pub fn GitBackedFs::switch(Self, String) -> Unit raise @bit_object.GitError
+pub fn GitBackedFs::tag(Self, String) -> Unit raise @bit_object.GitError
+pub fn GitBackedFs::tag_at(Self, String, @bit_object.ObjectId) -> Unit raise @bit_object.GitError
+pub impl @bit_types.FileSystem for GitBackedFs
+pub impl @bit_types.RepoFileSystem for GitBackedFs
+pub impl @fs.FileSystemBackend for GitBackedFs
+
+pub struct SnapshotId {
+  commit_id : @bit_object.ObjectId
+  message : String
+  timestamp : Int64
+}
+
+// Type aliases
+
+// Traits

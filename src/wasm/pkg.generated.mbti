@@ -1,0 +1,47 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "mizchi/moonix/wasm"
+
+// Values
+
+// Errors
+pub suberror WasmError {
+  NotFound(String)
+  ExecutionFailed(String)
+  InvalidModule(String)
+  Unsupported(String)
+}
+
+// Types and methods
+pub enum PluginConvention {
+  Simple
+  WasiCli
+}
+
+pub struct StubWasmRunner {
+  _placeholder : Int
+}
+pub fn StubWasmRunner::new() -> Self
+pub impl WasmRunner for StubWasmRunner
+
+pub struct WasmExecContext {
+  stdin : Bytes
+  args : Array[String]
+  env : Array[(String, String)]
+  cwd : String
+}
+pub fn WasmExecContext::new(Bytes, Array[String], Array[(String, String)], String) -> Self
+
+pub struct WasmExecResult {
+  exit_code : Int
+  stdout : Bytes
+  stderr : Bytes
+}
+pub fn WasmExecResult::error(Int, Bytes) -> Self
+pub fn WasmExecResult::ok(Bytes) -> Self
+
+// Type aliases
+
+// Traits
+pub(open) trait WasmRunner {
+  fn run(Self, Bytes, WasmExecContext) -> WasmExecResult raise WasmError
+}

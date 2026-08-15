@@ -1,0 +1,97 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "mizchi/moonix/posix"
+
+import {
+  "mizchi/moonix/fs",
+}
+
+// Values
+pub const STDERR_FD : Int = 2
+
+pub const STDIN_FD : Int = 0
+
+pub const STDOUT_FD : Int = 1
+
+pub fn fs_error_to_posix(@fs.FsError) -> PosixError
+
+// Errors
+pub(all) suberror PosixError {
+  ENOENT(String)
+  EEXIST(String)
+  ENOTDIR(String)
+  EISDIR(String)
+  EBADF(String)
+  EINVAL(String)
+  EIO(String)
+  EACCES(String)
+  ENOTEMPTY(String)
+} derive(Eq)
+pub impl Show for PosixError
+
+// Types and methods
+pub struct BufferedStreamHandler {
+  mut stdout : Bytes
+  mut stderr : Bytes
+  stdin : Bytes
+  mut stdin_pos : Int
+}
+pub fn BufferedStreamHandler::get_stderr(Self) -> Bytes
+pub fn BufferedStreamHandler::get_stdout(Self) -> Bytes
+pub fn BufferedStreamHandler::new() -> Self
+pub fn BufferedStreamHandler::with_stdin(Bytes) -> Self
+pub impl StdStreamHandler for BufferedStreamHandler
+
+type FileHandle
+
+pub struct NullStreamHandler {
+}
+pub fn NullStreamHandler::new() -> Self
+pub impl StdStreamHandler for NullStreamHandler
+
+pub(all) struct OpenFlags {
+  read : Bool
+  write : Bool
+  create : Bool
+  truncate : Bool
+  append : Bool
+} derive(Eq)
+pub fn OpenFlags::create_write() -> Self
+pub fn OpenFlags::default() -> Self
+pub fn OpenFlags::read_write() -> Self
+pub impl Show for OpenFlags
+
+pub struct PosixContext {
+  fs : &@fs.FileSystemBackend
+  streams : &StdStreamHandler
+  mut cwd : String
+  env : Map[String, String]
+  fds : Map[Int, FileHandle]
+  mut next_fd : Int
+}
+pub fn PosixContext::chdir(Self, String) -> Unit raise PosixError
+pub fn PosixContext::close(Self, Int) -> Unit raise PosixError
+pub fn PosixContext::get_all_env(Self) -> Array[(String, String)]
+pub fn PosixContext::getcwd(Self) -> String
+pub fn PosixContext::getenv(Self, String) -> String?
+pub fn PosixContext::lseek(Self, Int, Int, Int) -> Int raise PosixError
+pub fn PosixContext::new(&@fs.FileSystemBackend, &StdStreamHandler) -> Self
+pub fn PosixContext::open(Self, String, OpenFlags) -> Int raise PosixError
+pub fn PosixContext::read(Self, Int, Int) -> Bytes raise PosixError
+pub fn PosixContext::resolve_path(Self, String) -> String
+pub fn PosixContext::setenv(Self, String, String) -> Unit
+pub fn PosixContext::unsetenv(Self, String) -> Unit
+pub fn PosixContext::write(Self, Int, Bytes) -> Int raise PosixError
+
+pub(all) enum StdStream {
+  Stdin
+  Stdout
+  Stderr
+}
+
+// Type aliases
+
+// Traits
+pub(open) trait StdStreamHandler {
+  fn read(Self, StdStream, Int) -> Bytes
+  fn write(Self, StdStream, Bytes) -> Int
+}

@@ -84,7 +84,6 @@ fn Parser::skip_newlines(self : Parser) -> Unit {
     match self.peek_kind() {
       Newline => {
         let _ = self.advance()
-
       }
       _ => break
     }
@@ -403,7 +402,6 @@ fn Parser::parse_for(self : Parser) -> Command raise ParseError {
     match self.peek_kind() {
       Semi | Newline => {
         let _ = self.advance()
-
       }
       _ => break
     }
@@ -536,7 +534,7 @@ pub suberror ParseError {
 }
 
 ///|
-pub impl Show for ParseError with output(self, logger) {
+pub impl Show for ParseError with fn output(self, logger) {
   match self {
     LexError(msg) => logger.write_string("Lex error: \{msg}")
     UnexpectedToken(got, expected, line, col) =>

@@ -1,0 +1,23 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "mizchi/moonix/bitfs_adapter"
+
+import {
+  "mizchi/bit_io",
+  "mizchi/moonix/fs",
+}
+
+// Values
+
+// Errors
+
+// Types and methods
+pub struct BitFsAdapter {
+  fs : @bit_io.TestFs
+}
+pub fn BitFsAdapter::get_fs(Self) -> @bit_io.TestFs
+pub fn BitFsAdapter::new(@bit_io.TestFs) -> Self
+pub impl @fs.FileSystemBackend for BitFsAdapter
+
+// Type aliases
+
+// Traits

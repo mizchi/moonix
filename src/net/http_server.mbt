@@ -74,7 +74,6 @@ pub fn HttpServer::process_one(self : HttpServer) -> Bool {
       let response_bytes = generate_http_response(response)
       try {
         let _ = client_socket.write(response_bytes)
-
       } catch {
         _ => ()
       }

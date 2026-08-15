@@ -52,7 +52,7 @@ pub fn Semaphore::try_acquire(self : Semaphore, pid : Pid) -> Bool {
         break
       }
     }
-    if not(found) {
+    if !found {
       self.waiters.push(pid)
     }
     false
@@ -180,7 +180,7 @@ pub fn CondVar::wait(self : CondVar, pid : Pid) -> Bool {
       break
     }
   }
-  if not(found) {
+  if !found {
     self.waiters.push(pid)
   }
   false

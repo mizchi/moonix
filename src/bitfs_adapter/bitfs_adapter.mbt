@@ -1,43 +1,37 @@
-///| Adapter: mizchi/bit/x/fs -> moonix FileSystemBackend
+///| Adapter: mizchi/bit TestFs -> moonix FileSystemBackend
 
 ///|
-/// BitFsAdapter wraps bitfs.Fs with a RepoFileSystem to implement FileSystemBackend.
+/// BitFsAdapter wraps bit's in-memory filesystem to implement FileSystemBackend.
 pub struct BitFsAdapter {
-  fs : @bitfs.Fs
-  repo : &@bit.RepoFileSystem
+  fs : @io.TestFs
 }
 
 ///|
 /// Create a new adapter
-pub fn BitFsAdapter::new(
-  fs : @bitfs.Fs,
-  repo : &@bit.RepoFileSystem,
-) -> BitFsAdapter {
-  { fs, repo }
+pub fn BitFsAdapter::new(fs : @io.TestFs) -> BitFsAdapter {
+  { fs, }
 }
 
 ///|
 /// Get underlying bitfs instance
-pub fn BitFsAdapter::get_fs(self : BitFsAdapter) -> @bitfs.Fs {
+pub fn BitFsAdapter::get_fs(self : BitFsAdapter) -> @io.TestFs {
   self.fs
 }
 
 ///|
 fn to_rel_path(path : String) -> String {
   let normalized = @fs.normalize_path(path)
-  if normalized == "/" {
-    ""
-  } else if normalized.has_prefix("/") {
-    String::unsafe_substring(normalized, start=1, end=normalized.length())
-  } else {
+  if normalized.has_prefix("/") {
     normalized
+  } else {
+    "/" + normalized
   }
 }
 
 ///|
 fn join_rel(dir : String, name : String) -> String {
-  if dir.length() == 0 {
-    name
+  if dir == "/" {
+    "/" + name
   } else {
     dir + "/" + name
   }
@@ -71,7 +65,7 @@ fn BitFsAdapter::ensure_parent_dir(
   if self.is_file(parent) {
     raise @fs.FsError::NotADirectory(parent)
   }
-  if not(self.is_dir(parent)) {
+  if !self.is_dir(parent) {
     raise @fs.FsError::NotFound(parent)
   }
 }
@@ -87,7 +81,7 @@ fn BitFsAdapter::check_no_file_in_path(
   }
   let mut current = ""
   for part_view in rel.split("/") {
-    let part = part_view.to_string()
+    let part = part_view.to_owned()
     if part.length() == 0 {
       continue
     }
@@ -100,51 +94,51 @@ fn BitFsAdapter::check_no_file_in_path(
 }
 
 ///|
-fn git_error_to_fs(err : @bit.GitError) -> @fs.FsError {
+fn git_error_to_fs(err : @types.GitError) -> @fs.FsError {
   @fs.FsError::IoError(err.to_string())
 }
 
 ///|
 /// FileSystemBackend implementation
-pub impl @fs.FileSystemBackend for BitFsAdapter with read_file(self, path) {
+pub impl @fs.FileSystemBackend for BitFsAdapter with fn read_file(self, path) {
   let abs = @fs.normalize_path(path)
   if self.is_dir(abs) {
     raise @fs.FsError::IsADirectory(path)
   }
-  if not(self.is_file(abs)) {
+  if !self.is_file(abs) {
     raise @fs.FsError::NotFound(path)
   }
   let rel = to_rel_path(abs)
-  self.fs.read_file(self.repo, rel) catch {
+  self.fs.read_file(rel) catch {
     e => raise git_error_to_fs(e)
   }
 }
 
 ///|
-pub impl @fs.FileSystemBackend for BitFsAdapter with read_string(self, path) {
+pub impl @fs.FileSystemBackend for BitFsAdapter with fn read_string(self, path) {
   bytes_to_string(self.read_file(path))
 }
 
 ///|
-pub impl @fs.FileSystemBackend for BitFsAdapter with exists(self, path) {
+pub impl @fs.FileSystemBackend for BitFsAdapter with fn exists(self, path) {
   let abs = @fs.normalize_path(path)
   self.is_file(abs) || self.is_dir(abs)
 }
 
 ///|
-pub impl @fs.FileSystemBackend for BitFsAdapter with is_file(self, path) {
+pub impl @fs.FileSystemBackend for BitFsAdapter with fn is_file(self, path) {
   let rel = to_rel_path(path)
-  self.fs.is_file(self.repo, rel)
+  self.fs.is_file(rel)
 }
 
 ///|
-pub impl @fs.FileSystemBackend for BitFsAdapter with is_dir(self, path) {
+pub impl @fs.FileSystemBackend for BitFsAdapter with fn is_dir(self, path) {
   let rel = to_rel_path(path)
-  self.fs.is_dir(self.repo, rel)
+  self.fs.is_dir(rel)
 }
 
 ///|
-pub impl @fs.FileSystemBackend for BitFsAdapter with stat(self, path) {
+pub impl @fs.FileSystemBackend for BitFsAdapter with fn stat(self, path) {
   let abs = @fs.normalize_path(path)
   if self.is_file(abs) {
     let data = self.read_file(abs)
@@ -157,22 +151,20 @@ pub impl @fs.FileSystemBackend for BitFsAdapter with stat(self, path) {
 }
 
 ///|
-pub impl @fs.FileSystemBackend for BitFsAdapter with readdir(self, path) {
+pub impl @fs.FileSystemBackend for BitFsAdapter with fn readdir(self, path) {
   let abs = @fs.normalize_path(path)
-  if not(self.is_dir(abs)) {
+  if !self.is_dir(abs) {
     if self.is_file(abs) {
       raise @fs.FsError::NotADirectory(path)
     }
     raise @fs.FsError::NotFound(path)
   }
   let rel = to_rel_path(abs)
-  let entries = self.fs.readdir(self.repo, rel) catch {
-    e => raise git_error_to_fs(e)
-  }
+  let entries = self.fs.readdir(rel) catch { e => raise git_error_to_fs(e) }
   let out : Array[@fs.DirEntry] = []
   for name in entries {
     let child_rel = join_rel(rel, name)
-    let file_type = if self.fs.is_dir(self.repo, child_rel) {
+    let file_type = if self.fs.is_dir(child_rel) {
       @fs.FileType::Directory
     } else {
       @fs.FileType::File
@@ -183,7 +175,7 @@ pub impl @fs.FileSystemBackend for BitFsAdapter with readdir(self, path) {
 }
 
 ///|
-pub impl @fs.FileSystemBackend for BitFsAdapter with write_file(
+pub impl @fs.FileSystemBackend for BitFsAdapter with fn write_file(
   self,
   path,
   data,
@@ -201,7 +193,7 @@ pub impl @fs.FileSystemBackend for BitFsAdapter with write_file(
 }
 
 ///|
-pub impl @fs.FileSystemBackend for BitFsAdapter with write_string(
+pub impl @fs.FileSystemBackend for BitFsAdapter with fn write_string(
   self,
   path,
   content,
@@ -210,7 +202,7 @@ pub impl @fs.FileSystemBackend for BitFsAdapter with write_string(
 }
 
 ///|
-pub impl @fs.FileSystemBackend for BitFsAdapter with mkdir(self, path) {
+pub impl @fs.FileSystemBackend for BitFsAdapter with fn mkdir(self, path) {
   let abs = @fs.normalize_path(path)
   if abs == "/" {
     raise @fs.FsError::AlreadyExists(path)
@@ -224,7 +216,7 @@ pub impl @fs.FileSystemBackend for BitFsAdapter with mkdir(self, path) {
 }
 
 ///|
-pub impl @fs.FileSystemBackend for BitFsAdapter with mkdir_p(self, path) {
+pub impl @fs.FileSystemBackend for BitFsAdapter with fn mkdir_p(self, path) {
   let abs = @fs.normalize_path(path)
   if abs == "/" {
     return
@@ -235,7 +227,7 @@ pub impl @fs.FileSystemBackend for BitFsAdapter with mkdir_p(self, path) {
 }
 
 ///|
-pub impl @fs.FileSystemBackend for BitFsAdapter with remove(self, path) {
+pub impl @fs.FileSystemBackend for BitFsAdapter with fn remove(self, path) {
   let abs = @fs.normalize_path(path)
   if abs == "/" {
     raise @fs.FsError::PermissionDenied("cannot remove root")
@@ -243,15 +235,17 @@ pub impl @fs.FileSystemBackend for BitFsAdapter with remove(self, path) {
   if self.is_dir(abs) {
     raise @fs.FsError::IsADirectory(path)
   }
-  if not(self.is_file(abs)) {
+  if !self.is_file(abs) {
     raise @fs.FsError::NotFound(path)
   }
   let rel = to_rel_path(abs)
-  self.fs.remove_file(rel)
+  self.fs.remove_file(rel) catch {
+    e => raise git_error_to_fs(e)
+  }
 }
 
 ///|
-pub impl @fs.FileSystemBackend for BitFsAdapter with rmdir(self, path) {
+pub impl @fs.FileSystemBackend for BitFsAdapter with fn rmdir(self, path) {
   let abs = @fs.normalize_path(path)
   if abs == "/" {
     raise @fs.FsError::PermissionDenied("cannot remove root")
@@ -259,7 +253,7 @@ pub impl @fs.FileSystemBackend for BitFsAdapter with rmdir(self, path) {
   if self.is_file(abs) {
     raise @fs.FsError::NotADirectory(path)
   }
-  if not(self.is_dir(abs)) {
+  if !self.is_dir(abs) {
     raise @fs.FsError::NotFound(path)
   }
   let entries = self.readdir(abs)
@@ -267,11 +261,13 @@ pub impl @fs.FileSystemBackend for BitFsAdapter with rmdir(self, path) {
     raise @fs.FsError::NotEmpty(path)
   }
   let rel = to_rel_path(abs)
-  self.fs.remove_dir(rel)
+  self.fs.remove_dir(rel) catch {
+    e => raise git_error_to_fs(e)
+  }
 }
 
 ///|
-pub impl @fs.FileSystemBackend for BitFsAdapter with rename(
+pub impl @fs.FileSystemBackend for BitFsAdapter with fn rename(
   self,
   old_path,
   new_path,
@@ -293,10 +289,14 @@ pub impl @fs.FileSystemBackend for BitFsAdapter with rename(
 }
 
 ///|
-pub impl @fs.FileSystemBackend for BitFsAdapter with copy_file(self, src, dst) {
+pub impl @fs.FileSystemBackend for BitFsAdapter with fn copy_file(
+  self,
+  src,
+  dst,
+) {
   let src_abs = @fs.normalize_path(src)
   let dst_abs = @fs.normalize_path(dst)
-  if not(self.is_file(src_abs)) {
+  if !self.is_file(src_abs) {
     if self.is_dir(src_abs) {
       raise @fs.FsError::IsADirectory(src)
     }
@@ -307,12 +307,12 @@ pub impl @fs.FileSystemBackend for BitFsAdapter with copy_file(self, src, dst) {
 }
 
 ///|
-pub impl @fs.FileSystemBackend for BitFsAdapter with rm_rf(self, path) {
+pub impl @fs.FileSystemBackend for BitFsAdapter with fn rm_rf(self, path) {
   let abs = @fs.normalize_path(path)
   if abs == "/" {
     raise @fs.FsError::PermissionDenied("cannot remove root")
   }
-  if not(self.exists(abs)) {
+  if !self.exists(abs) {
     raise @fs.FsError::NotFound(path)
   }
   if self.is_file(abs) {

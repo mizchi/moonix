@@ -289,7 +289,7 @@ fn encode_task_send_request(req : TaskSendRequest) -> Bytes {
   }
   match req.skill_id {
     Some(id) => {
-      if not(first) {
+      if !first {
         buf.write_string(",")
       }
       buf.write_string("\"skillId\":")
@@ -300,7 +300,7 @@ fn encode_task_send_request(req : TaskSendRequest) -> Bytes {
   }
 
   // Encode message
-  if not(first) {
+  if !first {
     buf.write_string(",")
   }
   buf.write_string("\"message\":{")
@@ -342,7 +342,7 @@ fn encode_task_send_request(req : TaskSendRequest) -> Bytes {
   }
   buf.write_string("]}")
   buf.write_string("}")
-  buf.to_string().to_bytes()
+  @utf8.encode(buf.to_string())
 }
 
 ///|
@@ -457,7 +457,7 @@ fn parse_history_entry(json : Json) -> TaskHistoryEntry? {
   match json {
     Object(obj) => {
       let timestamp = match obj.get("timestamp") {
-        Some(Number(n)) => n.to_int64()
+        Some(Number(n, ..)) => n.to_int64()
         _ => 0L
       }
       let status_str = match obj.get("status") {

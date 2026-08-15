@@ -22,7 +22,7 @@ pub struct AgentRuntime {
 pub fn AgentRuntime::new(config : RuntimeConfig) -> AgentRuntime {
   let fs = @gitfs.GitBackedFs::new(author=config.author)
   let effect_log = @effect.EffectLog::new()
-  let env : Map[String, String] = {}
+  let env : Map[String, String] = Map([])
   env.set("HOME", "/home")
   env.set("PATH", "/bin:/usr/bin")
   env.set("PWD", "/")
@@ -82,7 +82,7 @@ pub fn AgentRuntime::read_file(
   path : String,
 ) -> Bytes raise RuntimeError {
   let abs_path = self.resolve_path(path)
-  if not(self.capabilities.can_read(abs_path)) {
+  if !self.capabilities.can_read(abs_path) {
     raise PermissionDenied("read: " + abs_path)
   }
   @fs.FileSystemBackend::read_file(self.fs, abs_path) catch {
@@ -97,7 +97,7 @@ pub fn AgentRuntime::read_string(
   path : String,
 ) -> String raise RuntimeError {
   let abs_path = self.resolve_path(path)
-  if not(self.capabilities.can_read(abs_path)) {
+  if !self.capabilities.can_read(abs_path) {
     raise PermissionDenied("read: " + abs_path)
   }
   @fs.FileSystemBackend::read_string(self.fs, abs_path) catch {
@@ -113,7 +113,7 @@ pub fn AgentRuntime::write_file(
   data : Bytes,
 ) -> Unit raise RuntimeError {
   let abs_path = self.resolve_path(path)
-  if not(self.capabilities.can_write(abs_path)) {
+  if !self.capabilities.can_write(abs_path) {
     raise PermissionDenied("write: " + abs_path)
   }
   @fs.FileSystemBackend::write_file(self.fs, abs_path, data) catch {
@@ -129,7 +129,7 @@ pub fn AgentRuntime::write_string(
   content : String,
 ) -> Unit raise RuntimeError {
   let abs_path = self.resolve_path(path)
-  if not(self.capabilities.can_write(abs_path)) {
+  if !self.capabilities.can_write(abs_path) {
     raise PermissionDenied("write: " + abs_path)
   }
   @fs.FileSystemBackend::write_string(self.fs, abs_path, content) catch {
@@ -166,7 +166,7 @@ pub fn AgentRuntime::mkdir(
   path : String,
 ) -> Unit raise RuntimeError {
   let abs_path = self.resolve_path(path)
-  if not(self.capabilities.can_write(abs_path)) {
+  if !self.capabilities.can_write(abs_path) {
     raise PermissionDenied("mkdir: " + abs_path)
   }
   @fs.FileSystemBackend::mkdir(self.fs, abs_path) catch {
@@ -181,7 +181,7 @@ pub fn AgentRuntime::mkdir_p(
   path : String,
 ) -> Unit raise RuntimeError {
   let abs_path = self.resolve_path(path)
-  if not(self.capabilities.can_write(abs_path)) {
+  if !self.capabilities.can_write(abs_path) {
     raise PermissionDenied("mkdir_p: " + abs_path)
   }
   @fs.FileSystemBackend::mkdir_p(self.fs, abs_path) catch {
@@ -196,7 +196,7 @@ pub fn AgentRuntime::remove(
   path : String,
 ) -> Unit raise RuntimeError {
   let abs_path = self.resolve_path(path)
-  if not(self.capabilities.can_delete(abs_path)) {
+  if !self.capabilities.can_delete(abs_path) {
     raise PermissionDenied("remove: " + abs_path)
   }
   @fs.FileSystemBackend::remove(self.fs, abs_path) catch {
@@ -211,7 +211,7 @@ pub fn AgentRuntime::rm_rf(
   path : String,
 ) -> Unit raise RuntimeError {
   let abs_path = self.resolve_path(path)
-  if not(self.capabilities.can_delete(abs_path)) {
+  if !self.capabilities.can_delete(abs_path) {
     raise PermissionDenied("rm_rf: " + abs_path)
   }
   @fs.FileSystemBackend::rm_rf(self.fs, abs_path) catch {
@@ -226,7 +226,7 @@ pub fn AgentRuntime::readdir(
   path : String,
 ) -> Array[@fs.DirEntry] raise RuntimeError {
   let abs_path = self.resolve_path(path)
-  if not(self.capabilities.can_read(abs_path)) {
+  if !self.capabilities.can_read(abs_path) {
     raise PermissionDenied("readdir: " + abs_path)
   }
   @fs.FileSystemBackend::readdir(self.fs, abs_path) catch {
@@ -261,7 +261,7 @@ pub fn AgentRuntime::chdir(
   path : String,
 ) -> Unit raise RuntimeError {
   let abs_path = self.resolve_path(path)
-  if not(@fs.FileSystemBackend::is_dir(self.fs, abs_path)) {
+  if !@fs.FileSystemBackend::is_dir(self.fs, abs_path) {
     raise IoError("not a directory: " + abs_path)
   }
   self.cwd = abs_path
@@ -271,7 +271,7 @@ pub fn AgentRuntime::chdir(
 ///|
 /// Get environment variable
 pub fn AgentRuntime::getenv(self : AgentRuntime, name : String) -> String? {
-  if not(self.capabilities.can_read_env(name)) {
+  if !self.capabilities.can_read_env(name) {
     return None
   }
   self.env.get(name)

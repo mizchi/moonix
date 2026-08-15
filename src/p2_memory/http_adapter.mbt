@@ -46,7 +46,7 @@ fn fields_to_pairs(kernel : Kernel, fields_id : Int) -> Array[(String, Bytes)] {
 
 ///|
 fn pairs_to_fields(kernel : Kernel, pairs : Array[(String, Bytes)]) -> Int {
-  let entries : Map[String, Array[Bytes]] = {}
+  let entries : Map[String, Array[Bytes]] = Map([])
   for pair in pairs {
     let (name, value) = pair
     match entries.get(name) {
@@ -60,14 +60,16 @@ fn pairs_to_fields(kernel : Kernel, pairs : Array[(String, Bytes)]) -> Int {
 // ===== Fields =====
 
 ///|
-pub impl @p2.WasiHttpTypesAdapter for HttpAdapter with fields_constructor(self) {
+pub impl @p2.WasiHttpTypesAdapter for HttpAdapter with fn fields_constructor(
+  self,
+) {
   let id = self.kernel.alloc_fields({ entries: {} })
   self.current_fields = id
   Ok(())
 }
 
 ///|
-pub impl @p2.WasiHttpTypesAdapter for HttpAdapter with fields_get(self, name) {
+pub impl @p2.WasiHttpTypesAdapter for HttpAdapter with fn fields_get(self, name) {
   let id = self.current_fields
   match self.kernel.http_fields.get(id) {
     None => Ok([])
@@ -86,7 +88,7 @@ pub impl @p2.WasiHttpTypesAdapter for HttpAdapter with fields_get(self, name) {
 }
 
 ///|
-pub impl @p2.WasiHttpTypesAdapter for HttpAdapter with fields_has(self, name) {
+pub impl @p2.WasiHttpTypesAdapter for HttpAdapter with fn fields_has(self, name) {
   let id = self.current_fields
   match self.kernel.http_fields.get(id) {
     None => Ok(false)
@@ -95,7 +97,7 @@ pub impl @p2.WasiHttpTypesAdapter for HttpAdapter with fields_has(self, name) {
 }
 
 ///|
-pub impl @p2.WasiHttpTypesAdapter for HttpAdapter with fields_set(
+pub impl @p2.WasiHttpTypesAdapter for HttpAdapter with fn fields_set(
   self,
   name,
   values,
@@ -115,7 +117,10 @@ pub impl @p2.WasiHttpTypesAdapter for HttpAdapter with fields_set(
 }
 
 ///|
-pub impl @p2.WasiHttpTypesAdapter for HttpAdapter with fields_delete(self, name) {
+pub impl @p2.WasiHttpTypesAdapter for HttpAdapter with fn fields_delete(
+  self,
+  name,
+) {
   let id = self.current_fields
   match self.kernel.http_fields.get(id) {
     None => Ok(())
@@ -127,7 +132,7 @@ pub impl @p2.WasiHttpTypesAdapter for HttpAdapter with fields_delete(self, name)
 }
 
 ///|
-pub impl @p2.WasiHttpTypesAdapter for HttpAdapter with fields_append(
+pub impl @p2.WasiHttpTypesAdapter for HttpAdapter with fn fields_append(
   self,
   name,
   value,
@@ -150,7 +155,7 @@ pub impl @p2.WasiHttpTypesAdapter for HttpAdapter with fields_append(
 }
 
 ///|
-pub impl @p2.WasiHttpTypesAdapter for HttpAdapter with fields_entries(self) {
+pub impl @p2.WasiHttpTypesAdapter for HttpAdapter with fn fields_entries(self) {
   let id = self.current_fields
   match self.kernel.http_fields.get(id) {
     None => Ok([])
@@ -177,7 +182,7 @@ pub impl @p2.WasiHttpTypesAdapter for HttpAdapter with fields_entries(self) {
 }
 
 ///|
-pub impl @p2.WasiHttpTypesAdapter for HttpAdapter with fields_clone(self) {
+pub impl @p2.WasiHttpTypesAdapter for HttpAdapter with fn fields_clone(self) {
   let id = self.current_fields
   match self.kernel.http_fields.get(id) {
     None => {
@@ -185,7 +190,7 @@ pub impl @p2.WasiHttpTypesAdapter for HttpAdapter with fields_clone(self) {
       Ok(@p2.HttpTypesFields(new_id))
     }
     Some(fs) => {
-      let new_entries : Map[String, Array[Bytes]] = {}
+      let new_entries : Map[String, Array[Bytes]] = Map([])
       fs.entries.each(fn(name, values) {
         let cloned : Array[Bytes] = []
         for v in values {
@@ -202,7 +207,7 @@ pub impl @p2.WasiHttpTypesAdapter for HttpAdapter with fields_clone(self) {
 // ===== Outgoing Request =====
 
 ///|
-pub impl @p2.WasiHttpTypesAdapter for HttpAdapter with outgoing_request_constructor(
+pub impl @p2.WasiHttpTypesAdapter for HttpAdapter with fn outgoing_request_constructor(
   self,
   headers,
 ) {
@@ -219,7 +224,7 @@ pub impl @p2.WasiHttpTypesAdapter for HttpAdapter with outgoing_request_construc
 }
 
 ///|
-pub impl @p2.WasiHttpTypesAdapter for HttpAdapter with outgoing_request_body(
+pub impl @p2.WasiHttpTypesAdapter for HttpAdapter with fn outgoing_request_body(
   self,
 ) {
   let req_id = self.current_outgoing_request
@@ -238,7 +243,7 @@ pub impl @p2.WasiHttpTypesAdapter for HttpAdapter with outgoing_request_body(
 }
 
 ///|
-pub impl @p2.WasiHttpTypesAdapter for HttpAdapter with outgoing_request_method(
+pub impl @p2.WasiHttpTypesAdapter for HttpAdapter with fn outgoing_request_method(
   self,
 ) {
   let req_id = self.current_outgoing_request
@@ -249,7 +254,7 @@ pub impl @p2.WasiHttpTypesAdapter for HttpAdapter with outgoing_request_method(
 }
 
 ///|
-pub impl @p2.WasiHttpTypesAdapter for HttpAdapter with outgoing_request_path_with_query(
+pub impl @p2.WasiHttpTypesAdapter for HttpAdapter with fn outgoing_request_path_with_query(
   self,
 ) {
   let req_id = self.current_outgoing_request
@@ -260,7 +265,7 @@ pub impl @p2.WasiHttpTypesAdapter for HttpAdapter with outgoing_request_path_wit
 }
 
 ///|
-pub impl @p2.WasiHttpTypesAdapter for HttpAdapter with outgoing_request_scheme(
+pub impl @p2.WasiHttpTypesAdapter for HttpAdapter with fn outgoing_request_scheme(
   self,
 ) {
   let req_id = self.current_outgoing_request
@@ -275,7 +280,7 @@ pub impl @p2.WasiHttpTypesAdapter for HttpAdapter with outgoing_request_scheme(
 }
 
 ///|
-pub impl @p2.WasiHttpTypesAdapter for HttpAdapter with outgoing_request_authority(
+pub impl @p2.WasiHttpTypesAdapter for HttpAdapter with fn outgoing_request_authority(
   self,
 ) {
   let req_id = self.current_outgoing_request
@@ -286,7 +291,7 @@ pub impl @p2.WasiHttpTypesAdapter for HttpAdapter with outgoing_request_authorit
 }
 
 ///|
-pub impl @p2.WasiHttpTypesAdapter for HttpAdapter with outgoing_request_headers(
+pub impl @p2.WasiHttpTypesAdapter for HttpAdapter with fn outgoing_request_headers(
   self,
 ) {
   let req_id = self.current_outgoing_request
@@ -299,28 +304,28 @@ pub impl @p2.WasiHttpTypesAdapter for HttpAdapter with outgoing_request_headers(
 // ===== Request Options (simplified) =====
 
 ///|
-pub impl @p2.WasiHttpTypesAdapter for HttpAdapter with request_options_constructor(
+pub impl @p2.WasiHttpTypesAdapter for HttpAdapter with fn request_options_constructor(
   _self,
 ) {
   Ok(())
 }
 
 ///|
-pub impl @p2.WasiHttpTypesAdapter for HttpAdapter with request_options_connect_timeout(
+pub impl @p2.WasiHttpTypesAdapter for HttpAdapter with fn request_options_connect_timeout(
   _self,
 ) {
   Ok(None)
 }
 
 ///|
-pub impl @p2.WasiHttpTypesAdapter for HttpAdapter with request_options_first_byte_timeout(
+pub impl @p2.WasiHttpTypesAdapter for HttpAdapter with fn request_options_first_byte_timeout(
   _self,
 ) {
   Ok(None)
 }
 
 ///|
-pub impl @p2.WasiHttpTypesAdapter for HttpAdapter with request_options_between_bytes_timeout(
+pub impl @p2.WasiHttpTypesAdapter for HttpAdapter with fn request_options_between_bytes_timeout(
   _self,
 ) {
   Ok(None)
@@ -329,7 +334,7 @@ pub impl @p2.WasiHttpTypesAdapter for HttpAdapter with request_options_between_b
 // ===== Response Outparam =====
 
 ///|
-pub impl @p2.WasiHttpTypesAdapter for HttpAdapter with response_outparam_send_informational(
+pub impl @p2.WasiHttpTypesAdapter for HttpAdapter with fn response_outparam_send_informational(
   _self,
   _status,
   _headers,
@@ -340,7 +345,7 @@ pub impl @p2.WasiHttpTypesAdapter for HttpAdapter with response_outparam_send_in
 // ===== Incoming Response =====
 
 ///|
-pub impl @p2.WasiHttpTypesAdapter for HttpAdapter with incoming_response_status(
+pub impl @p2.WasiHttpTypesAdapter for HttpAdapter with fn incoming_response_status(
   self,
 ) {
   let resp_id = self.current_incoming_response
@@ -351,7 +356,7 @@ pub impl @p2.WasiHttpTypesAdapter for HttpAdapter with incoming_response_status(
 }
 
 ///|
-pub impl @p2.WasiHttpTypesAdapter for HttpAdapter with incoming_response_headers(
+pub impl @p2.WasiHttpTypesAdapter for HttpAdapter with fn incoming_response_headers(
   self,
 ) {
   let resp_id = self.current_incoming_response
@@ -362,7 +367,7 @@ pub impl @p2.WasiHttpTypesAdapter for HttpAdapter with incoming_response_headers
 }
 
 ///|
-pub impl @p2.WasiHttpTypesAdapter for HttpAdapter with incoming_response_consume(
+pub impl @p2.WasiHttpTypesAdapter for HttpAdapter with fn incoming_response_consume(
   self,
 ) {
   let resp_id = self.current_incoming_response
@@ -383,7 +388,7 @@ pub impl @p2.WasiHttpTypesAdapter for HttpAdapter with incoming_response_consume
 // ===== Future Trailers =====
 
 ///|
-pub impl @p2.WasiHttpTypesAdapter for HttpAdapter with future_trailers_subscribe(
+pub impl @p2.WasiHttpTypesAdapter for HttpAdapter with fn future_trailers_subscribe(
   self,
 ) {
   let id = self.kernel.alloc_pollable()
@@ -391,7 +396,7 @@ pub impl @p2.WasiHttpTypesAdapter for HttpAdapter with future_trailers_subscribe
 }
 
 ///|
-pub impl @p2.WasiHttpTypesAdapter for HttpAdapter with future_trailers_get(
+pub impl @p2.WasiHttpTypesAdapter for HttpAdapter with fn future_trailers_get(
   _self,
 ) {
   Ok(Some(Ok(Ok(None))))
@@ -400,7 +405,7 @@ pub impl @p2.WasiHttpTypesAdapter for HttpAdapter with future_trailers_get(
 // ===== Outgoing Response =====
 
 ///|
-pub impl @p2.WasiHttpTypesAdapter for HttpAdapter with outgoing_response_constructor(
+pub impl @p2.WasiHttpTypesAdapter for HttpAdapter with fn outgoing_response_constructor(
   self,
   headers,
 ) {
@@ -414,7 +419,7 @@ pub impl @p2.WasiHttpTypesAdapter for HttpAdapter with outgoing_response_constru
 }
 
 ///|
-pub impl @p2.WasiHttpTypesAdapter for HttpAdapter with outgoing_response_status_code(
+pub impl @p2.WasiHttpTypesAdapter for HttpAdapter with fn outgoing_response_status_code(
   self,
 ) {
   let id = self.current_outgoing_response
@@ -425,7 +430,7 @@ pub impl @p2.WasiHttpTypesAdapter for HttpAdapter with outgoing_response_status_
 }
 
 ///|
-pub impl @p2.WasiHttpTypesAdapter for HttpAdapter with outgoing_response_headers(
+pub impl @p2.WasiHttpTypesAdapter for HttpAdapter with fn outgoing_response_headers(
   self,
 ) {
   let id = self.current_outgoing_response
@@ -436,7 +441,7 @@ pub impl @p2.WasiHttpTypesAdapter for HttpAdapter with outgoing_response_headers
 }
 
 ///|
-pub impl @p2.WasiHttpTypesAdapter for HttpAdapter with outgoing_response_body(
+pub impl @p2.WasiHttpTypesAdapter for HttpAdapter with fn outgoing_response_body(
   self,
 ) {
   let resp_id = self.current_outgoing_response
@@ -457,7 +462,9 @@ pub impl @p2.WasiHttpTypesAdapter for HttpAdapter with outgoing_response_body(
 // ===== Outgoing Body =====
 
 ///|
-pub impl @p2.WasiHttpTypesAdapter for HttpAdapter with outgoing_body_write(self) {
+pub impl @p2.WasiHttpTypesAdapter for HttpAdapter with fn outgoing_body_write(
+  self,
+) {
   let body_id = self.current_outgoing_body
   match self.kernel.http_outgoing_bodies.get(body_id) {
     None => Err(stream_closed_error())
@@ -472,7 +479,7 @@ pub impl @p2.WasiHttpTypesAdapter for HttpAdapter with outgoing_body_write(self)
 // ===== Future Incoming Response =====
 
 ///|
-pub impl @p2.WasiHttpTypesAdapter for HttpAdapter with future_incoming_response_subscribe(
+pub impl @p2.WasiHttpTypesAdapter for HttpAdapter with fn future_incoming_response_subscribe(
   self,
 ) {
   let id = self.kernel.alloc_pollable()
@@ -480,7 +487,7 @@ pub impl @p2.WasiHttpTypesAdapter for HttpAdapter with future_incoming_response_
 }
 
 ///|
-pub impl @p2.WasiHttpTypesAdapter for HttpAdapter with future_incoming_response_get(
+pub impl @p2.WasiHttpTypesAdapter for HttpAdapter with fn future_incoming_response_get(
   self,
 ) {
   let future_id = self.current_future
@@ -500,7 +507,7 @@ pub impl @p2.WasiHttpTypesAdapter for HttpAdapter with future_incoming_response_
 // ===== Incoming Request =====
 
 ///|
-pub impl @p2.WasiHttpTypesAdapter for HttpAdapter with incoming_request_method(
+pub impl @p2.WasiHttpTypesAdapter for HttpAdapter with fn incoming_request_method(
   self,
 ) {
   let id = self.current_incoming_request
@@ -511,7 +518,7 @@ pub impl @p2.WasiHttpTypesAdapter for HttpAdapter with incoming_request_method(
 }
 
 ///|
-pub impl @p2.WasiHttpTypesAdapter for HttpAdapter with incoming_request_path_with_query(
+pub impl @p2.WasiHttpTypesAdapter for HttpAdapter with fn incoming_request_path_with_query(
   self,
 ) {
   let id = self.current_incoming_request
@@ -522,7 +529,7 @@ pub impl @p2.WasiHttpTypesAdapter for HttpAdapter with incoming_request_path_wit
 }
 
 ///|
-pub impl @p2.WasiHttpTypesAdapter for HttpAdapter with incoming_request_scheme(
+pub impl @p2.WasiHttpTypesAdapter for HttpAdapter with fn incoming_request_scheme(
   self,
 ) {
   let id = self.current_incoming_request
@@ -537,7 +544,7 @@ pub impl @p2.WasiHttpTypesAdapter for HttpAdapter with incoming_request_scheme(
 }
 
 ///|
-pub impl @p2.WasiHttpTypesAdapter for HttpAdapter with incoming_request_authority(
+pub impl @p2.WasiHttpTypesAdapter for HttpAdapter with fn incoming_request_authority(
   self,
 ) {
   let id = self.current_incoming_request
@@ -548,7 +555,7 @@ pub impl @p2.WasiHttpTypesAdapter for HttpAdapter with incoming_request_authorit
 }
 
 ///|
-pub impl @p2.WasiHttpTypesAdapter for HttpAdapter with incoming_request_headers(
+pub impl @p2.WasiHttpTypesAdapter for HttpAdapter with fn incoming_request_headers(
   self,
 ) {
   let id = self.current_incoming_request
@@ -559,7 +566,7 @@ pub impl @p2.WasiHttpTypesAdapter for HttpAdapter with incoming_request_headers(
 }
 
 ///|
-pub impl @p2.WasiHttpTypesAdapter for HttpAdapter with incoming_request_consume(
+pub impl @p2.WasiHttpTypesAdapter for HttpAdapter with fn incoming_request_consume(
   self,
 ) {
   let id = self.current_incoming_request
@@ -580,7 +587,7 @@ pub impl @p2.WasiHttpTypesAdapter for HttpAdapter with incoming_request_consume(
 // ===== Error Code =====
 
 ///|
-pub impl @p2.WasiHttpTypesAdapter for HttpAdapter with http_error_code(
+pub impl @p2.WasiHttpTypesAdapter for HttpAdapter with fn http_error_code(
   _self,
   _err,
 ) {
@@ -590,7 +597,7 @@ pub impl @p2.WasiHttpTypesAdapter for HttpAdapter with http_error_code(
 // ===== Outgoing Handler =====
 
 ///|
-pub impl @p2.WasiHttpOutgoingHandlerAdapter for HttpAdapter with handle(
+pub impl @p2.WasiHttpOutgoingHandlerAdapter for HttpAdapter with fn handle(
   self,
   req,
   _options,
@@ -636,7 +643,7 @@ pub impl @p2.WasiHttpOutgoingHandlerAdapter for HttpAdapter with handle(
 // ===== Incoming Handler =====
 
 ///|
-pub impl @p2.WasiHttpIncomingHandlerAdapter for HttpAdapter with handle(
+pub impl @p2.WasiHttpIncomingHandlerAdapter for HttpAdapter with fn handle(
   self,
   _req,
   _outparam,

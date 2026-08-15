@@ -16,7 +16,7 @@ fn deny_network() -> @p3.WasiError {
 }
 
 ///|
-pub impl @p3.WasiIpNameLookupAdapter for NetworkAdapter with resolve_addresses(
+pub impl @p3.WasiIpNameLookupAdapter for NetworkAdapter with fn resolve_addresses(
   _self,
   _name,
 ) {

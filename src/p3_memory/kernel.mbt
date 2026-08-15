@@ -75,7 +75,7 @@ pub fn Kernel::new(
   wall_nanoseconds? : UInt = 0,
   preopens? : Array[String] = ["/"],
 ) -> Kernel {
-  let descriptors : Map[Int, DescriptorState] = {}
+  let descriptors : Map[Int, DescriptorState] = Map([])
   for i, path in preopens {
     descriptors[i] = { path, type_: Directory }
   }

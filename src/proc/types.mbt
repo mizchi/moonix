@@ -2,7 +2,15 @@
 
 ///|
 /// Process ID
-pub struct Pid(Int) derive(Eq, Hash, Show)
+pub struct Pid(Int) derive(Eq, Hash)
+
+///|
+pub impl Show for Pid with fn output(self, logger) {
+  let Pid(n) = self
+  logger.write_string("Pid(")
+  logger.write_string(n.to_string())
+  logger.write_string(")")
+}
 
 ///|
 pub fn Pid::new(id : Int) -> Pid {
@@ -20,7 +28,7 @@ pub enum ProcessState {
 }
 
 ///|
-pub impl Show for ProcessState with output(self, logger) {
+pub impl Show for ProcessState with fn output(self, logger) {
   match self {
     Ready => logger.write_string("Ready")
     Running => logger.write_string("Running")
@@ -43,7 +51,7 @@ pub enum Signal {
 }
 
 ///|
-pub impl Show for Signal with output(self, logger) {
+pub impl Show for Signal with fn output(self, logger) {
   match self {
     SIGTERM => logger.write_string("SIGTERM")
     SIGKILL => logger.write_string("SIGKILL")
@@ -146,7 +154,7 @@ pub suberror ProcError {
 }
 
 ///|
-pub impl Show for ProcError with output(self, logger) {
+pub impl Show for ProcError with fn output(self, logger) {
   match self {
     NotFound(msg) => logger.write_string("NotFound(\{msg})")
     AlreadyExists(msg) => logger.write_string("AlreadyExists(\{msg})")
@@ -158,7 +166,15 @@ pub impl Show for ProcError with output(self, logger) {
 
 ///|
 /// File descriptor for process I/O
-pub struct Fd(Int) derive(Eq, Hash, Show)
+pub struct Fd(Int) derive(Eq, Hash)
+
+///|
+pub impl Show for Fd with fn output(self, logger) {
+  let Fd(n) = self
+  logger.write_string("Fd(")
+  logger.write_string(n.to_string())
+  logger.write_string(")")
+}
 
 ///|
 pub fn Fd::stdin() -> Fd {
